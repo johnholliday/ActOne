@@ -36,3 +36,7 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+CLAUDE.local.md
+.claude/settings.local.json
+node_modules
+.turbo
