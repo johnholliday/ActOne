@@ -1,0 +1,43 @@
+{
+  "name": "@repo/string-utils",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./case": {
+      "import": "./dist/case.js",
+      "types": "./dist/case.d.ts"
+    },
+    "./whitespace": {
+      "import": "./dist/whitespace.js",
+      "types": "./dist/whitespace.d.ts"
+    },
+    "./truncate": {
+      "import": "./dist/truncate.js",
+      "types": "./dist/truncate.d.ts"
+    },
+    "./slug": {
+      "import": "./dist/slug.js",
+      "types": "./dist/slug.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "eslint": "^9.39.1",
+    "typescript": "5.9.2",
+    "vitest": "^3.2.1"
+  }
+}
