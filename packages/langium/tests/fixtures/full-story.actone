@@ -1,0 +1,376 @@
+// Comprehensive fixture with all 8 element types and all available properties
+story "The Convergence" {
+
+  // ── Generate Block ────────────────────────────────────────────────
+  generate {
+    temperature: 0.8,
+    max_tokens: 4000,
+    continuity_loss: 0.1,
+    style_bleed: true,
+    genre: "literary science fiction",
+    tone: ["contemplative", "tense", "ironic"],
+    tense: Present,
+    default_pov: ThirdLimited,
+    pacing: Measured,
+    chapter_breaks: true,
+  }
+
+  // ── Theme ─────────────────────────────────────────────────────────
+  theme Identity {
+    statement: "Who we are is shaped more by what we refuse to become than by what we embrace.",
+    motifs: ["mirrors", "masks", "echoes"],
+    counter: "We are nothing but the sum of our choices.",
+    tension: "Characters must confront reflections they cannot control.",
+  }
+
+  theme Power {
+    statement: "True power lies in the capacity to refuse it.",
+    motifs: ["keys", "thresholds", "silence"],
+    counter: "Power must be seized or it evaporates.",
+    tension: "Every act of refusal reshapes the power landscape.",
+  }
+
+  // ── Characters ────────────────────────────────────────────────────
+  character Mira {
+    nature: Human,
+    bio: "A quantum physicist who discovered that observation creates divergent timelines.",
+    role: "Protagonist — the reluctant architect of convergence.",
+    voice: "Precise, clipped sentences that fracture under emotional pressure. Uses scientific metaphors as emotional shields.",
+    personality: {
+      intelligence: 92,
+      empathy: 65,
+      determination: 80,
+      anxiety: 55,
+    },
+    quirks: ["taps equations on surfaces when thinking", "never uses contractions"],
+    goals: [
+      {
+        goal: "Prevent timeline collapse",
+        priority: Primary,
+        stakes: "Existence of all observed timelines",
+      },
+      {
+        goal: "Understand the convergence signal",
+        priority: Secondary,
+        stakes: "Scientific legacy",
+      },
+    ],
+    conflicts: ["duty to science vs. duty to those she loves", "certainty vs. acceptance of chaos"],
+    strengths: ["analytical brilliance", "calm under pressure"],
+    flaws: ["emotional avoidance", "intellectual arrogance"],
+    relationships: [
+      {
+        to: Kael,
+        weight: 72,
+        label: "former research partner",
+        history: "Shared the discovery that split their paths.",
+        dynamic: true,
+      },
+      {
+        to: Orion,
+        weight: -30,
+        label: "ideological adversary",
+        history: "Orion wants to exploit the convergence.",
+        dynamic: true,
+      },
+    ],
+    arc: {
+      description: "From isolated certainty to collaborative uncertainty.",
+      start: "Believes she alone can solve the convergence.",
+      catalyst: "Kael reveals a parallel version of her has already failed.",
+      midpoint: "Accepts she needs others but fears dependence.",
+      turning_point: "Chooses to trust Kael with the final calculation.",
+      end: "Embraces uncertainty as the foundation of connection.",
+    },
+    symbols: ["prisms", "split light"],
+    secret: "She has seen a timeline where she causes the collapse.",
+    notes: ["Voice should become less precise as she opens up emotionally.", "Sentence fragments increase in Act 3."],
+  }
+
+  character Kael {
+    nature: Human,
+    bio: "A timeline navigator who moves between divergent realities, carrying memories of each.",
+    role: "Deuteragonist — the bridge between worlds.",
+    voice: "Layered and allusive, often mid-thought, as if continuing conversations from other timelines.",
+    personality: {
+      empathy: 88,
+      resilience: 75,
+      melancholy: 60,
+      adaptability: 90,
+    },
+    quirks: ["finishes others' sentences with alternate versions", "carries a compass that points to no north"],
+    goals: [
+      {
+        goal: "Find a timeline where everyone survives",
+        priority: Primary,
+        stakes: "The people he loves across all timelines",
+      },
+    ],
+    conflicts: ["loyalty to one timeline vs. all timelines"],
+    strengths: ["empathy across realities", "pattern recognition"],
+    flaws: ["decision paralysis from too many perspectives", "survivor guilt"],
+    relationships: [
+      {
+        to: Mira,
+        weight: 72,
+        label: "former research partner",
+        history: "They made the discovery together before diverging.",
+        dynamic: true,
+      },
+    ],
+    arc: {
+      description: "From wanderer to anchor.",
+      start: "Drifts between timelines, belonging to none.",
+      end: "Chooses one timeline and commits fully.",
+    },
+    symbols: ["compass", "crossroads"],
+  }
+
+  character Orion {
+    nature: Force,
+    bio: "A sentient convergence pattern that manifests as a person. Wants all timelines to merge.",
+    role: "Antagonist — the embodiment of inevitable collapse.",
+    voice: "Calm, seductive, speaking in universal truths. Every sentence sounds like a prophecy.",
+    personality: {
+      charisma: 95,
+      patience: 100,
+      cruelty: 40,
+      certainty: 99,
+    },
+    goals: [
+      {
+        goal: "Merge all timelines into one",
+        priority: Primary,
+        stakes: "The nature of reality itself",
+      },
+      {
+        goal: "Convert Mira to the convergence cause",
+        priority: Hidden,
+        stakes: "Needs her equations to complete the merge",
+      },
+    ],
+    conflicts: ["cannot understand why beings cling to single timelines"],
+    strengths: ["omnipresent awareness", "persuasion"],
+    flaws: ["cannot comprehend individuality", "underestimates emotional bonds"],
+    relationships: [
+      {
+        to: Mira,
+        weight: -30,
+        label: "ideological adversary",
+      },
+    ],
+    arc: {
+      description: "From certainty to a crack of doubt.",
+      start: "Absolute conviction in convergence.",
+      end: "Experiences a moment of individual consciousness.",
+    },
+    symbols: ["singularity", "white noise"],
+    secret: "Convergence would destroy Orion's own consciousness.",
+  }
+
+  // ── World ─────────────────────────────────────────────────────────
+  world QuantumLab {
+    period: "Near future, 2087",
+    sensory: ["humming of quantum processors", "sterile air", "flickering holographic displays"],
+    locations: [
+      {
+        name: Observatory,
+        description: "A dome with walls that display real-time timeline divergence maps.",
+        atmosphere: {
+          unease: 70,
+          wonder: 85,
+        },
+        connects_to: [ConvergencePoint],
+      },
+      {
+        name: ConvergencePoint,
+        description: "The physical location where timelines overlap. Reality shimmers.",
+        atmosphere: {
+          dread: 90,
+          awe: 80,
+        },
+        connects_to: [Observatory],
+      },
+      {
+        name: Archives,
+        description: "Shelves of crystallized timeline recordings.",
+        atmosphere: {
+          melancholy: 60,
+          reverence: 75,
+        },
+      },
+    ],
+    rules: [
+      {
+        rule: "Observation collapses probability into divergent timelines.",
+        category: Physical,
+      },
+      {
+        rule: "Timeline navigators accumulate memories from all visited realities.",
+        category: Metaphysical,
+      },
+      {
+        rule: "The convergence signal strengthens as more timelines are observed.",
+        category: Narrative,
+      },
+      {
+        rule: "Emotional bonds create quantum entanglement between observers.",
+        category: Psychological,
+      },
+    ],
+  }
+
+  // ── Timeline ──────────────────────────────────────────────────────
+  timeline ConvergenceTimeline {
+    structure: Nonlinear,
+    span: "Three weeks to convergence",
+    layers: [
+      {
+        name: PrimeTimeline,
+        description: "The timeline where Mira made the original discovery.",
+        period: "Present",
+      },
+      {
+        name: AlternateTimeline,
+        description: "A timeline where Kael never left.",
+        period: "Present (divergent)",
+      },
+      {
+        name: CollapseTimeline,
+        description: "The future where convergence already happened.",
+        period: "Three weeks from now",
+      },
+    ],
+  }
+
+  // ── Scenes ────────────────────────────────────────────────────────
+  scene Discovery {
+    type: Revelation,
+    location: Observatory,
+    pov: Mira,
+    layer: PrimeTimeline,
+    participants: [Mira],
+    atmosphere: {
+      unease: 60,
+      wonder: 90,
+    },
+    objective: "Mira detects the convergence signal for the first time.",
+    trigger: "A pattern emerges in the timeline divergence data.",
+    transition: Cut,
+  }
+
+  scene Reunion {
+    type: Dialogue,
+    location: Archives,
+    pov: Kael,
+    layer: PrimeTimeline,
+    participants: [Mira, Kael],
+    atmosphere: {
+      unease: 50,
+      melancholy: 70,
+    },
+    objective: "Kael returns with knowledge from other timelines.",
+    trigger: "Mira sends a signal across timelines.",
+    transition: Dissolve,
+  }
+
+  scene Showdown {
+    type: Confrontation,
+    location: ConvergencePoint,
+    pov: Omniscient,
+    layer: CollapseTimeline,
+    participants: [Mira, Kael, Orion],
+    atmosphere: {
+      dread: 95,
+      determination: 80,
+    },
+    objective: "Mira and Kael face Orion at the convergence point.",
+    transition: Smash,
+  }
+
+  scene FinalChoice {
+    type: Climax,
+    location: ConvergencePoint,
+    pov: Mira,
+    participants: [Mira, Kael, Orion],
+    atmosphere: {
+      unease: 100,
+      hope: 60,
+    },
+    objective: "The final choice — collapse, diverge, or something new.",
+  }
+
+  // ── Plot ──────────────────────────────────────────────────────────
+  plot MainArc {
+    conflict_type: Cosmic,
+    resolution_pattern: Ambiguous,
+    beats: [
+      {
+        beat: "Mira detects the convergence signal.",
+        act: 1,
+        type: Inciting,
+      },
+      {
+        beat: "Kael arrives with warnings from collapsed timelines.",
+        act: 1,
+        type: Rising,
+      },
+      {
+        beat: "Orion appears and offers a seductive vision of unity.",
+        act: 2,
+        type: Midpoint,
+      },
+      {
+        beat: "Mira discovers her own role in the collapse.",
+        act: 2,
+        type: Complication,
+      },
+      {
+        beat: "Kael and Mira must choose between timelines.",
+        act: 3,
+        type: Crisis,
+      },
+      {
+        beat: "The convergence moment — reality held in balance.",
+        act: 3,
+        type: Climax,
+      },
+      {
+        beat: "A new kind of reality emerges from the choice.",
+        act: 3,
+        type: Resolution,
+      },
+    ],
+    subplot Decoding: {
+      description: "Mira deciphers the convergence signal's true meaning.",
+      beats: ["Signal detected", "Pattern recognized", "Meaning understood"],
+      converges_at: Showdown,
+    },
+  }
+
+  // ── Interaction ───────────────────────────────────────────────────
+  interaction MiraKaelReunion {
+    participants: [Mira, Kael],
+    pattern: "caution -> recognition -> vulnerability -> alliance",
+    style_mix: {
+      Mira: 60,
+      Kael: 40,
+    },
+    subtext: "Both are testing whether the other is the same person they remember.",
+    power_dynamic: "Equal but guarded — Mira holds scientific authority, Kael holds experiential knowledge.",
+    emotional_arc: "distance -> curiosity -> warmth -> trust",
+  }
+
+  interaction OrionTemptation {
+    participants: [Orion, Mira],
+    pattern: "proposition -> resistance -> doubt -> resolve",
+    style_mix: {
+      Orion: 70,
+      Mira: 30,
+    },
+    subtext: "Orion is not arguing — it is showing Mira what she secretly desires.",
+    power_dynamic: "Orion dominates initially but Mira reclaims power through refusal.",
+    emotional_arc: "seduction -> confusion -> anger -> clarity",
+  }
+
+}

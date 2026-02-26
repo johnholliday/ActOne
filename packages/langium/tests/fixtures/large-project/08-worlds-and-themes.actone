@@ -1,0 +1,295 @@
+// Performance benchmark: worlds, themes, and timeline
+story "The Grand Tapestry" {
+
+  // ── World 1: The Central Weave ──────────────────────────────────────
+  world CentralWeave {
+    period: "The current era of the Tapestry, several millennia after the First Weaving",
+    sensory: ["shimmering light between surfaces", "hum of taut threads", "warmth of interlocking patterns"],
+    locations: [
+      {
+        name: GrandLoom,
+        description: "The mythical loom at the center of all woven reality. It has not been used since the First Weavers departed, but it still hums with latent power.",
+        atmosphere: {
+          awe: 100,
+          reverence: 90,
+          power: 85,
+        },
+        connects_to: [CouncilChamber, PatternGarden],
+      },
+      {
+        name: CouncilChamber,
+        description: "A circular hall where the Weaving Council convenes. Threads from every region converge here, making it the most information-rich location in the Tapestry.",
+        atmosphere: {
+          unease: 70,
+          authority: 85,
+        },
+        connects_to: [GrandLoom, MarketNexus],
+      },
+      {
+        name: PatternGarden,
+        description: "A living garden where Thread-touched plants grow in fractal patterns. Used for meditation and Thread-attunement training.",
+        atmosphere: {
+          serenity: 90,
+          beauty: 85,
+          mystery: 50,
+        },
+        connects_to: [GrandLoom, HealingWards],
+      },
+      {
+        name: MarketNexus,
+        description: "A bustling crossroads where traders from every woven region exchange goods, information, and Thread fragments. The air crackles with commerce and rumor.",
+        atmosphere: {
+          energy: 85,
+          chaos: 60,
+          opportunity: 75,
+        },
+        connects_to: [CouncilChamber, RefugeeQuarter],
+      },
+      {
+        name: RefugeeQuarter,
+        description: "A sprawling district housing those displaced by the unraveling. Tents and temporary shelters crowd together. Hope is scarce but kindness persists.",
+        atmosphere: {
+          despair: 70,
+          solidarity: 65,
+          unease: 55,
+        },
+        connects_to: [MarketNexus],
+      },
+    ],
+    rules: [
+      {
+        rule: "The Grand Loom can only be activated by a weaver who has touched all five Thread types.",
+        category: Metaphysical,
+      },
+      {
+        rule: "The Council Chamber amplifies truth — lies spoken there cause visible distortions.",
+        category: Social,
+      },
+      {
+        rule: "Thread-touched plants in the Pattern Garden respond to the emotional state of nearby beings.",
+        category: Physical,
+      },
+    ],
+  }
+
+  // ── World 2: The Borderlands ────────────────────────────────────────
+  world Borderlands {
+    period: "The contested frontier between intact and frayed reality",
+    sensory: ["flickering light", "smell of ozone", "sounds that repeat with slight variations", "ground that shifts underfoot"],
+    locations: [
+      {
+        name: TwilightPass,
+        description: "A narrow corridor between stable and unstable Tapestry regions. Travelers must move quickly — the pass shifts without warning.",
+        atmosphere: {
+          danger: 85,
+          urgency: 90,
+          beauty: 30,
+        },
+        connects_to: [WatchfireStation, DriftingIsles],
+      },
+      {
+        name: WatchfireStation,
+        description: "A fortified outpost where Thread guardians maintain signal fires that stabilize the local weave. The fires must never go out.",
+        atmosphere: {
+          vigilance: 95,
+          isolation: 80,
+          duty: 85,
+        },
+        connects_to: [TwilightPass, SmugglersCove],
+      },
+      {
+        name: SmugglersCove,
+        description: "A hidden harbor where Thread-fragment traders conduct illegal business. The water here is half-real, flickering between liquid and light.",
+        atmosphere: {
+          secrecy: 90,
+          danger: 70,
+          opportunity: 75,
+        },
+        connects_to: [WatchfireStation, DriftingIsles],
+      },
+      {
+        name: DriftingIsles,
+        description: "Fragments of fully formed reality that float in the Frayed Edges like islands in a sea of entropy. Each one is a tiny preserved world.",
+        atmosphere: {
+          wonder: 85,
+          melancholy: 80,
+          fragility: 90,
+        },
+        connects_to: [TwilightPass, SmugglersCove, EchoFields],
+      },
+      {
+        name: EchoFields,
+        description: "A region where unraveled Threads replay scenes from the past in ghostly loops. Walking through them means walking through memories.",
+        atmosphere: {
+          haunting: 95,
+          beauty: 60,
+          sorrow: 85,
+        },
+        connects_to: [DriftingIsles],
+      },
+    ],
+    rules: [
+      {
+        rule: "Navigation in the Borderlands requires either a Thread-compass or a bonded animal guide.",
+        category: Physical,
+      },
+      {
+        rule: "Emotional resonance between travelers strengthens the local weave, making passage safer.",
+        category: Metaphysical,
+      },
+      {
+        rule: "Trade in Thread fragments is illegal under Council law but tolerated at Smuggler's Cove by unspoken agreement.",
+        category: Social,
+      },
+      {
+        rule: "Echo Fields replay events more vividly when observers have personal connections to the memories shown.",
+        category: Narrative,
+      },
+    ],
+  }
+
+  // ── World 3: The Deep Weave ─────────────────────────────────────────
+  world DeepWeave {
+    period: "Before recorded history — the substrate beneath all woven reality",
+    sensory: ["deep vibration felt in bones", "colors that have no names", "the taste of static electricity", "absolute silence punctuated by heartbeat rhythms"],
+    locations: [
+      {
+        name: RootThreads,
+        description: "The oldest Threads in existence — massive, slow-vibrating strands that form the foundation of all woven reality. They pulse like arteries.",
+        atmosphere: {
+          awe: 100,
+          primal: 95,
+          danger: 70,
+        },
+        connects_to: [MemoryWell, SunderPoint],
+      },
+      {
+        name: MemoryWell,
+        description: "A place where every memory ever woven into the Tapestry collects like water. Drinking from it grants knowledge at the cost of losing a memory of your own.",
+        atmosphere: {
+          mystery: 95,
+          temptation: 85,
+          sorrow: 70,
+        },
+        connects_to: [RootThreads, SilentForge],
+      },
+      {
+        name: SunderPoint,
+        description: "The exact location where the original Sundering occurred. Reality is scarred here — the wound has never fully healed and the air bleeds light.",
+        atmosphere: {
+          trauma: 100,
+          power: 90,
+          dread: 85,
+        },
+        connects_to: [RootThreads, HealingWards],
+      },
+      {
+        name: SilentForge,
+        description: "An ancient workshop where the First Weavers created their tools. The forge still holds heat after millennia, waiting for someone to use it again.",
+        atmosphere: {
+          potential: 90,
+          patience: 100,
+          reverence: 80,
+        },
+        connects_to: [MemoryWell, LoomHeart],
+      },
+      {
+        name: LoomHeart,
+        description: "The core of the Grand Loom, accessible only from the Deep Weave. It is where all Threads converge into a single point of infinite possibility.",
+        atmosphere: {
+          transcendence: 100,
+          danger: 95,
+          hope: 80,
+        },
+        connects_to: [SilentForge],
+      },
+    ],
+    rules: [
+      {
+        rule: "Only those who have experienced profound loss can perceive the Root Threads.",
+        category: Psychological,
+      },
+      {
+        rule: "The Memory Well extracts an equivalent memory for every memory gained — the exchange is not negotiable.",
+        category: Metaphysical,
+      },
+      {
+        rule: "The Sunder Point amplifies all Thread manipulation tenfold — creation and destruction alike.",
+        category: Physical,
+      },
+      {
+        rule: "Time does not flow in the Deep Weave — all moments exist simultaneously.",
+        category: Narrative,
+      },
+    ],
+  }
+
+  // A location bridge between worlds
+  world HealingWards {
+    period: "Exists outside normal time, maintained by collective will",
+    sensory: ["warm light", "the scent of herbs", "soft humming of healers", "clean linen"],
+    locations: [
+      {
+        name: HealingWards,
+        description: "A sanctuary where Thread-sickness is treated and broken weavers are mended. Located at the intersection of the Central Weave and the Deep Weave.",
+        atmosphere: {
+          comfort: 85,
+          hope: 75,
+          exhaustion: 60,
+        },
+      },
+    ],
+    rules: [
+      {
+        rule: "Violence is physically impossible within the Healing Wards — the Threads reject destructive intent.",
+        category: Metaphysical,
+      },
+    ],
+  }
+
+  // ── Themes ──────────────────────────────────────────────────────────
+  theme Connection {
+    statement: "The threads between people are stronger than the threads of reality itself.",
+    motifs: ["woven hands", "tangled strings", "bridges", "echoed voices"],
+    counter: "Attachment is a weakness that the unraveling exploits.",
+    tension: "Characters must choose between protecting their bonds and protecting the Tapestry.",
+  }
+
+  theme Decay {
+    statement: "Everything that is made will one day unmake itself — the question is what we do in between.",
+    motifs: ["frayed edges", "rust", "falling leaves", "fading photographs"],
+    counter: "Permanence can be achieved through sufficient will and craft.",
+    tension: "The drive to preserve versus the wisdom of letting go.",
+  }
+
+  theme Legacy {
+    statement: "What we leave behind shapes the world more than what we build while alive.",
+    motifs: ["scrolls", "tools passed down", "children learning", "old songs"],
+    counter: "The past is dead weight that prevents the future from emerging.",
+    tension: "Characters must decide which traditions to preserve and which to release.",
+  }
+
+  // ── Timeline ────────────────────────────────────────────────────────
+  timeline TapestryTimeline {
+    structure: Nonlinear,
+    span: "From the first signs of unraveling to the Mending attempt — approximately one year",
+    layers: [
+      {
+        name: CurrentDay,
+        description: "The current crisis as the Tapestry unravels and the protagonists assemble.",
+        period: "Year of the Fraying",
+      },
+      {
+        name: Sundering,
+        description: "Flashbacks to the original catastrophe that first tore the Tapestry, centuries ago.",
+        period: "Three hundred years before the present",
+      },
+      {
+        name: FirstWeaving,
+        description: "Ancient visions of when the Tapestry was first created by the original Weavers.",
+        period: "The beginning of woven time",
+      },
+    ],
+  }
+
+}

@@ -1,0 +1,404 @@
+// Performance benchmark: scenes 1-50
+story "The Grand Tapestry" {
+
+  scene TheUnraveling {
+    type: Revelation,
+    location: HighTower,
+    participants: [Lyra],
+    objective: "Lyra witnesses the first major tear in the Tapestry from the HighTower.",
+    transition: Cut,
+  }
+
+  scene CallToAction {
+    type: Dialogue,
+    location: WeavingHall,
+    participants: [Lyra, Khalid],
+    objective: "Khalid reveals the scope of the crisis and asks Lyra to undertake the quest.",
+    transition: Dissolve,
+  }
+
+  scene SmugglersGambit {
+    type: Action,
+    location: SmugglersCove,
+    participants: [Fen, Mordecai],
+    objective: "Fen attempts to steal Thread intelligence from Mordecai's smuggling operation.",
+    transition: Cut,
+  }
+
+  scene OldWounds {
+    type: Dialogue,
+    location: WatchfireStation,
+    participants: [Sable, Orin],
+    objective: "Sable reunites with her former comrade and confronts memories of the Thread Wars.",
+    transition: Dissolve,
+  }
+
+  scene TheRogueWeaver {
+    type: Confrontation,
+    location: ThreadArchive,
+    participants: [Rowan, Esme],
+    objective: "Rowan breaks into the ThreadArchive seeking forbidden knowledge, confronted by Esme.",
+    transition: Smash,
+  }
+
+  scene GatheringThreads {
+    type: Montage,
+    location: MarketNexus,
+    participants: [Lyra, Fen, Sable],
+    objective: "The three protagonists meet at the MarketNexus and begin assembling their team.",
+    transition: Dissolve,
+  }
+
+  scene WhisperFromThePast {
+    type: Revelation,
+    location: ThreadArchive,
+    participants: [Lyra, Whisper],
+    objective: "The spirit Whisper reveals fragments of the Sundering's true cause to Lyra.",
+    transition: Flashback,
+  }
+
+  scene BorderCrossing {
+    type: Action,
+    location: TwilightPass,
+    participants: [Fen, Sable, Koda],
+    objective: "The group navigates the dangerous TwilightPass into the Borderlands.",
+    transition: Cut,
+  }
+
+  scene CouncilDebate {
+    type: Dialogue,
+    location: CouncilChamber,
+    participants: [Khalid, Priya, Katya],
+    objective: "Khalid petitions the Council for resources while Priya mediates and Katya objects.",
+    transition: Cut,
+  }
+
+  scene ThreadSong {
+    type: Reflection,
+    location: PatternGarden,
+    participants: [Isolde, Wren],
+    objective: "Isolde sings to the Pattern Garden, sensing the Tapestry's pain through harmonics.",
+    transition: Fade,
+  }
+
+  scene MordecaisOffer {
+    type: Dialogue,
+    location: MarketNexus,
+    participants: [Mordecai, Delara],
+    objective: "Mordecai hires Delara to spy on Lyra's group and report their movements.",
+    transition: Cut,
+  }
+
+  scene ApprenticesTrial {
+    type: Action,
+    location: WeavingHall,
+    participants: [Darius, Mei],
+    objective: "Darius attempts an advanced weaving technique and nearly causes a cascade failure.",
+    transition: Smash,
+  }
+
+  scene RefugeeStories {
+    type: Montage,
+    location: RefugeeQuarter,
+    participants: [Tadeo, Yuki],
+    objective: "Tadeo collects stories from refugees while Yuki guides him through the quarter.",
+    transition: Dissolve,
+  }
+
+  scene TheForgeAwakens {
+    type: Revelation,
+    location: SilentForge,
+    participants: [Gunnar, Ember],
+    objective: "Gunnar discovers the Silent Forge and Ember reveals its ancient purpose.",
+    transition: Fade,
+  }
+
+  scene HealingHands {
+    type: Dialogue,
+    location: HealingWards,
+    participants: [Amara, Hana],
+    objective: "Amara treats Hana's Thread-sensitivity while trying to understand the child's unique gift.",
+    transition: Dissolve,
+  }
+
+  scene NightWatch {
+    type: Reflection,
+    location: WatchfireStation,
+    participants: [Sable],
+    objective: "Sable stands watch alone, wrestling with memories of the village she burned.",
+    transition: Fade,
+  }
+
+  scene ThornStrike {
+    type: Action,
+    location: CouncilChamber,
+    participants: [Thorn, Khalid],
+    objective: "Thorn attacks the Council Chamber, demanding Khalid face judgment for the Sundering.",
+    transition: Smash,
+  }
+
+  scene DriftingMemories {
+    type: Reflection,
+    location: DriftingIsles,
+    participants: [Lyra, Fen],
+    objective: "Lyra and Fen explore a Drifting Isle that preserves memories of Tessara before the decay.",
+    transition: Dissolve,
+  }
+
+  scene TheEquation {
+    type: Revelation,
+    location: CouncilChamber,
+    participants: [Rashid, Mei],
+    objective: "Rashid presents his mathematical model predicting the Tapestry's complete collapse.",
+    transition: Cut,
+  }
+
+  scene SeaShantyIntelligence {
+    type: Dialogue,
+    location: SmugglersCove,
+    participants: [Caspian, Fen],
+    objective: "Caspian shares nautical Thread-pattern observations that reveal a hidden route.",
+    transition: Cut,
+  }
+
+  scene VexisFirstAppearance {
+    type: Confrontation,
+    location: RavelsEnd,
+    participants: [Lyra, Sable, Vexis],
+    objective: "Vexis manifests for the first time, testing Lyra's resolve at the boundary.",
+    transition: Smash,
+  }
+
+  scene GardenConsultation {
+    type: Dialogue,
+    location: PatternGarden,
+    participants: [Linnea, Khalid],
+    objective: "Linnea shows Khalid how Thread-touched plants are dying, confirming the decay's acceleration.",
+    transition: Dissolve,
+  }
+
+  scene TheBlacksmithsGift {
+    type: Transition,
+    location: SilentForge,
+    participants: [Gunnar, Lyra],
+    objective: "Gunnar presents Lyra with a Thread-tool forged from ancient materials.",
+    transition: Cut,
+  }
+
+  scene NihilsWhisper {
+    type: Reflection,
+    location: EchoFields,
+    participants: [Lyra, Nihil],
+    objective: "Nihil appears in the Echo Fields, questioning whether the Tapestry deserves to be saved.",
+    transition: Fade,
+  }
+
+  scene DoubleAgent {
+    type: Dialogue,
+    location: MarketNexus,
+    participants: [Delara, Fen],
+    objective: "Delara feeds Fen misleading information while secretly reporting to Mordecai.",
+    transition: Cut,
+  }
+
+  scene ThreadAnchoring {
+    type: Action,
+    location: TwilightPass,
+    participants: [Bjorn, Viktor],
+    objective: "Bjorn constructs a Thread-anchor at the pass while Viktor defends against Thread-storms.",
+    transition: Cut,
+  }
+
+  scene ThePhilosophersSpeech {
+    type: Dialogue,
+    location: MarketNexus,
+    participants: [Soren, Tadeo],
+    objective: "Soren argues publicly that the Mending is futile, shaking public confidence.",
+    transition: Cut,
+  }
+
+  scene RavenMessage {
+    type: Transition,
+    location: HighTower,
+    participants: [Corvus, Lyra],
+    objective: "Corvus delivers a cryptic message from deep within the Frayed Edges.",
+    transition: Cut,
+  }
+
+  scene MothersThread {
+    type: Revelation,
+    location: HealingWards,
+    participants: [Mordecai],
+    objective: "Mordecai secretly visits his dying mother, revealing his hidden vulnerability.",
+    transition: Fade,
+  }
+
+  scene WarCouncil {
+    type: Dialogue,
+    location: CouncilChamber,
+    participants: [Lyra, Khalid, Sable, Fen],
+    objective: "The core group debates strategy for entering the Deep Weave.",
+    transition: Cut,
+  }
+
+  scene AlchemistsExperiment {
+    type: Action,
+    location: PatternGarden,
+    participants: [Zara, Linnea],
+    objective: "Zara tests a new Thread-solidification compound using Linnea's Thread-touched plants.",
+    transition: Dissolve,
+  }
+
+  scene GhostDaughter {
+    type: Revelation,
+    location: EchoFields,
+    participants: [Rowan, Selene],
+    objective: "Rowan encounters his daughter's Thread-spirit and must decide whether to speak to her.",
+    transition: Flashback,
+  }
+
+  scene CourierRun {
+    type: Action,
+    location: TwilightPass,
+    participants: [Callum, Nadia],
+    objective: "Callum and Nadia race through the pass carrying intelligence about Mordecai.",
+    transition: Cut,
+  }
+
+  scene TheDance {
+    type: Montage,
+    location: GrandLoom,
+    participants: [Ashara, Isolde],
+    objective: "Ashara dances while Isolde sings, temporarily stabilizing the Grand Loom's vibrations.",
+    transition: Dissolve,
+  }
+
+  scene ForestSpeaks {
+    type: Revelation,
+    location: RootThreads,
+    participants: [Morrigan, Lyra],
+    objective: "The sentient forest Morrigan shares ancient memories of the First Weaving with Lyra.",
+    transition: Flashback,
+  }
+
+  scene BetrayalRevealed {
+    type: Confrontation,
+    location: MarketNexus,
+    participants: [Fen, Delara],
+    objective: "Fen discovers Delara has been feeding information to Mordecai.",
+    transition: Smash,
+  }
+
+  scene TheBrokenOath {
+    type: Dialogue,
+    location: WatchfireStation,
+    participants: [Thorn, Sable],
+    objective: "Thorn and Sable confront their shared military past and opposing present loyalties.",
+    transition: Cut,
+  }
+
+  scene VexisGrows {
+    type: Action,
+    location: TheVoid,
+    participants: [Vexis, Entropy],
+    objective: "Vexis absorbs more of the Frayed Edges, growing in power and nascent self-awareness.",
+    transition: Fade,
+  }
+
+  scene LanternLight {
+    type: Transition,
+    location: RefugeeQuarter,
+    participants: [Idris, Petra],
+    objective: "Idris distributes Thread-light lanterns while Petra prepares evacuation wagons.",
+    transition: Dissolve,
+  }
+
+  scene MidwifeSecret {
+    type: Revelation,
+    location: HealingWards,
+    participants: [Maren, Amara],
+    objective: "Maren reveals her registry of Thread-storm children to Amara, suggesting a pattern.",
+    transition: Cut,
+  }
+
+  scene DescentBegins {
+    type: Action,
+    location: RootThreads,
+    participants: [Lyra, Fen, Sable, Khalid],
+    objective: "The core group begins their descent into the Deep Weave.",
+    transition: Cut,
+  }
+
+  scene MemoryPrice {
+    type: Confrontation,
+    location: MemoryWell,
+    participants: [Lyra, Khalid],
+    objective: "Khalid drinks from the Memory Well and the group witnesses what he sacrifices.",
+    transition: Dissolve,
+  }
+
+  scene HiveMindContact {
+    type: Dialogue,
+    location: DriftingIsles,
+    participants: [Amos, Mei],
+    objective: "Mei attempts to communicate with the hive-mind Amos using pattern-based language.",
+    transition: Fade,
+  }
+
+  scene GlassworkIntelligence {
+    type: Dialogue,
+    location: MarketNexus,
+    participants: [Idris, Nadia],
+    objective: "Nadia uses Idris's Thread-light lanterns to decode hidden messages in Mordecai's trade routes.",
+    transition: Cut,
+  }
+
+  scene WolfWarning {
+    type: Action,
+    location: TwilightPass,
+    participants: [Koda, Sable],
+    objective: "Koda senses an approaching Thread-storm, giving Sable time to warn the group.",
+    transition: Smash,
+  }
+
+  scene PaintersPerspective {
+    type: Reflection,
+    location: DriftingIsles,
+    participants: [Juno],
+    objective: "Juno paints a Drifting Isle before it dissolves, preserving its beauty as a record.",
+    transition: Fade,
+  }
+
+  scene MechanicalLoom {
+    type: Revelation,
+    location: GrandLoom,
+    participants: [Ravi, Khalid],
+    objective: "Ravi proposes using a mechanical loom to amplify the Mending — Khalid sees both promise and danger.",
+    transition: Cut,
+  }
+
+  scene ThornYields {
+    type: Dialogue,
+    location: WatchfireStation,
+    participants: [Thorn, Lyra],
+    objective: "Thorn reluctantly agrees to a temporary alliance after Lyra appeals to her guardian oath.",
+    transition: Dissolve,
+  }
+
+  scene FenwicksWarning {
+    type: Dialogue,
+    location: WeavingHall,
+    participants: [Fenwick, Darius],
+    objective: "Fenwick warns Darius about the dangers of overconfidence, sharing a cautionary tale.",
+    transition: Cut,
+  }
+
+  scene VoidEncounter {
+    type: Confrontation,
+    location: TheVoid,
+    participants: [Lyra, Fen, Vexis],
+    objective: "The group's first direct confrontation with Vexis in the heart of the Void.",
+    transition: Smash,
+  }
+
+}

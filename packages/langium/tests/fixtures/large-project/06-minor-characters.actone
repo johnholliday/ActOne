@@ -1,0 +1,44 @@
+// Performance benchmark: minor characters with minimal properties
+story "The Grand Tapestry" {
+
+  character Yuki {
+    nature: Human,
+    bio: "A street urchin in the market district of Tessara who runs errands for the weavers in exchange for scraps of Thread-light to keep warm.",
+  }
+
+  character Theron {
+    nature: Human,
+    bio: "A grizzled ferryman who transports people across the River of Threads. He has seen the water change color as the Tapestry decays.",
+  }
+
+  character Lucienne {
+    nature: Human,
+    bio: "A perfumer who distills scents from Thread-touched flowers. Her fragrances can trigger vivid memories in anyone who smells them.",
+  }
+
+  character Kofi {
+    nature: Human,
+    bio: "A drummer whose rhythms can synchronize with Thread vibrations. He performs at festivals to maintain community morale during the unraveling.",
+  }
+
+  character Maren {
+    nature: Human,
+    bio: "A midwife who has noticed that children born during Thread-storms possess unusual abilities. She keeps a secret registry.",
+  }
+
+  character Idris {
+    nature: Human,
+    bio: "A glassblower whose creations trap tiny fragments of Thread-light. His lanterns are the only reliable light source in the Frayed Edges.",
+  }
+
+  character Petra {
+    nature: Human,
+    bio: "A cartwright who builds Thread-shielded wagons for refugees fleeing the expanding Frayed Edges. Her designs save hundreds of lives.",
+  }
+
+  character Soren {
+    nature: Human,
+    bio: "A philosopher who argues that the unraveling is natural and that attempts to mend the Tapestry are hubris. His lectures draw large crowds.",
+  }
+
+}
