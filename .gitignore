@@ -27,6 +27,15 @@ out/
 build
 dist
 
+# SvelteKit
+.svelte-kit/
+
+# Drizzle
+drizzle/meta/
+
+# Langium generated (tracked, but noting for awareness)
+# packages/langium/src/generated/
+
 
 # Debug
 npm-debug.log*

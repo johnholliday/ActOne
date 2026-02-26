@@ -1,0 +1,11 @@
+{
+  "extends": "./.svelte-kit/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "moduleResolution": "Bundler",
+    "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
+  }
+}

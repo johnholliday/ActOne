@@ -1,0 +1,229 @@
+<script lang="ts">
+  import { onMount } from 'svelte';
+  import { EditorView, keymap, lineNumbers, drawSelection } from '@codemirror/view';
+  import { EditorState } from '@codemirror/state';
+  import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+  import { bracketMatching, indentOnInput } from '@codemirror/language';
+  import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
+  import { lintGutter } from '@codemirror/lint';
+  import { LangiumClient } from './langium-client.js';
+  import {
+    langiumExtension,
+    pushDiagnostics,
+    refreshSemanticTokens,
+  } from './langium-extension.js';
+  import { astStore } from '$lib/stores/ast.svelte.js';
+  import { editorStore } from '$lib/stores/editor.svelte.js';
+  import type { Diagnostic } from './langium-client.js';
+
+  /* ── Props ──────────────────────────────────────────────────────── */
+
+  interface Props {
+    /** The document URI for LSP protocol */
+    uri?: string;
+    /** Initial document content */
+    initialContent?: string;
+    /** Callback when content changes */
+    onchange?: (content: string) => void;
+  }
+
+  let { uri = 'inmemory://model.actone', initialContent = '', onchange }: Props = $props();
+
+  /* ── Refs ───────────────────────────────────────────────────────── */
+
+  let editorContainer: HTMLDivElement;
+  let view: EditorView | null = null;
+  let client: LangiumClient | null = null;
+
+  /* ── Worker + Editor Lifecycle ──────────────────────────────────── */
+
+  onMount(() => {
+    const langiumClient = new LangiumClient({
+      onDiagnostics: handleDiagnostics,
+      onError: (err) => console.error('[LangiumClient]', err),
+      onReady: () => {
+        // Inform the worker that we have a document open
+        langiumClient.didOpen(uri, 'actone', initialContent);
+
+        // Trigger initial semantic token fetch after a short delay
+        setTimeout(() => {
+          if (view) refreshSemanticTokens(langiumClient, uri, view);
+        }, 300);
+      },
+    });
+
+    client = langiumClient;
+
+    // Create CodeMirror editor
+    const extensions = [
+      lineNumbers(),
+      drawSelection(),
+      indentOnInput(),
+      bracketMatching(),
+      closeBrackets(),
+      history(),
+      lintGutter(),
+      keymap.of([...defaultKeymap, ...historyKeymap, ...closeBracketsKeymap]),
+      langiumExtension(langiumClient, uri),
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) {
+          const content = update.state.doc.toString();
+          onchange?.(content);
+        }
+        // Track cursor position
+        const { head } = update.state.selection.main;
+        const line = update.state.doc.lineAt(head);
+        editorStore.updateCursor({
+          line: line.number,
+          column: head - line.from + 1,
+        });
+      }),
+      EditorView.theme({
+        '&': {
+          height: '100%',
+          fontSize: '14px',
+        },
+        '.cm-content': {
+          fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+          padding: '8px 0',
+        },
+        '.cm-gutters': {
+          backgroundColor: 'transparent',
+          borderRight: '1px solid rgba(255,255,255,0.08)',
+          color: 'rgba(255,255,255,0.3)',
+        },
+        '.cm-activeLineGutter': {
+          color: 'rgba(255,255,255,0.7)',
+        },
+        '.cm-activeLine': {
+          backgroundColor: 'rgba(255,255,255,0.03)',
+        },
+        '.cm-selectionBackground': {
+          backgroundColor: 'rgba(99,102,241,0.3) !important',
+        },
+        '.cm-cursor': {
+          borderLeftColor: '#818cf8',
+        },
+        /* Semantic token colors */
+        '.cm-semantic-keyword': { color: '#c792ea' },
+        '.cm-semantic-type': { color: '#ffcb6b' },
+        '.cm-semantic-property': { color: '#82aaff' },
+        '.cm-semantic-variable': { color: '#f07178' },
+        '.cm-semantic-string': { color: '#c3e88d' },
+        '.cm-semantic-number': { color: '#f78c6c' },
+        '.cm-semantic-comment': { color: '#546e7a', fontStyle: 'italic' },
+        '.cm-semantic-function': { color: '#82aaff' },
+        '.cm-semantic-enum': { color: '#ffcb6b' },
+        '.cm-semantic-enumMember': { color: '#89ddff' },
+        /* Hover tooltip */
+        '.cm-hover-tooltip': {
+          backgroundColor: '#1e293b',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '6px',
+          color: '#e2e8f0',
+        },
+        /* Lint gutter */
+        '.cm-lint-marker-error': { content: '"●"' },
+        '.cm-lint-marker-warning': { content: '"●"' },
+      }),
+      // Dark base theme
+      EditorView.baseTheme({
+        '&.cm-focused': {
+          outline: 'none',
+        },
+      }),
+    ];
+
+    view = new EditorView({
+      state: EditorState.create({
+        doc: initialContent,
+        extensions,
+      }),
+      parent: editorContainer,
+    });
+
+    // Start the Langium worker — local entry re-exports @repo/langium/worker
+    const workerUrl = new URL(
+      '../worker/langium-worker.ts',
+      import.meta.url,
+    );
+
+    langiumClient.start(workerUrl).catch((err) => {
+      console.error('[EditorPane] Failed to start Langium worker:', err);
+    });
+
+    // Set active URI in AST store
+    astStore.activeUri = uri;
+
+    return () => {
+      // Cleanup
+      if (langiumClient.isReady) {
+        langiumClient.didClose(uri);
+      }
+      langiumClient.stop();
+      view?.destroy();
+      view = null;
+      client = null;
+    };
+  });
+
+  /* ── Diagnostic Handler ────────────────────────────────────────── */
+
+  function handleDiagnostics(diagnosticUri: string, diagnostics: Diagnostic[]) {
+    // Update AST store
+    astStore.updateDiagnostics(diagnosticUri, diagnostics);
+
+    // Update editor store diagnostic count
+    editorStore.updateDiagnosticCount(astStore.totalDiagnostics);
+
+    // Push to CodeMirror view
+    if (view && diagnosticUri === uri) {
+      pushDiagnostics(view, diagnostics);
+    }
+  }
+
+  /* ── Public API ────────────────────────────────────────────────── */
+
+  /** Get the current document text */
+  export function getText(): string {
+    return view?.state.doc.toString() ?? '';
+  }
+
+  /** Replace the entire document text */
+  export function setText(text: string): void {
+    if (!view) return;
+    view.dispatch({
+      changes: {
+        from: 0,
+        to: view.state.doc.length,
+        insert: text,
+      },
+    });
+  }
+
+  /** Request document formatting from the Langium worker */
+  export async function format(): Promise<void> {
+    if (!client?.isReady || !view) return;
+
+    try {
+      const result = await client.formatDocument(uri);
+      if (result.formattedText) {
+        setText(result.formattedText);
+      }
+    } catch (err) {
+      console.error('[EditorPane] Format failed:', err);
+    }
+  }
+
+  /** Get the LangiumClient instance for advanced operations */
+  export function getClient(): LangiumClient | null {
+    return client;
+  }
+</script>
+
+<div
+  bind:this={editorContainer}
+  class="h-full w-full overflow-hidden bg-surface-900"
+  role="textbox"
+  tabindex="0"
+></div>

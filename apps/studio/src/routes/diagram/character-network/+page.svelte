@@ -1,0 +1,216 @@
+<script lang="ts">
+  /**
+   * T077: Character Network diagram route.
+   *
+   * SvelteFlow canvas with character circle nodes and relationship edges.
+   * Supports context menu (create/delete/rename character) and double-click-to-navigate.
+   */
+  import { SvelteFlow, Controls, Background, MiniMap } from '@xyflow/svelte';
+  import '@xyflow/svelte/dist/style.css';
+
+  import CharacterNode from '$lib/diagrams/nodes/CharacterNode.svelte';
+  import RelationshipEdge from '$lib/diagrams/edges/RelationshipEdge.svelte';
+  import { transformCharacterNetwork } from '$lib/diagrams/transformers/character-network.js';
+  import { computeLayout } from '$lib/diagrams/layout/elk-layout.js';
+  import { loadSidecar, saveSidecar, setOverride, applyOverrides } from '$lib/diagrams/layout/sidecar.js';
+  import { diagramStore } from '$lib/stores/diagrams.svelte.js';
+  import { astStore } from '$lib/stores/ast.svelte.js';
+  import { parseStableId } from '$lib/diagrams/operations/stable-refs.js';
+  import type { DiagramOperation } from '$lib/diagrams/operations/text-edit-generator.js';
+
+  const nodeTypes = { character: CharacterNode };
+  const edgeTypes = { relationship: RelationshipEdge };
+
+  let nodes = $state<any[]>([]);
+  let edges = $state<any[]>([]);
+  let contextMenu = $state<{ x: number; y: number; nodeId?: string } | null>(null);
+
+  const projectId = 'default';
+  const viewId = 'character-network';
+
+  async function refresh() {
+    const ast = astStore.activeAst;
+    if (!ast) return;
+
+    const result = transformCharacterNetwork(ast);
+    const layoutNodes = result.nodes.map((n) => ({
+      id: n.id,
+      width: n.width ?? 100,
+      height: n.height ?? 100,
+    }));
+    const layoutEdges = result.edges.map((e) => ({
+      id: e.id,
+      sources: [e.source],
+      targets: [e.target],
+    }));
+
+    const layout = await computeLayout('character-network', layoutNodes, layoutEdges);
+    const sidecar = loadSidecar(projectId, viewId);
+    const positions = applyOverrides(layout.nodes, sidecar);
+
+    nodes = result.nodes.map((n) => {
+      const pos = positions.get(n.id);
+      return { ...n, position: pos ?? n.position };
+    });
+    edges = result.edges;
+    diagramStore.setView('character-network', nodes, edges);
+  }
+
+  $effect(() => {
+    void refresh();
+  });
+
+  function handleNodeDragStop(event: CustomEvent<{ node: any }>) {
+    const node = event.detail.node;
+    const sidecar = loadSidecar(projectId, viewId);
+    const updated = setOverride(sidecar, node.id, node.position);
+    saveSidecar(projectId, viewId, updated);
+    diagramStore.updateNodes('character-network', nodes);
+  }
+
+  function handleNodeDoubleClick(event: CustomEvent<{ node: any }>) {
+    const node = event.detail.node;
+    const parsed = parseStableId(node.id);
+    if (parsed) {
+      window.dispatchEvent(
+        new CustomEvent('actone:navigate-to-source', {
+          detail: { type: parsed.type, name: parsed.name },
+        }),
+      );
+    }
+  }
+
+  function handleContextMenu(event: MouseEvent) {
+    event.preventDefault();
+    contextMenu = { x: event.clientX, y: event.clientY };
+  }
+
+  function handleNodeContextMenu(event: CustomEvent<{ node: any; event: MouseEvent }>) {
+    event.detail.event.preventDefault();
+    contextMenu = {
+      x: event.detail.event.clientX,
+      y: event.detail.event.clientY,
+      nodeId: event.detail.node.id,
+    };
+  }
+
+  function closeContextMenu() {
+    contextMenu = null;
+  }
+
+  function executeOperation(op: DiagramOperation) {
+    closeContextMenu();
+  }
+
+  function handleCreateCharacter() {
+    const name = prompt('Character name:');
+    if (!name) return;
+    executeOperation({ kind: 'create', elementType: 'character', name });
+  }
+
+  function handleDeleteCharacter() {
+    if (!contextMenu?.nodeId) return;
+    const parsed = parseStableId(contextMenu.nodeId);
+    if (!parsed) return;
+    executeOperation({ kind: 'delete', elementType: 'character', name: parsed.name });
+  }
+
+  function handleRenameCharacter() {
+    if (!contextMenu?.nodeId) return;
+    const parsed = parseStableId(contextMenu.nodeId);
+    if (!parsed) return;
+    const newName = prompt('New name:', parsed.name);
+    if (!newName || newName === parsed.name) return;
+    executeOperation({ kind: 'rename', elementType: 'character', oldName: parsed.name, newName });
+  }
+</script>
+
+<div class="diagram-container" role="presentation" oncontextmenu={handleContextMenu}>
+  <SvelteFlow
+    {nodes}
+    {edges}
+    {nodeTypes}
+    {edgeTypes}
+    fitView
+    on:nodedragstop={handleNodeDragStop}
+    on:nodedoubleclick={handleNodeDoubleClick}
+    on:nodecontextmenu={handleNodeContextMenu}
+  >
+    <Controls />
+    <Background />
+    <MiniMap />
+  </SvelteFlow>
+
+  {#if contextMenu}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <div
+      class="context-overlay"
+      role="presentation"
+      onclick={closeContextMenu}
+    >
+      <div
+        class="context-menu"
+        role="menu"
+        tabindex="-1"
+        style="left: {contextMenu.x}px; top: {contextMenu.y}px;"
+        onkeydown={(e) => e.key === 'Escape' && closeContextMenu()}
+      >
+        <button role="menuitem" onclick={handleCreateCharacter}>New Character</button>
+        {#if contextMenu.nodeId}
+          <button role="menuitem" onclick={handleRenameCharacter}>Rename Character</button>
+          <button role="menuitem" class="danger" onclick={handleDeleteCharacter}>Delete Character</button>
+        {/if}
+      </div>
+    </div>
+  {/if}
+</div>
+
+<style>
+  .diagram-container {
+    width: 100%;
+    height: 100vh;
+    background: #0f172a;
+  }
+
+  .context-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+  }
+
+  .context-menu {
+    position: fixed;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 4px;
+    min-width: 160px;
+    z-index: 101;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .context-menu button {
+    display: block;
+    width: 100%;
+    padding: 6px 12px;
+    background: none;
+    border: none;
+    color: #e2e8f0;
+    text-align: left;
+    font-size: 13px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .context-menu button:hover {
+    background: #334155;
+  }
+
+  .context-menu button.danger {
+    color: #ef4444;
+  }
+
+  .context-menu button.danger:hover {
+    background: #7f1d1d33;
+  }
+</style>
