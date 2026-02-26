@@ -11,7 +11,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test --config tests/e2e/playwright.config.ts",
     "lint": "eslint .",
-    "check-types": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+    "check-types": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "db:migration:generate": "drizzle-kit generate",
+    "db:migration:push": "drizzle-kit push"
   },
   "dependencies": {
     "@repo/langium": "workspace:*",

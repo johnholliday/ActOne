@@ -42,8 +42,6 @@ export const actions: Actions = {
       });
     }
 
-    return {
-      message: 'Check your email for a confirmation link.',
-    };
+    redirect(303, '/');
   },
 };

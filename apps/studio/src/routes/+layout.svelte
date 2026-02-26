@@ -101,60 +101,65 @@
   }
 </script>
 
-<div class="flex h-screen w-screen overflow-hidden bg-surface-900 text-white">
-  <!-- Sidebar -->
-  {#if uiStore.sidebarVisible}
-    <aside
-      class="flex flex-col border-r border-white/10 bg-surface-800"
-      style="width: {sidebarWidth}px;"
-    >
-      <div class="flex h-12 items-center px-4 font-semibold tracking-wide">
-        ActOne Studio
-      </div>
-      <nav class="flex-1 overflow-y-auto px-2 py-2">
-        <!-- Project navigator will be injected here -->
-      </nav>
-    </aside>
+{#if !data.session}
+  <!-- Unauthenticated: render page content directly (e.g. /auth) -->
+  {@render children()}
+{:else}
+  <div class="flex h-screen w-screen overflow-hidden bg-surface-900 text-white">
+    <!-- Sidebar -->
+    {#if uiStore.sidebarVisible}
+      <aside
+        class="flex flex-col border-r border-white/10 bg-surface-800"
+        style="width: {sidebarWidth}px;"
+      >
+        <div class="flex h-12 items-center px-4 font-semibold tracking-wide">
+          ActOne Studio
+        </div>
+        <nav class="flex-1 overflow-y-auto px-2 py-2">
+          <!-- Project navigator will be injected here -->
+        </nav>
+      </aside>
 
-    <!-- Sidebar resize handle -->
-    <div
-      class="w-1 cursor-col-resize bg-transparent hover:bg-indigo-500/30 {resizingSidebar ? 'bg-indigo-500/50' : ''}"
-      role="separator"
-      tabindex="-1"
-      onmousedown={handleSidebarMouseDown}
-    ></div>
-  {/if}
-
-  <!-- Main content area -->
-  <div class="flex flex-1 flex-col overflow-hidden">
-    <!-- Top toolbar zone -->
-    <header class="flex h-10 items-center border-b border-white/10 bg-surface-800 px-2">
-      <MenuBar
-        onnavigate={(path) => void goto(path)}
-      />
-    </header>
-
-    <!-- Primary content -->
-    <main class="flex-1 overflow-hidden">
-      {@render children()}
-    </main>
-
-    <!-- Bottom panel resize handle -->
-    {#if uiStore.bottomPanelVisible}
+      <!-- Sidebar resize handle -->
       <div
-        class="h-1 cursor-row-resize bg-transparent hover:bg-indigo-500/30 {resizingBottom ? 'bg-indigo-500/50' : ''}"
+        class="w-1 cursor-col-resize bg-transparent hover:bg-indigo-500/30 {resizingSidebar ? 'bg-indigo-500/50' : ''}"
         role="separator"
         tabindex="-1"
-        onmousedown={handleBottomMouseDown}
+        onmousedown={handleSidebarMouseDown}
       ></div>
-
-      <!-- Bottom panel zone (diagnostics, output) -->
-      <div
-        class="border-t border-white/10 bg-surface-850"
-        style="height: {bottomHeight}px;"
-      >
-        <!-- Bottom panel content injected per-route -->
-      </div>
     {/if}
+
+    <!-- Main content area -->
+    <div class="flex flex-1 flex-col overflow-hidden">
+      <!-- Top toolbar zone -->
+      <header class="flex h-10 items-center border-b border-white/10 bg-surface-800 px-2">
+        <MenuBar
+          onnavigate={(path) => void goto(path)}
+        />
+      </header>
+
+      <!-- Primary content -->
+      <main class="flex-1 overflow-hidden">
+        {@render children()}
+      </main>
+
+      <!-- Bottom panel resize handle -->
+      {#if uiStore.bottomPanelVisible}
+        <div
+          class="h-1 cursor-row-resize bg-transparent hover:bg-indigo-500/30 {resizingBottom ? 'bg-indigo-500/50' : ''}"
+          role="separator"
+          tabindex="-1"
+          onmousedown={handleBottomMouseDown}
+        ></div>
+
+        <!-- Bottom panel zone (diagnostics, output) -->
+        <div
+          class="border-t border-white/10 bg-surface-850"
+          style="height: {bottomHeight}px;"
+        >
+          <!-- Bottom panel content injected per-route -->
+        </div>
+      {/if}
+    </div>
   </div>
-</div>
+{/if}
