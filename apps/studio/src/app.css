@@ -1,0 +1,36 @@
+@import 'tailwindcss';
+
+@theme {
+  /* ActOne Studio color tokens */
+  --color-surface: #0f172a;
+  --color-surface-raised: #1e293b;
+  --color-surface-overlay: #334155;
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+  --color-border: #334155;
+
+  /* Scene type colors */
+  --color-scene-action: #ef4444;
+  --color-scene-dialogue: #3b82f6;
+  --color-scene-reflection: #a855f7;
+  --color-scene-montage: #f59e0b;
+  --color-scene-revelation: #10b981;
+  --color-scene-confrontation: #f97316;
+  --color-scene-transition: #6b7280;
+  --color-scene-climax: #dc2626;
+
+  /* Beat type colors */
+  --color-beat-setup: #22c55e;
+  --color-beat-inciting: #eab308;
+  --color-beat-rising: #f59e0b;
+  --color-beat-midpoint: #3b82f6;
+  --color-beat-complication: #f97316;
+  --color-beat-crisis: #ef4444;
+  --color-beat-climax: #dc2626;
+  --color-beat-falling: #8b5cf6;
+  --color-beat-resolution: #06b6d4;
+  --color-beat-denouement: #64748b;
+}

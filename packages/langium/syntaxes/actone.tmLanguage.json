@@ -1,0 +1,71 @@
+{
+  "name": "actone",
+  "scopeName": "source.actone",
+  "fileTypes": [
+    ".actone"
+  ],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "keyword.control.actone",
+      "match": "\\b(Accelerating|Action|Ambiguous|Animal|Brisk|Climax|Collapsed|Collective|Complication|Concept|Confrontation|Cosmic|Crisis|Cut|Cyclical|Denouement|Dialogue|Dissolve|Environment|Environmental|Existential|Fade|Falling|FirstPerson|FlashForward|Flashback|Force|Future|Hidden|Human|Inciting|Internal|Interpersonal|Intrapsychic|Linear|Measured|Metaphysical|Midpoint|Moderate|Montage|Narrative|Nonlinear|Omniscient|Parallel|Past|Physical|Present|Primary|Psychological|Pyrrhic|Redemptive|Reflection|Resolution|Revelation|Reverse|Rising|SecondPerson|Secondary|Setup|Slow|Smash|Social|Societal|Spirit|Technological|ThirdLimited|ThirdOmniscient|Tragic|Transcendent|Transformative|Transition|act|arc|atmosphere|beat|beats|bio|catalyst|category|chapter_breaks|character|conflict_type|conflicts|connects_to|continuity_loss|converges_at|counter|default_pov|description|dynamic|emotional_arc|end|false|flaws|generate|genre|goal|goals|history|interaction|label|layer|layers|location|locations|max_tokens|midpoint|motifs|name|nature|notes|objective|pacing|participants|pattern|period|personality|plot|pov|power_dynamic|priority|quirks|relationships|resolution_pattern|role|rule|rules|scene|secret|sensory|span|stakes|start|statement|story|strengths|structure|style_bleed|style_mix|subplot|subtext|symbols|temperature|tense|tension|theme|timeline|to|tone|transition|trigger|true|turning_point|type|voice|weight|world)\\b"
+    },
+    {
+      "name": "string.quoted.double.actone",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "include": "#string-character-escape"
+        }
+      ]
+    },
+    {
+      "name": "string.quoted.single.actone",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "include": "#string-character-escape"
+        }
+      ]
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.actone",
+          "begin": "/\\*",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.actone"
+            }
+          },
+          "end": "\\*/",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.actone"
+            }
+          }
+        },
+        {
+          "begin": "//",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.whitespace.comment.leading.actone"
+            }
+          },
+          "end": "(?=$)",
+          "name": "comment.line.actone"
+        }
+      ]
+    },
+    "string-character-escape": {
+      "name": "constant.character.escape.actone",
+      "match": "\\\\(x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|u\\{[0-9A-Fa-f]+\\}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.|$)"
+    }
+  }
+}

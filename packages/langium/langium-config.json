@@ -1,0 +1,14 @@
+{
+  "projectName": "ActOne",
+  "languages": [
+    {
+      "id": "actone",
+      "grammar": "src/actone.langium",
+      "fileExtensions": [".actone"],
+      "textMate": {
+        "out": "syntaxes/actone.tmLanguage.json"
+      }
+    }
+  ],
+  "out": "src/generated"
+}

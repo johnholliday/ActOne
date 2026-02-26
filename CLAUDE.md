@@ -55,6 +55,8 @@ Uses ESLint 9 flat config format (`.mjs` files). Base config includes `typescrip
 
 ## Active Technologies
 - TypeScript 5.9 (strict mode, ES2022 target) + None at runtime; Vitest for testing (dev only) (001-string-utils)
+- TypeScript 5.9.x (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + SvelteKit 2.53.x, Svelte 5.53.x, Langium 4.2.x, @xyflow/svelte 1.5.x, CodeMirror 6, elkjs 0.11.x, Drizzle ORM 0.45.x, @supabase/supabase-js 2.97.x, @supabase/ssr 0.8.x, Zod, Tailwind CSS 4.2.x, docx 9.6.x, archiver 7.x, pdfkit 0.17.x, sharp 0.34.x, marked 17.x (002-actone-studio)
+- Supabase PostgreSQL (Drizzle ORM for schema/queries, Supabase client for auth/storage/realtime) (002-actone-studio)
 
 ## Recent Changes
 - 001-string-utils: Added TypeScript 5.9 (strict mode, ES2022 target) + None at runtime; Vitest for testing (dev only)
