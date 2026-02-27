@@ -431,7 +431,7 @@
         </div>
       </aside>
 
-      <!-- Sidebar resize handle -->
+      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <div
         class="w-1 cursor-col-resize bg-transparent hover:bg-amber-500/30 {resizingSidebar ? 'bg-amber-500/50' : ''}"
         role="separator"
@@ -461,6 +461,7 @@
 
       <!-- Bottom panel resize handle -->
       {#if uiStore.bottomPanelVisible}
+        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
         <div
           class="h-1 cursor-row-resize bg-transparent hover:bg-amber-500/30 {resizingBottom ? 'bg-amber-500/50' : ''}"
           role="separator"

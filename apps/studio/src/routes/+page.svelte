@@ -10,7 +10,7 @@
 
   /* ── State ─────────────────────────────────────────────────────── */
 
-  let editorPane: EditorPane;
+  let editorPane = $state<EditorPane | undefined>(undefined);
   let symbols = $state<DocumentSymbol[]>([]);
   let activeTab = $state<'diagnostics' | 'output'>('diagnostics');
 
