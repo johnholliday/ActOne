@@ -13,7 +13,7 @@
   let newPassword = $state('');
   let confirmPassword = $state('');
 
-  const user = $derived(page.data.session?.user);
+  const user = $derived(page.data.user);
   const email = $derived(user?.email ?? '');
   const identities = $derived(user?.identities ?? []);
 

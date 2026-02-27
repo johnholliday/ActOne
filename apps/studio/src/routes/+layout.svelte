@@ -25,7 +25,7 @@
   import Activity from 'lucide-svelte/icons/activity';
   import File from 'lucide-svelte/icons/file';
   import ChevronUp from 'lucide-svelte/icons/chevron-up';
-  import Clapperboard from 'lucide-svelte/icons/clapperboard';
+
   import type { LifecycleStage } from '@repo/shared';
 
   let { data, children } = $props();
@@ -76,11 +76,11 @@
     { icon: Activity, label: 'Statistics', route: '/statistics', match: (p: string) => p.startsWith('/statistics') },
   ] as const;
 
-  /** Extract user initials from session metadata */
+  /** Extract user initials from validated user metadata */
   const userInitials = $derived.by(() => {
-    const meta = data.session?.user?.user_metadata;
+    const meta = data.user?.user_metadata;
     if (!meta) return '?';
-    const name = (meta.full_name ?? meta.name ?? data.session?.user?.email ?? '') as string;
+    const name = (meta.full_name ?? meta.name ?? data.user?.email ?? '') as string;
     const parts = name.split(/\s+/).filter(Boolean);
     if (parts.length === 0) return '?';
     if (parts.length === 1) return parts[0]![0]!.toUpperCase();
@@ -88,11 +88,17 @@
   });
 
   const userName = $derived.by(() => {
-    const meta = data.session?.user?.user_metadata;
+    const meta = data.user?.user_metadata;
     return ((meta?.full_name ?? meta?.name ?? '') as string) || 'User';
   });
 
-  const userEmail = $derived(data.session?.user?.email ?? '');
+  const userEmail = $derived(data.user?.email ?? '');
+
+  /** Avatar URL from OAuth provider (GitHub: avatar_url, Google: avatar_url or picture) */
+  const userAvatarUrl = $derived.by(() => {
+    const meta = data.user?.user_metadata;
+    return ((meta?.avatar_url ?? meta?.picture ?? '') as string) || '';
+  });
 
   /* ── T009: New project creation handler ──────────────────────── */
   async function handleCreateProject() {
@@ -332,8 +338,8 @@
       >
         <!-- Sidebar header -->
         <div class="flex h-12 items-center gap-2 px-4">
-          <Clapperboard size={18} class="text-amber-400" />
-          <span class="text-[13px] font-semibold tracking-[0.15em] text-white">ACTONE</span>
+          <img src="/images/masks.png" alt="ActOne" class="h-7 w-7" />
+          <span class="text-[13px] font-semibold text-white" style="font-family: 'Cormorant Garamond', serif; letter-spacing: 4px;">ACTONE</span>
         </div>
 
         <!-- Navigation items -->
@@ -379,9 +385,13 @@
             class="flex w-full items-center gap-3 border-t border-[#252525] px-3 py-3 transition-colors hover:bg-white/5"
             onclick={(e) => { e.stopPropagation(); profileMenuOpen = !profileMenuOpen; }}
           >
-            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-600 text-[11px] font-semibold text-white">
-              {userInitials}
-            </div>
+            {#if userAvatarUrl}
+              <img src={userAvatarUrl} alt={userName} class="h-8 w-8 shrink-0 rounded-full object-cover" />
+            {:else}
+              <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-600 text-[11px] font-semibold text-white">
+                {userInitials}
+              </div>
+            {/if}
             <div class="min-w-0 flex-1 text-left">
               <div class="truncate text-[12px] font-medium text-white">{userName}</div>
               <div class="truncate text-[11px] text-zinc-500">{userEmail}</div>

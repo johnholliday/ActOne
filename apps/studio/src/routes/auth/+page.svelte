@@ -1,11 +1,15 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-
   let mode: 'login' | 'signup' = $state('login');
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-surface-900">
   <div class="w-full max-w-sm rounded-lg border border-white/10 bg-surface-800 p-8">
+    <div class="mb-6 flex flex-col items-center gap-1">
+      <img src="/images/masks.png" alt="ActOne Studio" class="h-20 w-20" />
+      <span class="text-[24px] font-semibold text-slate-50" style="font-family: 'Cormorant Garamond', serif; letter-spacing: 4px;">ACTONE</span>
+      <span class="text-[11px] font-medium text-zinc-400" style="letter-spacing: 6px;">STUDIO</span>
+    </div>
     <h1 class="mb-6 text-center text-2xl font-bold text-white">
       {mode === 'login' ? 'Sign In' : 'Create Account'}
     </h1>

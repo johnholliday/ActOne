@@ -10,7 +10,7 @@
   let message = $state('');
   let messageType = $state<'success' | 'error'>('success');
 
-  const user = $derived(page.data.session?.user);
+  const user = $derived(page.data.user);
   let fullName = $state('');
   let avatarUrl = $state('');
 

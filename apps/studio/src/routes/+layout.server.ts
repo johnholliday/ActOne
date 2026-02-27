@@ -1,10 +1,10 @@
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals: { safeGetSession, supabase } }) => {
-  const { session } = await safeGetSession();
+  const { session, user } = await safeGetSession();
 
   if (!session) {
-    return { session, projects: [] };
+    return { session, user, projects: [] };
   }
 
   // T004: Load the user's projects (ordered by most recently modified)
@@ -16,5 +16,5 @@ export const load: LayoutServerLoad = async ({ locals: { safeGetSession, supabas
     .order('modified_at', { ascending: false })
     .limit(50);
 
-  return { session, projects: projects ?? [] };
+  return { session, user, projects: projects ?? [] };
 };
