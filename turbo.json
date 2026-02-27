@@ -25,6 +25,13 @@
       "cache": false,
       "persistent": true
     },
+    "clean": {
+      "cache": false
+    },
+    "preview": {
+      "cache": false,
+      "persistent": true
+    },
     "db:migration:generate": {
       "cache": false
     },

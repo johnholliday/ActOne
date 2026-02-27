@@ -12,6 +12,7 @@
     "test:e2e": "playwright test --config tests/e2e/playwright.config.ts",
     "lint": "eslint .",
     "check-types": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "clean": "rm -rf .svelte-kit build",
     "db:migration:generate": "drizzle-kit generate",
     "db:migration:push": "drizzle-kit push"
   },
@@ -25,6 +26,7 @@
     "docx": "^9.6.0",
     "drizzle-orm": "^0.45.1",
     "elkjs": "^0.11.0",
+    "lucide-svelte": "^0.575.0",
     "marked": "^17.0.3",
     "pdfkit": "^0.17.2",
     "postgres": "^3.4.7",

@@ -3,6 +3,9 @@
   import { editorStore } from '$lib/stores/editor.svelte.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { uiStore } from '$lib/stores/ui.svelte.js';
+  import { projectStore } from '$lib/stores/project.svelte.js';
+  import EmptyState from '$lib/components/EmptyState.svelte';
+  import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
   import type { DocumentSymbol } from '$lib/editor/langium-client.js';
 
   /* ── State ─────────────────────────────────────────────────────── */
@@ -11,10 +14,18 @@
   let symbols = $state<DocumentSymbol[]>([]);
   let activeTab = $state<'diagnostics' | 'output'>('diagnostics');
 
-  /** Sample initial content for a new story */
-  const sampleContent = `story "Untitled Story" {
-}
-`;
+  /** T010: Load content from the active project's entry file, or fall back to sample */
+  const editorContent = $derived.by(() => {
+    const entry = projectStore.entryFile;
+    if (entry?.content) return entry.content;
+    if (projectStore.isLoaded) {
+      return `story "${projectStore.project?.title ?? 'Untitled Story'}" {\n}\n`;
+    }
+    return `story "Untitled Story" {\n}\n`;
+  });
+
+  /** Track the active file name for the toolbar */
+  const activeFileName = $derived(projectStore.entryFile?.filePath ?? 'model.actone');
 
   /* ── Derived ───────────────────────────────────────────────────── */
 
@@ -73,7 +84,7 @@
   <div class="flex flex-1 flex-col overflow-hidden">
     <!-- Editor toolbar -->
     <div class="flex h-8 items-center gap-2 border-b border-white/10 bg-surface-850 px-3 text-xs text-white/60">
-      <span class="font-medium text-white/80">model.actone</span>
+      <span class="font-medium text-white/80">{activeFileName}</span>
       <span class="ml-auto">
         Ln {cursor.line}, Col {cursor.column}
       </span>
@@ -87,11 +98,17 @@
 
     <!-- CodeMirror Editor -->
     <div class="flex-1 overflow-hidden">
-      <EditorPane
-        bind:this={editorPane}
-        initialContent={sampleContent}
-        onchange={handleChange}
-      />
+      {#if projectStore.loading}
+        <div class="flex h-full items-center justify-center">
+          <LoadingSpinner label="Loading project..." />
+        </div>
+      {:else}
+        <EditorPane
+          bind:this={editorPane}
+          initialContent={editorContent}
+          onchange={handleChange}
+        />
+      {/if}
     </div>
   </div>
 
@@ -142,7 +159,7 @@
     <!-- Tab bar -->
     <div class="flex h-7 items-center border-b border-white/10 px-3 text-xs">
       <button
-        class="mr-3 pb-0.5 {activeTab === 'diagnostics' ? 'border-b border-indigo-400 text-white/90' : 'text-white/40 hover:text-white/60'}"
+        class="mr-3 pb-0.5 {activeTab === 'diagnostics' ? 'border-b border-amber-400 text-white/90' : 'text-white/40 hover:text-white/60'}"
         onclick={() => (activeTab = 'diagnostics')}
       >
         Problems
@@ -153,7 +170,7 @@
         {/if}
       </button>
       <button
-        class="pb-0.5 {activeTab === 'output' ? 'border-b border-indigo-400 text-white/90' : 'text-white/40 hover:text-white/60'}"
+        class="pb-0.5 {activeTab === 'output' ? 'border-b border-amber-400 text-white/90' : 'text-white/40 hover:text-white/60'}"
         onclick={() => (activeTab = 'output')}
       >
         Output

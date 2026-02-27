@@ -8,6 +8,7 @@ import type {
   LangiumSharedServices,
   PartialLangiumServices,
 } from 'langium/lsp';
+import type { Connection } from 'vscode-languageserver';
 import {
   createDefaultCoreModule,
   inject,
@@ -82,7 +83,8 @@ export const ActOneModule: Module<
  */
 export function createActOneServices(context?: {
   shared?: LangiumSharedServices;
-  fileSystemProvider?: FileSystemProvider;
+  fileSystemProvider?: (services: LangiumSharedCoreServices) => FileSystemProvider;
+  connection?: Connection;
 }): {
   shared: LangiumSharedServices;
   ActOne: ActOneServices;
@@ -91,8 +93,8 @@ export function createActOneServices(context?: {
     context?.shared ??
     inject(
       createDefaultSharedModule({
-        ...EmptyFileSystem,
-        connection: undefined,
+        fileSystemProvider: context?.fileSystemProvider ?? EmptyFileSystem.fileSystemProvider,
+        connection: context?.connection,
       }),
       ActOneGeneratedSharedModule,
     );

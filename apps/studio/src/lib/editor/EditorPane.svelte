@@ -3,7 +3,13 @@
   import { EditorView, keymap, lineNumbers, drawSelection } from '@codemirror/view';
   import { EditorState } from '@codemirror/state';
   import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
-  import { bracketMatching, indentOnInput } from '@codemirror/language';
+  import {
+    bracketMatching,
+    indentOnInput,
+    codeFolding,
+    foldGutter,
+    foldKeymap,
+  } from '@codemirror/language';
   import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
   import { lintGutter } from '@codemirror/lint';
   import { LangiumClient } from './langium-client.js';
@@ -11,6 +17,7 @@
     langiumExtension,
     pushDiagnostics,
     refreshSemanticTokens,
+    refreshFoldingRanges,
   } from './langium-extension.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { editorStore } from '$lib/stores/editor.svelte.js';
@@ -35,19 +42,44 @@
   let view: EditorView | null = null;
   let client: LangiumClient | null = null;
 
+  /** T014: Worker error state for error banner display */
+  let workerError = $state<string | null>(null);
+
+  /** T014: Retry starting the Langium worker */
+  async function retryWorker() {
+    workerError = null;
+    if (!client) return;
+    try {
+      const workerUrl = new URL(
+        '../worker/langium-worker.ts',
+        import.meta.url,
+      );
+      await client.start(workerUrl);
+    } catch (err) {
+      workerError = err instanceof Error ? err.message : 'Worker failed to start';
+    }
+  }
+
   /* ── Worker + Editor Lifecycle ──────────────────────────────────── */
 
   onMount(() => {
     const langiumClient = new LangiumClient({
       onDiagnostics: handleDiagnostics,
-      onError: (err) => console.error('[LangiumClient]', err),
+      onError: (err) => {
+        console.error('[LangiumClient]', err);
+        workerError = err instanceof Error ? err.message : 'Language server error';
+      },
       onReady: () => {
+        workerError = null;
         // Inform the worker that we have a document open
         langiumClient.didOpen(uri, 'actone', initialContent);
 
-        // Trigger initial semantic token fetch after a short delay
+        // Trigger initial semantic token + folding range fetch after a short delay
         setTimeout(() => {
-          if (view) refreshSemanticTokens(langiumClient, uri, view);
+          if (view) {
+            refreshSemanticTokens(langiumClient, uri, view);
+            refreshFoldingRanges(langiumClient, uri, view);
+          }
         }, 300);
       },
     });
@@ -63,7 +95,9 @@
       closeBrackets(),
       history(),
       lintGutter(),
-      keymap.of([...defaultKeymap, ...historyKeymap, ...closeBracketsKeymap]),
+      codeFolding(),
+      foldGutter(),
+      keymap.of([...defaultKeymap, ...historyKeymap, ...closeBracketsKeymap, ...foldKeymap]),
       langiumExtension(langiumClient, uri),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
@@ -125,6 +159,33 @@
         /* Lint gutter */
         '.cm-lint-marker-error': { content: '"●"' },
         '.cm-lint-marker-warning': { content: '"●"' },
+        /* Reference highlights */
+        '.cm-reference-highlight': {
+          backgroundColor: 'rgba(255,191,0,0.15)',
+          borderBottom: '1px solid rgba(255,191,0,0.4)',
+        },
+        /* Fold gutter */
+        '.cm-foldGutter .cm-gutterElement': {
+          color: 'rgba(255,255,255,0.3)',
+          padding: '0 2px',
+        },
+        /* Rename dialog */
+        '.cm-rename-dialog': {
+          backgroundColor: '#171717',
+          borderBottom: '1px solid #252525',
+          color: '#e2e8f0',
+          padding: '4px 8px',
+        },
+        '.cm-rename-dialog input': {
+          backgroundColor: '#0D0D0D',
+          border: '1px solid rgba(255,255,255,0.2)',
+          borderRadius: '4px',
+          color: '#e2e8f0',
+          padding: '2px 6px',
+        },
+        '.cm-rename-dialog input:focus': {
+          borderColor: 'rgba(245,158,11,0.6)',
+        },
       }),
       // Dark base theme
       EditorView.baseTheme({
@@ -150,6 +211,7 @@
 
     langiumClient.start(workerUrl).catch((err) => {
       console.error('[EditorPane] Failed to start Langium worker:', err);
+      workerError = err instanceof Error ? err.message : 'Language server failed to start';
     });
 
     // Set active URI in AST store
@@ -176,9 +238,9 @@
     // Update editor store diagnostic count
     editorStore.updateDiagnosticCount(astStore.totalDiagnostics);
 
-    // Push to CodeMirror view
+    // Push to CodeMirror view (with code actions if client available)
     if (view && diagnosticUri === uri) {
-      pushDiagnostics(view, diagnostics);
+      pushDiagnostics(view, diagnostics, client ?? undefined, uri);
     }
   }
 
@@ -221,6 +283,17 @@
   }
 </script>
 
+{#if workerError}
+  <div class="flex items-center gap-2 border-b border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs text-red-400">
+    <span>Language server error: {workerError}</span>
+    <button
+      class="ml-auto rounded bg-red-500/20 px-2 py-0.5 text-red-300 hover:bg-red-500/30"
+      onclick={() => void retryWorker()}
+    >
+      Retry
+    </button>
+  </div>
+{/if}
 <div
   bind:this={editorContainer}
   class="h-full w-full overflow-hidden bg-surface-900"

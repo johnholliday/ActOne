@@ -14,7 +14,13 @@
     "db:status": "supabase status",
     "db:reset": "supabase db reset",
     "db:migration:generate": "turbo run db:migration:generate --filter=studio",
-    "db:migration:push": "turbo run db:migration:push --filter=studio"
+    "db:migration:push": "turbo run db:migration:push --filter=studio",
+    "clean": "turbo run clean && rm -rf node_modules/.cache",
+    "clean:all": "turbo run clean && rm -rf node_modules **/node_modules .turbo **/.turbo **/dist **/.svelte-kit",
+    "typecheck": "turbo run check-types",
+    "format:check": "prettier --check \"**/*.{ts,tsx,md}\"",
+    "preview": "turbo run preview --filter=studio",
+    "studio": "turbo run dev --filter=studio"
   },
   "devDependencies": {
     "prettier": "^3.7.4",

@@ -8,6 +8,8 @@
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { projectStore } from '$lib/stores/project.svelte.js';
   import { extractAnalytics, type StoryAnalytics } from '$lib/project/analytics.js';
+  import EmptyState from '$lib/components/EmptyState.svelte';
+  import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
 
   const analytics = $derived<StoryAnalytics | null>(
     astStore.activeAst ? extractAnalytics(astStore.activeAst) : null,
@@ -87,7 +89,9 @@
 <div class="statistics">
   <h1>Statistics</h1>
 
-  {#if !analytics}
+  {#if !projectStore.isLoaded}
+    <EmptyState message="No project loaded" description="Create or open a project to view statistics." />
+  {:else if !analytics}
     <div class="empty">No story loaded. Open a project to view statistics.</div>
   {:else}
     <!-- Overview Cards -->
@@ -191,7 +195,7 @@
       </div>
 
       {#if timeseriesLoading}
-        <div class="trend-loading">Loading trend data...</div>
+        <div class="trend-loading"><LoadingSpinner size="sm" label="Loading trend data..." /></div>
       {:else if timeseries.length === 0}
         <div class="trend-empty">
           No snapshots yet. Click "Capture Snapshot" to start tracking word count over time.

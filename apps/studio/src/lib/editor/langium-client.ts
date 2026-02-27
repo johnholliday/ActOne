@@ -113,6 +113,19 @@ export interface SemanticTokens {
   data: number[];
 }
 
+export interface FoldingRange {
+  startLine: number;
+  startCharacter?: number;
+  endLine: number;
+  endCharacter?: number;
+  kind?: string;
+}
+
+export type PrepareRenameResult =
+  | Range
+  | { range: Range; placeholder: string }
+  | null;
+
 /* ── Custom Extension Response Types ─────────────────────────────── */
 
 export interface SerializedAstResponse {
@@ -313,6 +326,22 @@ export class LangiumClient {
       range,
       context: { diagnostics },
     }) as Promise<CodeAction[] | null>;
+  }
+
+  async foldingRange(uri: string): Promise<FoldingRange[] | null> {
+    return this.sendRequest('textDocument/foldingRange', {
+      textDocument: { uri },
+    }) as Promise<FoldingRange[] | null>;
+  }
+
+  async prepareRename(
+    uri: string,
+    position: Position,
+  ): Promise<PrepareRenameResult> {
+    return this.sendRequest('textDocument/prepareRename', {
+      textDocument: { uri },
+      position,
+    }) as Promise<PrepareRenameResult>;
   }
 
   /* ── Custom ActOne Extensions ──────────────────────────────────── */

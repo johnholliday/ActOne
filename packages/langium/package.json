@@ -19,7 +19,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "langium": "~4.2.1",

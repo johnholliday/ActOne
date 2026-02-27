@@ -1,12 +1,15 @@
 <script lang="ts">
   /**
-   * T126 + T134: Spread Preview page.
+   * T126 + T134 + T028-T030: Spread Preview page.
    *
    * Two-page spreads at print aspect ratio with optional
-   * bleed/margin guide overlays. Supports guided-view panel
-   * overlays for graphic novel mode.
+   * bleed/margin guide overlays. Fetches real manuscript
+   * content from the publishing preview API.
    */
   import { TRIM_SIZES } from '$lib/publishing/pdf-generator.js';
+  import { projectStore } from '$lib/stores/project.svelte.js';
+  import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
+  import EmptyState from '$lib/components/EmptyState.svelte';
 
   let selectedTrimSize = $state(2); // 6x9
   let showGuides = $state(true);
@@ -17,8 +20,92 @@
   const aspectRatio = $derived(trimSize.width / trimSize.height);
   const pageHeight = 600; // px
   const pageWidth = $derived(Math.round(pageHeight * aspectRatio));
+
+  /** T028: Fetch manuscript preview content */
+  let previewHtml = $state('');
+  let previewLoading = $state(false);
+  let previewError = $state('');
+  let pages = $state<string[]>([]);
+
+  const totalSpreads = $derived(Math.max(1, Math.ceil(pages.length / 2)));
+
+  async function loadPreview() {
+    const projectId = projectStore.project?.id;
+    if (!projectId) return;
+    previewLoading = true;
+    previewError = '';
+    try {
+      const res = await fetch(`/api/publishing/preview?projectId=${projectId}`);
+      if (!res.ok) {
+        previewError = `Failed to load preview (${res.status})`;
+        return;
+      }
+      previewHtml = await res.text();
+      // T029: Split HTML into page-sized chunks
+      splitIntoPages(previewHtml);
+    } catch (err) {
+      previewError = err instanceof Error ? err.message : 'Failed to load preview';
+    } finally {
+      previewLoading = false;
+    }
+  }
+
+  function splitIntoPages(html: string) {
+    // Simple paragraph-based page splitting
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const elements = Array.from(doc.body.children);
+
+    const result: string[] = [];
+    let currentPage = '';
+    let charCount = 0;
+    const charsPerPage = 1800; // approximate characters per page at print size
+
+    for (const el of elements) {
+      const text = el.textContent ?? '';
+      if (charCount + text.length > charsPerPage && currentPage) {
+        result.push(currentPage);
+        currentPage = '';
+        charCount = 0;
+      }
+      currentPage += el.outerHTML;
+      charCount += text.length;
+    }
+    if (currentPage) {
+      result.push(currentPage);
+    }
+
+    pages = result.length > 0 ? result : [];
+    currentSpread = 0;
+  }
+
+  $effect(() => {
+    if (projectStore.project?.id) {
+      void loadPreview();
+    }
+  });
 </script>
 
+{#if !projectStore.isLoaded}
+  <div class="spread-preview">
+    <EmptyState message="No project loaded" description="Create or open a project to preview your manuscript." />
+  </div>
+{:else if previewLoading}
+  <div class="spread-preview">
+    <LoadingSpinner label="Loading preview..." />
+  </div>
+{:else if previewError}
+  <div class="spread-preview">
+    <div style="text-align: center; color: #ef4444;">
+      <p>{previewError}</p>
+      <button class="controls select" style="margin-top: 12px; padding: 6px 16px; background: #d97706; color: white; border: none; border-radius: 4px; cursor: pointer;" onclick={() => void loadPreview()}>Retry</button>
+    </div>
+  </div>
+{:else if pages.length === 0}
+  <div class="spread-preview">
+    <EmptyState message="No content to preview" description="Generate and accept prose to see your manuscript in spread view." />
+  </div>
+{:else}
 <div class="spread-preview">
   <div class="controls">
     <select bind:value={selectedTrimSize}>
@@ -44,8 +131,13 @@
       >
         Previous
       </button>
-      <span>Spread {currentSpread + 1}</span>
-      <button onclick={() => (currentSpread += 1)}>Next</button>
+      <span>Spread {currentSpread + 1} / {totalSpreads}</span>
+      <button
+        disabled={currentSpread >= totalSpreads - 1}
+        onclick={() => (currentSpread = Math.min(totalSpreads - 1, currentSpread + 1))}
+      >
+        Next
+      </button>
     </div>
   </div>
 
@@ -59,8 +151,10 @@
         <div class="bleed-guide"></div>
         <div class="margin-guide"></div>
       {/if}
-      <div class="page-content">
-        <p class="placeholder">Page {currentSpread * 2 + 1}</p>
+      <div class="page-content manuscript">
+        {#if pages[currentSpread * 2]}
+          {@html pages[currentSpread * 2]}
+        {/if}
       </div>
     </div>
 
@@ -73,12 +167,15 @@
         <div class="bleed-guide"></div>
         <div class="margin-guide"></div>
       {/if}
-      <div class="page-content">
-        <p class="placeholder">Page {currentSpread * 2 + 2}</p>
+      <div class="page-content manuscript">
+        {#if pages[currentSpread * 2 + 1]}
+          {@html pages[currentSpread * 2 + 1]}
+        {/if}
       </div>
     </div>
   </div>
 </div>
+{/if}
 
 <style>
   .spread-preview {
@@ -166,9 +263,29 @@
     justify-content: center;
   }
 
-  .placeholder {
-    color: #9ca3af;
+  .manuscript {
+    overflow: hidden;
     font-family: Georgia, serif;
-    font-size: 14px;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #1a1a1a;
+    text-align: justify;
+  }
+
+  .manuscript :global(h1),
+  .manuscript :global(h2),
+  .manuscript :global(h3) {
+    font-family: Georgia, serif;
+    color: #111;
+    margin: 0 0 8px;
+  }
+
+  .manuscript :global(p) {
+    margin: 0 0 6px;
+    text-indent: 1.5em;
+  }
+
+  .manuscript :global(p:first-child) {
+    text-indent: 0;
   }
 </style>

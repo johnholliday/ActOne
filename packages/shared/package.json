@@ -34,7 +34,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.1",

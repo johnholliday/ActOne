@@ -27,8 +27,8 @@ const connection = createConnection(messageReader, messageWriter);
 
 const { shared, ActOne } = createActOneServices({
   ...EmptyFileSystem,
-  connection: undefined,
-} as never);
+  connection,
+});
 
 /* ── Start standard LSP server ───────────────────────────────────── */
 

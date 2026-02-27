@@ -15,7 +15,10 @@
   import { loadSidecar, saveSidecar, setOverride, applyOverrides } from '$lib/diagrams/layout/sidecar.js';
   import { diagramStore } from '$lib/stores/diagrams.svelte.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
+  import { projectStore } from '$lib/stores/project.svelte.js';
   import { parseStableId } from '$lib/diagrams/operations/stable-refs.js';
+  import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
+  import EmptyState from '$lib/components/EmptyState.svelte';
 
   const nodeTypes = {
     location: LocationNode,
@@ -24,14 +27,16 @@
 
   let nodes = $state<any[]>([]);
   let edges = $state<any[]>([]);
+  let diagramLoading = $state(true);
 
-  const projectId = 'default';
+  const projectId = $derived(projectStore.project?.id ?? '');
   const viewId = 'world-map';
 
   async function refresh() {
     const ast = astStore.activeAst;
-    if (!ast) return;
-
+    if (!ast || !projectId) { diagramLoading = false; return; }
+    diagramLoading = true;
+    try {
     const result = transformWorldMap(ast);
     const layoutNodes = result.nodes.map((n) => ({
       id: n.id,
@@ -55,6 +60,7 @@
     });
     edges = result.edges;
     diagramStore.setView('world-map', nodes, edges);
+    } finally { diagramLoading = false; }
   }
 
   $effect(() => {
@@ -82,6 +88,15 @@
   }
 </script>
 
+{#if !projectStore.isLoaded}
+  <div class="diagram-container flex items-center justify-center">
+    <EmptyState message="No project loaded" description="Create or open a project to see the world map." />
+  </div>
+{:else if diagramLoading && nodes.length === 0}
+  <div class="diagram-container flex items-center justify-center">
+    <LoadingSpinner label="Loading diagram..." />
+  </div>
+{:else}
 <div class="diagram-container">
   <SvelteFlow
     {nodes}
@@ -96,6 +111,7 @@
     <MiniMap />
   </SvelteFlow>
 </div>
+{/if}
 
 <style>
   .diagram-container {
