@@ -422,6 +422,45 @@ export function createTestManuscript(
   };
 }
 
+// ── Supabase Row Factories ────────────────────────────────────────────
+
+/** Creates a row matching what Supabase returns from the `projects` table */
+export function createProjectRow(
+  overrides: Partial<Record<string, unknown>> = {},
+): Record<string, unknown> {
+  return {
+    id: 'proj-001',
+    title: 'Test Project',
+    author_name: 'Test Author',
+    genre: 'literary fiction',
+    composition_mode: 'sequential',
+    lifecycle_stage: 'drafting',
+    publishing_mode: 'text',
+    grammar_version: '1.0.0',
+    grammar_fingerprint: 'abc123',
+    modified_at: '2026-01-15T12:00:00Z',
+    ...overrides,
+  };
+}
+
+/** Creates a row matching what Supabase returns from the `assets` table */
+export function createAssetRow(
+  overrides: Partial<Record<string, unknown>> = {},
+): Record<string, unknown> {
+  return {
+    id: 'asset-001',
+    project_id: 'proj-001',
+    type: 'portrait',
+    name: 'Elena Portrait',
+    status: 'pending',
+    prompt: 'A young painter in morning light',
+    backend: 'dall-e-3',
+    metadata: { imageUrl: 'https://storage.example.com/elena.png' },
+    created_at: '2026-01-15T14:00:00Z',
+    ...overrides,
+  };
+}
+
 // ── Reset helpers ─────────────────────────────────────────────────────
 
 /** Reset auto-incrementing counters between tests */

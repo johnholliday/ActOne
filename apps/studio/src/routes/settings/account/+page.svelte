@@ -5,6 +5,7 @@
    */
   import { page } from '$app/state';
   import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
+  import { validatePasswordChange } from '$lib/validation/password.js';
 
   let saving = $state(false);
   let message = $state('');
@@ -17,18 +18,9 @@
   const identities = $derived(user?.identities ?? []);
 
   async function handlePasswordChange() {
-    if (!newPassword) {
-      message = 'Please enter a new password';
-      messageType = 'error';
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      message = 'Passwords do not match';
-      messageType = 'error';
-      return;
-    }
-    if (newPassword.length < 8) {
-      message = 'Password must be at least 8 characters';
+    const validation = validatePasswordChange(newPassword, confirmPassword);
+    if (!validation.valid) {
+      message = validation.error;
       messageType = 'error';
       return;
     }

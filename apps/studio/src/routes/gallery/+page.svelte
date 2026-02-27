@@ -7,6 +7,7 @@
    */
   import { page } from '$app/state';
   import { projectStore } from '$lib/stores/project.svelte.js';
+  import { filterAndSortAssets, toggleCompareSelection } from '$lib/gallery/gallery-filters.js';
   import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
 
@@ -39,25 +40,11 @@
   const filters = ['all', 'portrait', 'scene', 'cover', 'style-board'];
 
   const filteredAssets = $derived(
-    assets
-      .filter((a) => filter === 'all' || a.type === filter)
-      .filter((a) =>
-        searchQuery === '' ||
-        a.label.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-      .sort((a, b) => {
-        if (sortBy === 'newest') return b.createdAt.localeCompare(a.createdAt);
-        if (sortBy === 'oldest') return a.createdAt.localeCompare(b.createdAt);
-        return a.label.localeCompare(b.label);
-      }),
+    filterAndSortAssets(assets, filter, searchQuery, sortBy),
   );
 
   function toggleCompare(id: string) {
-    if (selectedForCompare.includes(id)) {
-      selectedForCompare = selectedForCompare.filter((s) => s !== id);
-    } else if (selectedForCompare.length < 2) {
-      selectedForCompare = [...selectedForCompare, id];
-    }
+    selectedForCompare = toggleCompareSelection(selectedForCompare, id);
   }
 
   // T039: Approve/reject action handlers

@@ -6,6 +6,7 @@
  * Supabase client so RLS policies apply.
  */
 import type { PageServerLoad } from './$types';
+import { mapAssetRow } from '$lib/gallery/asset-mapping.js';
 
 export const load: PageServerLoad = async ({ parent, url, locals: { supabase } }) => {
   const { session, projects } = await parent();
@@ -32,15 +33,6 @@ export const load: PageServerLoad = async ({ parent, url, locals: { supabase } }
   }
 
   return {
-    assets: (assetRows ?? []).map((row: Record<string, unknown>) => ({
-      id: row.id as string,
-      type: row.type as string,
-      label: row.name as string,
-      storageUrl: ((row.metadata as Record<string, unknown> | null)?.imageUrl as string) ?? '',
-      status: row.status as 'pending' | 'approved' | 'rejected',
-      createdAt: row.created_at as string,
-      prompt: (row.prompt as string) ?? '',
-      backend: (row.backend as string) ?? '',
-    })),
+    assets: (assetRows ?? []).map((row: Record<string, unknown>) => mapAssetRow(row)),
   };
 };

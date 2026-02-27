@@ -5,6 +5,7 @@
    * Preferences saved to localStorage.
    */
   import { onMount } from 'svelte';
+  import { parseAppearancePrefs, serializeAppearancePrefs } from '$lib/settings/appearance.js';
 
   let theme = $state<'dark' | 'light' | 'system'>('dark');
   let fontSize = $state(14);
@@ -22,23 +23,15 @@
   ];
 
   onMount(() => {
-    try {
-      const stored = localStorage.getItem('actone:appearance');
-      if (stored) {
-        const prefs = JSON.parse(stored) as { theme?: string; fontSize?: number; fontFamily?: string };
-        if (prefs.theme === 'dark' || prefs.theme === 'light' || prefs.theme === 'system') {
-          theme = prefs.theme;
-        }
-        if (typeof prefs.fontSize === 'number') fontSize = prefs.fontSize;
-        if (typeof prefs.fontFamily === 'string') fontFamily = prefs.fontFamily;
-      }
-    } catch {
-      // Use defaults
-    }
+    const stored = localStorage.getItem('actone:appearance');
+    const prefs = parseAppearancePrefs(stored);
+    theme = prefs.theme;
+    fontSize = prefs.fontSize;
+    fontFamily = prefs.fontFamily;
   });
 
   function save() {
-    localStorage.setItem('actone:appearance', JSON.stringify({ theme, fontSize, fontFamily }));
+    localStorage.setItem('actone:appearance', serializeAppearancePrefs({ theme, fontSize, fontFamily }));
     saved = true;
     setTimeout(() => { saved = false; }, 2000);
   }

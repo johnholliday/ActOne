@@ -1,5 +1,6 @@
 import type { LifecycleStage, CompositionMode } from '@repo/shared';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { loadProjectFromSupabase } from './project-loader.js';
 
 /** Minimal project metadata for the active project */
 export interface ProjectMeta {
@@ -64,52 +65,13 @@ class ProjectStore {
   async loadFromServer(supabase: SupabaseClient): Promise<void> {
     this.loading = true;
     try {
-      // Fetch the most recently modified project for the current user
-      const { data: projectRow, error: projectError } = await supabase
-        .from('projects')
-        .select('*')
-        .order('modified_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (projectError || !projectRow) {
+      const result = await loadProjectFromSupabase(supabase);
+      if (!result.success) {
         this.clear();
         return;
       }
-
-      // Fetch source files for this project
-      const { data: fileRows, error: filesError } = await supabase
-        .from('source_files')
-        .select('id, file_path, is_entry, content')
-        .eq('project_id', projectRow.id)
-        .order('file_path', { ascending: true });
-
-      if (filesError) {
-        this.clear();
-        return;
-      }
-
-      const meta: ProjectMeta = {
-        id: projectRow.id,
-        title: projectRow.title,
-        authorName: projectRow.author_name,
-        genre: projectRow.genre,
-        compositionMode: projectRow.composition_mode,
-        lifecycleStage: projectRow.lifecycle_stage,
-        publishingMode: projectRow.publishing_mode,
-        grammarVersion: projectRow.grammar_version,
-        grammarFingerprint: projectRow.grammar_fingerprint,
-      };
-
-      const files: SourceFileEntry[] = (fileRows ?? []).map((f: Record<string, unknown>) => ({
-        id: f.id as string,
-        filePath: f.file_path as string,
-        isEntry: f.is_entry as boolean,
-        content: f.content as string | undefined,
-      }));
-
-      this.project = meta;
-      this.files = files;
+      this.project = result.project;
+      this.files = result.files;
     } finally {
       this.loading = false;
     }

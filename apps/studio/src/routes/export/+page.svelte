@@ -3,6 +3,7 @@
    * T026 + T027: Export page with format selection and download trigger.
    */
   import { projectStore } from '$lib/stores/project.svelte.js';
+  import { requestExport } from '$lib/export/export-handler.js';
   import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
 
@@ -26,22 +27,15 @@
     exportSuccess = '';
 
     try {
-      const res = await fetch('/api/publishing/export', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectId, format: selectedFormat }),
-      });
+      const result = await requestExport(fetch, projectId, selectedFormat);
 
-      if (!res.ok) {
-        const text = await res.text();
-        exportError = text || `Export failed (${res.status})`;
+      if (!result.success) {
+        exportError = result.error;
         return;
       }
 
-      const data = await res.json() as { downloads: Array<{ format: string; url: string }> };
-
-      // Trigger download for each file
-      for (const download of data.downloads) {
+      // Trigger download for each file (DOM-only, stays in component)
+      for (const download of result.downloads) {
         const link = document.createElement('a');
         link.href = download.url;
         link.download = `${projectStore.project?.title ?? 'manuscript'}.${download.format}`;
