@@ -16,8 +16,11 @@
   "scripts": {
     "build": "langium generate && tsc",
     "build:langium": "langium generate",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "lint": "eslint .",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "langium": "~4.2.1",
@@ -29,6 +32,7 @@
     "@repo/typescript-config": "workspace:*",
     "langium-cli": "~4.2.0",
     "eslint": "^9.0.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.1"
   }
 }

@@ -15,8 +15,11 @@
   import { loadSidecar, saveSidecar, setOverride, applyOverrides } from '$lib/diagrams/layout/sidecar.js';
   import { diagramStore } from '$lib/stores/diagrams.svelte.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
+  import { projectStore } from '$lib/stores/project.svelte.js';
   import { parseStableId } from '$lib/diagrams/operations/stable-refs.js';
   import type { DiagramOperation } from '$lib/diagrams/operations/text-edit-generator.js';
+  import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
+  import EmptyState from '$lib/components/EmptyState.svelte';
 
   const nodeTypes = { character: CharacterNode };
   const edgeTypes = { relationship: RelationshipEdge };
@@ -24,13 +27,16 @@
   let nodes = $state<any[]>([]);
   let edges = $state<any[]>([]);
   let contextMenu = $state<{ x: number; y: number; nodeId?: string } | null>(null);
+  let diagramLoading = $state(true);
 
-  const projectId = 'default';
+  const projectId = $derived(projectStore.project?.id ?? '');
   const viewId = 'character-network';
 
   async function refresh() {
     const ast = astStore.activeAst;
-    if (!ast) return;
+    if (!ast || !projectId) { diagramLoading = false; return; }
+    diagramLoading = true;
+    try {
 
     const result = transformCharacterNetwork(ast);
     const layoutNodes = result.nodes.map((n) => ({
@@ -54,6 +60,7 @@
     });
     edges = result.edges;
     diagramStore.setView('character-network', nodes, edges);
+    } finally { diagramLoading = false; }
   }
 
   $effect(() => {
@@ -125,6 +132,15 @@
   }
 </script>
 
+{#if !projectStore.isLoaded}
+  <div class="diagram-container flex items-center justify-center">
+    <EmptyState message="No project loaded" description="Create or open a project to see the character network." />
+  </div>
+{:else if diagramLoading && nodes.length === 0}
+  <div class="diagram-container flex items-center justify-center">
+    <LoadingSpinner label="Loading diagram..." />
+  </div>
+{:else}
 <div class="diagram-container" role="presentation" oncontextmenu={handleContextMenu}>
   <SvelteFlow
     {nodes}
@@ -164,6 +180,7 @@
     </div>
   {/if}
 </div>
+{/if}
 
 <style>
   .diagram-container {

@@ -1,0 +1,76 @@
+// Performance benchmark: supporting cast group A
+story "The Grand Tapestry" {
+
+  character Isolde {
+    nature: Human,
+    bio: "A blind Thread-singer from the mountain monastery of Vehl. She perceives the Tapestry through sound rather than sight, hearing harmonies where others see patterns.",
+    personality: {
+      perception: 90,
+      serenity: 75,
+    },
+  }
+
+  character Darius {
+    nature: Human,
+    bio: "A young apprentice weaver from Tessara who idolizes Lyra. Eager and talented but dangerously overconfident in his abilities.",
+    personality: {
+      enthusiasm: 90,
+      skill: 65,
+    },
+  }
+
+  character Mei {
+    nature: Human,
+    bio: "A Thread cartographer who maps the Tapestry's decay, recording which regions are failing and predicting where tears will appear next.",
+    personality: {
+      precision: 95,
+      anxiety: 70,
+    },
+  }
+
+  character Orin {
+    nature: Human,
+    bio: "A retired guardian who served with Sable in the Thread Wars. He runs a safe house in the Frayed Edges for refugees displaced by the unraveling.",
+    personality: {
+      compassion: 85,
+      weariness: 70,
+    },
+  }
+
+  character Zara {
+    nature: Human,
+    bio: "A Thread alchemist who discovered how to temporarily solidify frayed regions using distilled essence of strong memories. Her work is controversial but effective.",
+    personality: {
+      ingenuity: 90,
+      recklessness: 65,
+    },
+  }
+
+  character Tadeo {
+    nature: Human,
+    bio: "A traveling bard who collects stories from every region of the Tapestry. His songs carry encoded information about Thread patterns that scholars have yet to decipher.",
+    personality: {
+      charisma: 85,
+      observation: 80,
+    },
+  }
+
+  character Priya {
+    nature: Human,
+    bio: "A diplomat from the eastern city of Sundara, tasked with negotiating ceasefires between factions fighting over Thread fragments. Exhausted but unwavering.",
+    personality: {
+      diplomacy: 92,
+      endurance: 78,
+    },
+  }
+
+  character Gunnar {
+    nature: Human,
+    bio: "A master blacksmith who forges tools from solidified Thread material. His creations can interact with the Tapestry in ways no ordinary instrument can.",
+    personality: {
+      craftsmanship: 95,
+      stubbornness: 80,
+    },
+  }
+
+}

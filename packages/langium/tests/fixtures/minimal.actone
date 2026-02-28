@@ -1,0 +1,29 @@
+// Minimal smoke test fixture: 1 character + 1 scene
+story "The Morning Light" {
+
+  character Elena {
+    nature: Human,
+    bio: "A young painter searching for inspiration in a quiet coastal town.",
+    personality: {
+      creativity: 85,
+      introversion: 70,
+    },
+  }
+
+  world CoastalTown {
+    locations: [
+      {
+        name: Studio,
+        description: "A sunlit room overlooking the harbor.",
+      },
+    ],
+  }
+
+  scene Awakening {
+    type: Reflection,
+    location: Studio,
+    participants: [Elena],
+    objective: "Elena contemplates the morning light filtering through her studio windows.",
+  }
+
+}

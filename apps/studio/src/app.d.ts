@@ -15,6 +15,7 @@ declare global {
     }
     interface PageData {
       session: Session | null;
+      user: import('@supabase/supabase-js').User | null;
     }
     // interface Error {}
     // interface Platform {}

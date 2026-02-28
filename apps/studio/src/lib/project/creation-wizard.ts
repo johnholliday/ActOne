@@ -24,6 +24,13 @@ export interface CreateProjectResult {
 /**
  * Generate the default entry file content for a new project.
  * Creates a minimal but valid .actone story skeleton.
+ *
+ * IMPORTANT: The content must conform to the ActOne grammar (actone.langium):
+ *   - Definition names accept both ID (Protagonist) and STRING ("Elena Vasquez")
+ *   - Properties require colons (e.g., `bio: "..."`)
+ *   - Enum values are PascalCase (e.g., `Human`, `Past`, `Moderate`)
+ *   - Arrays use bracket syntax (e.g., `participants: [Protagonist]`)
+ *   - Locations use `locations: [{ name: Name, ... }]` block syntax
  */
 export function generateEntrySkeleton(title: string, authorName?: string): string {
   const sanitizedTitle = title.replace(/"/g, '\\"');
@@ -33,38 +40,41 @@ export function generateEntrySkeleton(title: string, authorName?: string): strin
   lines.push('');
 
   // Add a sample character
-  lines.push('  character "Protagonist" {');
-  lines.push('    nature hero');
-  lines.push('    bio "The main character of the story."');
+  lines.push('  character Protagonist {');
+  lines.push('    nature: Human,');
+  lines.push('    bio: "The main character of the story.",');
   lines.push('  }');
   lines.push('');
 
-  // Add a sample world
-  lines.push('  world "Story World" {');
-  lines.push('    location "Starting Point" {');
-  lines.push('      description "Where the story begins."');
-  lines.push('    }');
+  // Add a sample world with a location
+  lines.push('  world StoryWorld {');
+  lines.push('    locations: [');
+  lines.push('      {');
+  lines.push('        name: StartingPoint,');
+  lines.push('        description: "Where the story begins.",');
+  lines.push('      }');
+  lines.push('    ],');
   lines.push('  }');
   lines.push('');
 
   // Add a sample scene
-  lines.push('  scene "Opening" {');
-  lines.push('    type exposition');
-  lines.push('    location "Starting Point"');
-  lines.push('    participants "Protagonist"');
-  lines.push('    objective "Introduce the world and main character."');
+  lines.push('  scene Opening {');
+  lines.push('    type: Dialogue,');
+  lines.push('    location: StartingPoint,');
+  lines.push('    participants: [Protagonist],');
+  lines.push('    objective: "Introduce the world and main character.",');
   lines.push('  }');
   lines.push('');
 
   // Add generate block with author info
   lines.push('  generate {');
-  lines.push('    genre "Fiction"');
+  lines.push('    genre: "Fiction",');
   if (authorName) {
     lines.push(`    // Author: ${authorName}`);
   }
-  lines.push('    tone "atmospheric"');
-  lines.push('    tense past');
-  lines.push('    pacing moderate');
+  lines.push('    tone: ["atmospheric"],');
+  lines.push('    tense: Past,');
+  lines.push('    pacing: Moderate,');
   lines.push('  }');
 
   lines.push('}');

@@ -1,0 +1,404 @@
+// Performance benchmark: scenes 51-100
+story "The Grand Tapestry" {
+
+  scene KhalidConfesses {
+    type: Revelation,
+    location: SunderPoint,
+    participants: [Khalid, Lyra, Fen, Sable],
+    objective: "Khalid reveals his full role in the original Sundering to the entire group.",
+    transition: Dissolve,
+  }
+
+  scene RowanJoins {
+    type: Dialogue,
+    location: SilentForge,
+    participants: [Rowan, Lyra],
+    objective: "Rowan offers his Thread-cutting expertise to the group, naming his conditions.",
+    transition: Cut,
+  }
+
+  scene RefugeeEvacuation {
+    type: Action,
+    location: RefugeeQuarter,
+    participants: [Petra, Viktor, Callum],
+    objective: "A sudden expansion of the Frayed Edges forces an emergency evacuation of the quarter.",
+    transition: Smash,
+  }
+
+  scene DreamOfTheFirstWeaving {
+    type: Reflection,
+    location: LoomHeart,
+    participants: [Lyra],
+    objective: "Lyra experiences a vision of the original Weavers creating the Tapestry.",
+    transition: Flashback,
+  }
+
+  scene MordecaiCorners {
+    type: Confrontation,
+    location: SmugglersCove,
+    participants: [Mordecai, Fen, Nadia],
+    objective: "Mordecai's mercenaries trap Fen and Nadia at Smuggler's Cove.",
+    transition: Smash,
+  }
+
+  scene SableRescue {
+    type: Action,
+    location: SmugglersCove,
+    participants: [Sable, Koda, Fen],
+    objective: "Sable and Koda fight through Mordecai's forces to rescue Fen.",
+    transition: Cut,
+  }
+
+  scene EntropyDialogue {
+    type: Dialogue,
+    location: TheVoid,
+    participants: [Entropy, Lyra],
+    objective: "Lyra attempts to communicate with Entropy, learning that it is not malicious but inevitable.",
+    transition: Fade,
+  }
+
+  scene MathematicalBreakthrough {
+    type: Revelation,
+    location: CouncilChamber,
+    participants: [Rashid, Ravi, Mei],
+    objective: "Rashid's equations combined with Ravi's engineering produce a viable Mending blueprint.",
+    transition: Cut,
+  }
+
+  scene TrainingMontage {
+    type: Montage,
+    location: WeavingHall,
+    participants: [Lyra, Darius, Isolde],
+    objective: "Lyra trains Darius in advanced Thread techniques while Isolde provides harmonic support.",
+    transition: Dissolve,
+  }
+
+  scene EmbersBargain {
+    type: Dialogue,
+    location: SilentForge,
+    participants: [Ember, Gunnar, Rowan],
+    objective: "Ember demands a price for reforging the ancient Thread-tools needed for the Mending.",
+    transition: Cut,
+  }
+
+  scene ThornsPast {
+    type: Revelation,
+    location: EchoFields,
+    participants: [Thorn],
+    objective: "Thorn walks through Echo Field memories of her time as Khalid's student.",
+    transition: Flashback,
+  }
+
+  scene NihilsChallenge {
+    type: Confrontation,
+    location: MemoryWell,
+    participants: [Nihil, Sable],
+    objective: "Nihil confronts Sable with the question of whether her guilt makes her unworthy of survival.",
+    transition: Fade,
+  }
+
+  scene TradeWarEscalates {
+    type: Action,
+    location: MarketNexus,
+    participants: [Mordecai, Priya],
+    objective: "Mordecai disrupts Thread-fragment supply lines, forcing a diplomatic crisis.",
+    transition: Cut,
+  }
+
+  scene ChildsVision {
+    type: Revelation,
+    location: PatternGarden,
+    participants: [Hana, Lyra],
+    objective: "Hana draws a picture that exactly matches the Tapestry's original pattern, stunning Lyra.",
+    transition: Dissolve,
+  }
+
+  scene WolfAndRaven {
+    type: Transition,
+    location: HighTower,
+    participants: [Koda, Corvus],
+    objective: "Koda and Corvus establish an animal communication network spanning stable and frayed regions.",
+    transition: Cut,
+  }
+
+  scene OrinsSacrifice {
+    type: Climax,
+    location: WatchfireStation,
+    participants: [Orin, Viktor],
+    objective: "Orin stays behind to maintain the watchfire as the station is overwhelmed by the Frayed Edges.",
+    transition: Smash,
+  }
+
+  scene SableAndFen {
+    type: Dialogue,
+    location: DriftingIsles,
+    participants: [Sable, Fen],
+    objective: "Sable and Fen share their deepest secrets with each other on a drifting isle.",
+    transition: Fade,
+  }
+
+  scene CouncilFalls {
+    type: Action,
+    location: CouncilChamber,
+    participants: [Katya, Priya, Thorn],
+    objective: "The Weaving Council collapses as factions splinter and Thorn claims the chamber.",
+    transition: Smash,
+  }
+
+  scene FinalPreparations {
+    type: Montage,
+    location: GrandLoom,
+    participants: [Lyra, Rowan, Gunnar],
+    objective: "The team prepares the Grand Loom for the Mending attempt with forged tools.",
+    transition: Dissolve,
+  }
+
+  scene MordecaiLastStand {
+    type: Confrontation,
+    location: MarketNexus,
+    participants: [Mordecai, Fen, Sable],
+    objective: "Mordecai makes a desperate attempt to sabotage the Mending to preserve his empire.",
+    transition: Smash,
+  }
+
+  scene LyrasFear {
+    type: Reflection,
+    location: HighTower,
+    participants: [Lyra],
+    objective: "Lyra confronts the secret that she caused the first tear, alone in the HighTower at dawn.",
+    transition: Fade,
+  }
+
+  scene VexisConverses {
+    type: Dialogue,
+    location: RavelsEnd,
+    participants: [Vexis, Rowan],
+    objective: "Vexis and Rowan discover they share the desire to unmake and remake the Tapestry.",
+    transition: Dissolve,
+  }
+
+  scene FenRevealsGift {
+    type: Revelation,
+    location: RootThreads,
+    participants: [Fen, Lyra],
+    objective: "Fen finally admits he can see the Threads, adding his perception to the Mending effort.",
+    transition: Cut,
+  }
+
+  scene IsoldeSerenade {
+    type: Reflection,
+    location: GrandLoom,
+    participants: [Isolde, Whisper, Wren],
+    objective: "Isolde, Whisper, and Wren create a three-part harmony that resonates through the Grand Loom.",
+    transition: Dissolve,
+  }
+
+  scene AnchorLine {
+    type: Action,
+    location: TwilightPass,
+    participants: [Bjorn, Ashara, Viktor],
+    objective: "Bjorn anchors the pass while Ashara dances to keep the Threads stable during the approach.",
+    transition: Cut,
+  }
+
+  scene DelaraRedeems {
+    type: Confrontation,
+    location: SmugglersCove,
+    participants: [Delara, Mordecai],
+    objective: "Delara betrays Mordecai, feeding his battle plans to Lyra's group.",
+    transition: Smash,
+  }
+
+  scene KatyaSpeech {
+    type: Dialogue,
+    location: RefugeeQuarter,
+    participants: [Katya, Tadeo, Kofi],
+    objective: "Katya rallies the refugees with a speech while Tadeo and Kofi provide musical support.",
+    transition: Dissolve,
+  }
+
+  scene RowanSacrifice {
+    type: Climax,
+    location: LoomHeart,
+    participants: [Rowan, Selene],
+    objective: "Rowan chooses to leave his daughter's Thread intact, sacrificing his chance to save her.",
+    transition: Fade,
+  }
+
+  scene TheMending {
+    type: Climax,
+    location: LoomHeart,
+    participants: [Lyra, Fen, Khalid, Rowan],
+    objective: "The core group attempts the Mending at the Loom Heart, weaving with every skill they possess.",
+    transition: Parallel,
+  }
+
+  scene VexisChoice {
+    type: Climax,
+    location: LoomHeart,
+    participants: [Vexis, Lyra],
+    objective: "Vexis chooses whether to fight the Mending or become part of the new pattern.",
+    transition: Dissolve,
+  }
+
+  scene TwilightStabilizes {
+    type: Action,
+    location: TwilightPass,
+    participants: [Sable, Thorn, Bjorn],
+    objective: "Sable and Thorn fight side by side to hold the pass stable during the Mending.",
+    transition: Cut,
+  }
+
+  scene MordecaiChooses {
+    type: Revelation,
+    location: HealingWards,
+    participants: [Mordecai, Amara],
+    objective: "Mordecai surrenders his last Thread fragment to save his mother, choosing love over power.",
+    transition: Fade,
+  }
+
+  scene TheNewPattern {
+    type: Revelation,
+    location: GrandLoom,
+    participants: [Lyra, Fen, Sable, Khalid, Rowan],
+    objective: "The Mending succeeds but creates a pattern none of them expected — something entirely new.",
+    transition: Dissolve,
+  }
+
+  scene AmosSpeaks {
+    type: Dialogue,
+    location: PatternGarden,
+    participants: [Amos, Mei, Linnea],
+    objective: "The hive-mind Amos achieves full communication, sharing observations about the new pattern.",
+    transition: Cut,
+  }
+
+  scene SunderPointHeals {
+    type: Reflection,
+    location: SunderPoint,
+    participants: [Khalid, Thorn],
+    objective: "Khalid and Thorn stand together at the Sunder Point as the ancient wound finally closes.",
+    transition: Fade,
+  }
+
+  scene FenSableFuture {
+    type: Dialogue,
+    location: WatchfireStation,
+    participants: [Fen, Sable],
+    objective: "Fen and Sable discuss what comes after the crisis, tentatively planning a shared future.",
+    transition: Dissolve,
+  }
+
+  scene RowanRemembrance {
+    type: Reflection,
+    location: EchoFields,
+    participants: [Rowan],
+    objective: "Rowan visits the Echo Fields one last time to say goodbye to his daughter's memory.",
+    transition: Fade,
+  }
+
+  scene EmberRecedes {
+    type: Transition,
+    location: SilentForge,
+    participants: [Ember, Gunnar],
+    objective: "The Silent Forge cools for the first time in millennia as Ember settles into dormancy.",
+    transition: Fade,
+  }
+
+  scene DariusGraduates {
+    type: Montage,
+    location: WeavingHall,
+    participants: [Darius, Fenwick],
+    objective: "Darius completes his training and Fenwick grudgingly acknowledges his growth.",
+    transition: Dissolve,
+  }
+
+  scene NadiaPublishes {
+    type: Dialogue,
+    location: MarketNexus,
+    participants: [Nadia, Priya],
+    objective: "Nadia publishes her investigation into the Thread trade, reshaping public understanding.",
+    transition: Cut,
+  }
+
+  scene HanaWeaves {
+    type: Revelation,
+    location: GrandLoom,
+    participants: [Hana, Lyra],
+    objective: "Hana instinctively weaves a new pattern that even Lyra cannot replicate, revealing the next generation.",
+    transition: Dissolve,
+  }
+
+  scene NihilAnswered {
+    type: Confrontation,
+    location: TheVoid,
+    participants: [Nihil, Lyra, Fen],
+    objective: "Lyra and Fen answer Nihil's eternal question not with words but with an act of creation.",
+    transition: Fade,
+  }
+
+  scene LegacyScroll {
+    type: Transition,
+    location: ThreadArchive,
+    participants: [Esme, Whisper],
+    objective: "Esme records the full story of the Mending in the ThreadArchive while Whisper finally fades.",
+    transition: Dissolve,
+  }
+
+  scene ThornGuardsAgain {
+    type: Transition,
+    location: CouncilChamber,
+    participants: [Thorn, Katya],
+    objective: "Thorn takes up her guardian oath again, this time to protect a reformed Council.",
+    transition: Cut,
+  }
+
+  scene MorriganBlooms {
+    type: Reflection,
+    location: RootThreads,
+    participants: [Morrigan],
+    objective: "The sentient forest blooms for the first time in centuries, signaling the Deep Weave's renewal.",
+    transition: Fade,
+  }
+
+  scene MarenRegistry {
+    type: Dialogue,
+    location: HealingWards,
+    participants: [Maren, Amara, Hana],
+    objective: "Maren opens her registry of Thread-storm children, beginning a new era of understanding.",
+    transition: Dissolve,
+  }
+
+  scene CorvusFlight {
+    type: Transition,
+    location: HighTower,
+    participants: [Corvus],
+    objective: "Corvus flies across the newly mended Tapestry, surveying a changed world from above.",
+    transition: Montage,
+  }
+
+  scene LyraWeavesBareHanded {
+    type: Climax,
+    location: GrandLoom,
+    participants: [Lyra],
+    objective: "Lyra weaves without a loom for the first time, creating something unprecedented and personal.",
+    transition: Dissolve,
+  }
+
+  scene FinalGathering {
+    type: Montage,
+    location: PatternGarden,
+    participants: [Lyra, Fen, Sable, Khalid, Rowan],
+    objective: "The five protagonists gather in the Pattern Garden as the new Tapestry takes shape around them.",
+    transition: Fade,
+  }
+
+  scene EpilogueThread {
+    type: Reflection,
+    location: HighTower,
+    participants: [Lyra, Fen],
+    objective: "Lyra and Fen look out from the HighTower at a world rewoven, knowing the work is never finished.",
+    transition: Fade,
+  }
+
+}

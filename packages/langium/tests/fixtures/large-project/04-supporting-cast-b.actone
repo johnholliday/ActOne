@@ -1,0 +1,76 @@
+// Performance benchmark: supporting cast group B
+story "The Grand Tapestry" {
+
+  character Amara {
+    nature: Human,
+    bio: "A healer who specializes in Thread-sickness — the malady that afflicts those who spend too long in the Frayed Edges. She runs a clinic at Ravel's End.",
+    personality: {
+      empathy: 92,
+      resilience: 80,
+    },
+  }
+
+  character Viktor {
+    nature: Human,
+    bio: "A former soldier in Mordecai's private army who defected after witnessing the human cost of Thread harvesting. Haunted by what he did.",
+    personality: {
+      remorse: 85,
+      loyalty: 70,
+    },
+  }
+
+  character Esme {
+    nature: Human,
+    bio: "An elderly librarian at the ThreadArchive who has memorized more patterns than any living person. She speaks in quotes from ancient weaving texts.",
+    personality: {
+      knowledge: 98,
+      frailty: 60,
+    },
+  }
+
+  character Caspian {
+    nature: Human,
+    bio: "A young sailor from the coastal regions who discovered that ocean currents follow Thread patterns. He navigates by reading the weave of the sea.",
+    personality: {
+      adventurousness: 88,
+      intuition: 75,
+    },
+  }
+
+  character Linnea {
+    nature: Human,
+    bio: "A botanist who studies Thread-touched plants — flora that has adapted to grow along Thread lines. Her garden is a living map of the local weave.",
+    personality: {
+      patience: 90,
+      curiosity: 85,
+    },
+  }
+
+  character Rashid {
+    nature: Human,
+    bio: "A mathematician who believes the Tapestry follows predictable equations. His models are eerily accurate but he cannot explain why.",
+    personality: {
+      intellect: 95,
+      obsessiveness: 80,
+    },
+  }
+
+  character Hana {
+    nature: Human,
+    bio: "A child prodigy who can instinctively feel where the Tapestry is weakest. She does not understand her gift and it frightens her.",
+    personality: {
+      sensitivity: 95,
+      vulnerability: 85,
+    },
+  }
+
+  character Bjorn {
+    nature: Human,
+    bio: "A stonemason who builds Thread-anchors — structures that stabilize the weave in their immediate vicinity. His work is slow, permanent, and vital.",
+    personality: {
+      dedication: 90,
+      stoicism: 85,
+    },
+  }
+
+}

@@ -70,7 +70,7 @@ export async function saveFileContent(
 ): Promise<boolean> {
   const { error } = await supabase
     .from('source_files')
-    .update({ content, updated_at: new Date().toISOString() })
+    .update({ content, modified_at: new Date().toISOString() })
     .eq('id', fileId);
 
   return !error;

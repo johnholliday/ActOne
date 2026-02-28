@@ -6,6 +6,8 @@
    * Relationships, Themes, Plots, and Scenes.
    */
   import { astStore } from '$lib/stores/ast.svelte.js';
+  import { projectStore } from '$lib/stores/project.svelte.js';
+  import EmptyState from '$lib/components/EmptyState.svelte';
   import {
     findCharacters,
     findWorlds,
@@ -84,7 +86,9 @@
   </nav>
 
   <div class="content">
-    {#if !story}
+    {#if !projectStore.isLoaded}
+      <EmptyState message="No project loaded" description="Create or open a project to view the Story Bible." />
+    {:else if !story}
       <div class="empty">No story loaded. Open a project to view the Story Bible.</div>
     {:else if activeTab === 'characters'}
       <section>

@@ -1,0 +1,44 @@
+// Performance benchmark: remaining characters to reach ~50 total
+story "The Grand Tapestry" {
+
+  character Delara {
+    nature: Human,
+    bio: "A spymaster who works for no single faction, trading Thread intelligence to the highest bidder. She knows more secrets than anyone alive.",
+  }
+
+  character Amos {
+    nature: Collective,
+    bio: "A hive-mind of Thread-touched insects that has achieved rudimentary sentience. It communicates by arranging its members into patterns.",
+  }
+
+  character Juno {
+    nature: Human,
+    bio: "A painter who can capture Thread patterns on canvas. Her paintings serve as stable snapshots of regions that have since unraveled.",
+  }
+
+  character Ravi {
+    nature: Human,
+    bio: "An engineer who designs mechanical looms that can weave Thread at industrial scale. His inventions are both revolutionary and dangerous.",
+  }
+
+  character Morrigan {
+    nature: Environment,
+    bio: "The sentient forest at the heart of the oldest woven region. It has been alive since the Tapestry was first created and remembers its makers.",
+  }
+
+  character Callum {
+    nature: Human,
+    bio: "A young courier who carries messages between Thread-stable regions. He is faster than anyone and navigates the Frayed Edges by instinct.",
+  }
+
+  character Wren {
+    nature: Animal,
+    bio: "A songbird whose melody can temporarily mend small tears in the Tapestry. It follows Isolde everywhere, harmonizing with her Thread-singing.",
+  }
+
+  character Katya {
+    nature: Human,
+    bio: "A former member of the Weaving Council who resigned in protest over their inaction. She now works independently to organize resistance against the unraveling.",
+  }
+
+}

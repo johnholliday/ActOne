@@ -42,8 +42,26 @@ export const actions: Actions = {
       });
     }
 
-    return {
-      message: 'Check your email for a confirmation link.',
-    };
+    redirect(303, '/');
+  },
+
+  oauth: async ({ request, url, locals: { supabase } }) => {
+    const formData = await request.formData();
+    const provider = formData.get('provider') as 'google' | 'github';
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${url.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      return fail(400, {
+        message: error.message,
+      });
+    }
+
+    redirect(303, data.url);
   },
 };

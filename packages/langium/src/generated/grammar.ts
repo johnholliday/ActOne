@@ -105,6 +105,34 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
     },
     {
       "$type": "ParserRule",
+      "name": "DefinitionName",
+      "dataType": "string",
+      "definition": {
+        "$type": "Alternatives",
+        "elements": [
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@1"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@2"
+            },
+            "arguments": []
+          }
+        ]
+      },
+      "entry": false,
+      "fragment": false,
+      "parameters": [],
+      "$comment": "/**\\n * Names for definitions and cross-references.\\n * Accepts both bare identifiers (Elena) and quoted strings (\\"Elena Vasquez\\").\\n * When using STRING, cross-references must also use the quoted form.\\n */"
+    },
+    {
+      "$type": "ParserRule",
       "name": "SignedInt",
       "dataType": "number",
       "definition": {
@@ -163,7 +191,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@9"
+                "$ref": "#/rules@10"
               },
               "arguments": []
             },
@@ -188,56 +216,56 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@10"
+              "$ref": "#/rules@11"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@25"
+              "$ref": "#/rules@26"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@31"
+              "$ref": "#/rules@32"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@69"
+              "$ref": "#/rules@70"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@87"
+              "$ref": "#/rules@88"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@97"
+              "$ref": "#/rules@98"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@110"
+              "$ref": "#/rules@111"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@128"
+              "$ref": "#/rules@129"
             },
             "arguments": []
           }
@@ -269,7 +297,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@11"
+                "$ref": "#/rules@12"
               },
               "arguments": []
             },
@@ -292,13 +320,6 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
       "definition": {
         "$type": "Alternatives",
         "elements": [
-          {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@12"
-            },
-            "arguments": []
-          },
           {
             "$type": "RuleCall",
             "rule": {
@@ -344,21 +365,28 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@20"
+              "$ref": "#/rules@19"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@22"
+              "$ref": "#/rules@21"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@24"
+              "$ref": "#/rules@23"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@25"
             },
             "arguments": []
           }
@@ -658,7 +686,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@19"
+                "$ref": "#/rules@20"
               },
               "arguments": []
             }
@@ -721,7 +749,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@21"
+                "$ref": "#/rules@22"
               },
               "arguments": []
             }
@@ -788,7 +816,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@23"
+                "$ref": "#/rules@24"
               },
               "arguments": []
             }
@@ -893,7 +921,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@1"
+                "$ref": "#/rules@7"
               },
               "arguments": []
             }
@@ -909,7 +937,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@26"
+                "$ref": "#/rules@27"
               },
               "arguments": []
             },
@@ -935,13 +963,6 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@27"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
               "$ref": "#/rules@28"
             },
             "arguments": []
@@ -957,6 +978,13 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "$type": "RuleCall",
             "rule": {
               "$ref": "#/rules@30"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@31"
             },
             "arguments": []
           }
@@ -1176,7 +1204,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@1"
+                "$ref": "#/rules@7"
               },
               "arguments": []
             }
@@ -1192,7 +1220,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@32"
+                "$ref": "#/rules@33"
               },
               "arguments": []
             },
@@ -1218,14 +1246,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@33"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@35"
+              "$ref": "#/rules@34"
             },
             "arguments": []
           },
@@ -1246,7 +1267,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@39"
+              "$ref": "#/rules@38"
             },
             "arguments": []
           },
@@ -1267,7 +1288,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@48"
+              "$ref": "#/rules@42"
             },
             "arguments": []
           },
@@ -1295,14 +1316,14 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@58"
+              "$ref": "#/rules@52"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@66"
+              "$ref": "#/rules@59"
             },
             "arguments": []
           },
@@ -1317,6 +1338,13 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "$type": "RuleCall",
             "rule": {
               "$ref": "#/rules@68"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@69"
             },
             "arguments": []
           }
@@ -1347,7 +1375,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@34"
+                "$ref": "#/rules@35"
               },
               "arguments": []
             }
@@ -1506,7 +1534,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@38"
+                "$ref": "#/rules@39"
               },
               "arguments": []
             },
@@ -1718,7 +1746,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@42"
+                    "$ref": "#/rules@43"
                   },
                   "arguments": []
                 }
@@ -1737,7 +1765,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                     "terminal": {
                       "$type": "RuleCall",
                       "rule": {
-                        "$ref": "#/rules@42"
+                        "$ref": "#/rules@43"
                       },
                       "arguments": []
                     }
@@ -1786,7 +1814,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@43"
+                "$ref": "#/rules@44"
               },
               "arguments": []
             },
@@ -1811,13 +1839,6 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@44"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
               "$ref": "#/rules@45"
             },
             "arguments": []
@@ -1825,7 +1846,14 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@47"
+              "$ref": "#/rules@46"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@48"
             },
             "arguments": []
           }
@@ -1893,7 +1921,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@46"
+                "$ref": "#/rules@47"
               },
               "arguments": []
             }
@@ -2236,7 +2264,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@52"
+                    "$ref": "#/rules@53"
                   },
                   "arguments": []
                 }
@@ -2255,7 +2283,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                     "terminal": {
                       "$type": "RuleCall",
                       "rule": {
-                        "$ref": "#/rules@52"
+                        "$ref": "#/rules@53"
                       },
                       "arguments": []
                     }
@@ -2312,12 +2340,12 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "CrossReference",
               "type": {
-                "$ref": "#/rules@31"
+                "$ref": "#/rules@32"
               },
               "terminal": {
                 "$type": "RuleCall",
                 "rule": {
-                  "$ref": "#/rules@1"
+                  "$ref": "#/rules@7"
                 },
                 "arguments": []
               },
@@ -2337,7 +2365,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@53"
+                "$ref": "#/rules@54"
               },
               "arguments": []
             },
@@ -2362,13 +2390,6 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@54"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
               "$ref": "#/rules@55"
             },
             "arguments": []
@@ -2384,6 +2405,13 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "$type": "RuleCall",
             "rule": {
               "$ref": "#/rules@57"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@58"
             },
             "arguments": []
           }
@@ -2414,7 +2442,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@7"
+                "$ref": "#/rules@8"
               },
               "arguments": []
             }
@@ -2570,7 +2598,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@59"
+                "$ref": "#/rules@60"
               },
               "arguments": []
             },
@@ -2598,13 +2626,6 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
       "definition": {
         "$type": "Alternatives",
         "elements": [
-          {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@60"
-            },
-            "arguments": []
-          },
           {
             "$type": "RuleCall",
             "rule": {
@@ -2637,6 +2658,13 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "$type": "RuleCall",
             "rule": {
               "$ref": "#/rules@65"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@66"
             },
             "arguments": []
           }
@@ -3087,7 +3115,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@1"
+                "$ref": "#/rules@7"
               },
               "arguments": []
             }
@@ -3103,7 +3131,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@70"
+                "$ref": "#/rules@71"
               },
               "arguments": []
             },
@@ -3129,13 +3157,6 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@71"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
               "$ref": "#/rules@72"
             },
             "arguments": []
@@ -3150,7 +3171,14 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@81"
+              "$ref": "#/rules@74"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@82"
             },
             "arguments": []
           }
@@ -3305,7 +3333,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@74"
+                    "$ref": "#/rules@75"
                   },
                   "arguments": []
                 }
@@ -3324,7 +3352,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                     "terminal": {
                       "$type": "RuleCall",
                       "rule": {
-                        "$ref": "#/rules@74"
+                        "$ref": "#/rules@75"
                       },
                       "arguments": []
                     }
@@ -3381,7 +3409,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@1"
+                "$ref": "#/rules@7"
               },
               "arguments": []
             }
@@ -3398,7 +3426,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@75"
+                "$ref": "#/rules@76"
               },
               "arguments": []
             },
@@ -3423,13 +3451,6 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@76"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
               "$ref": "#/rules@77"
             },
             "arguments": []
@@ -3437,7 +3458,14 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@79"
+              "$ref": "#/rules@78"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@80"
             },
             "arguments": []
           }
@@ -3509,7 +3537,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@78"
+                "$ref": "#/rules@79"
               },
               "arguments": []
             },
@@ -3604,7 +3632,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@80"
+                    "$ref": "#/rules@81"
                   },
                   "arguments": []
                 }
@@ -3623,7 +3651,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                     "terminal": {
                       "$type": "RuleCall",
                       "rule": {
-                        "$ref": "#/rules@80"
+                        "$ref": "#/rules@81"
                       },
                       "arguments": []
                     }
@@ -3668,12 +3696,12 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "CrossReference",
               "type": {
-                "$ref": "#/rules@74"
+                "$ref": "#/rules@75"
               },
               "terminal": {
                 "$type": "RuleCall",
                 "rule": {
-                  "$ref": "#/rules@1"
+                  "$ref": "#/rules@7"
                 },
                 "arguments": []
               },
@@ -3691,12 +3719,12 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                 "terminal": {
                   "$type": "CrossReference",
                   "type": {
-                    "$ref": "#/rules@69"
+                    "$ref": "#/rules@70"
                   },
                   "terminal": {
                     "$type": "RuleCall",
                     "rule": {
-                      "$ref": "#/rules@1"
+                      "$ref": "#/rules@7"
                     },
                     "arguments": []
                   },
@@ -3715,12 +3743,12 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                 "terminal": {
                   "$type": "CrossReference",
                   "type": {
-                    "$ref": "#/rules@74"
+                    "$ref": "#/rules@75"
                   },
                   "terminal": {
                     "$type": "RuleCall",
                     "rule": {
-                      "$ref": "#/rules@1"
+                      "$ref": "#/rules@7"
                     },
                     "arguments": []
                   },
@@ -3765,7 +3793,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@82"
+                    "$ref": "#/rules@83"
                   },
                   "arguments": []
                 }
@@ -3784,7 +3812,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                     "terminal": {
                       "$type": "RuleCall",
                       "rule": {
-                        "$ref": "#/rules@82"
+                        "$ref": "#/rules@83"
                       },
                       "arguments": []
                     }
@@ -3833,7 +3861,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@83"
+                "$ref": "#/rules@84"
               },
               "arguments": []
             },
@@ -3858,14 +3886,14 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@84"
+              "$ref": "#/rules@85"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@85"
+              "$ref": "#/rules@86"
             },
             "arguments": []
           }
@@ -3933,7 +3961,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@86"
+                "$ref": "#/rules@87"
               },
               "arguments": []
             }
@@ -3999,7 +4027,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@1"
+                "$ref": "#/rules@7"
               },
               "arguments": []
             }
@@ -4015,7 +4043,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@88"
+                "$ref": "#/rules@89"
               },
               "arguments": []
             },
@@ -4041,14 +4069,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@89"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@91"
+              "$ref": "#/rules@90"
             },
             "arguments": []
           },
@@ -4056,6 +4077,13 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "$type": "RuleCall",
             "rule": {
               "$ref": "#/rules@92"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@93"
             },
             "arguments": []
           }
@@ -4086,7 +4114,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@90"
+                "$ref": "#/rules@91"
               },
               "arguments": []
             }
@@ -4206,7 +4234,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@93"
+                    "$ref": "#/rules@94"
                   },
                   "arguments": []
                 }
@@ -4225,7 +4253,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                     "terminal": {
                       "$type": "RuleCall",
                       "rule": {
-                        "$ref": "#/rules@93"
+                        "$ref": "#/rules@94"
                       },
                       "arguments": []
                     }
@@ -4282,7 +4310,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@1"
+                "$ref": "#/rules@7"
               },
               "arguments": []
             }
@@ -4299,7 +4327,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@94"
+                "$ref": "#/rules@95"
               },
               "arguments": []
             },
@@ -4324,14 +4352,14 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@95"
+              "$ref": "#/rules@96"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@96"
+              "$ref": "#/rules@97"
             },
             "arguments": []
           }
@@ -4432,7 +4460,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@1"
+                "$ref": "#/rules@7"
               },
               "arguments": []
             }
@@ -4448,7 +4476,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@98"
+                "$ref": "#/rules@99"
               },
               "arguments": []
             },
@@ -4474,14 +4502,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@99"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@101"
+              "$ref": "#/rules@100"
             },
             "arguments": []
           },
@@ -4533,6 +4554,13 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
               "$ref": "#/rules@108"
             },
             "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@109"
+            },
+            "arguments": []
           }
         ]
       },
@@ -4561,7 +4589,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@100"
+                "$ref": "#/rules@101"
               },
               "arguments": []
             }
@@ -4644,7 +4672,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@80"
+                "$ref": "#/rules@81"
               },
               "arguments": []
             }
@@ -4685,12 +4713,12 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                 "terminal": {
                   "$type": "CrossReference",
                   "type": {
-                    "$ref": "#/rules@31"
+                    "$ref": "#/rules@32"
                   },
                   "terminal": {
                     "$type": "RuleCall",
                     "rule": {
-                      "$ref": "#/rules@1"
+                      "$ref": "#/rules@7"
                     },
                     "arguments": []
                   },
@@ -4742,12 +4770,12 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "CrossReference",
               "type": {
-                "$ref": "#/rules@93"
+                "$ref": "#/rules@94"
               },
               "terminal": {
                 "$type": "RuleCall",
                 "rule": {
-                  "$ref": "#/rules@1"
+                  "$ref": "#/rules@7"
                 },
                 "arguments": []
               },
@@ -4795,12 +4823,12 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                 "terminal": {
                   "$type": "CrossReference",
                   "type": {
-                    "$ref": "#/rules@31"
+                    "$ref": "#/rules@32"
                   },
                   "terminal": {
                     "$type": "RuleCall",
                     "rule": {
-                      "$ref": "#/rules@1"
+                      "$ref": "#/rules@7"
                     },
                     "arguments": []
                   },
@@ -4822,12 +4850,12 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                     "terminal": {
                       "$type": "CrossReference",
                       "type": {
-                        "$ref": "#/rules@31"
+                        "$ref": "#/rules@32"
                       },
                       "terminal": {
                         "$type": "RuleCall",
                         "rule": {
-                          "$ref": "#/rules@1"
+                          "$ref": "#/rules@7"
                         },
                         "arguments": []
                       },
@@ -4887,7 +4915,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@78"
+                "$ref": "#/rules@79"
               },
               "arguments": []
             },
@@ -5006,7 +5034,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@109"
+                "$ref": "#/rules@110"
               },
               "arguments": []
             }
@@ -5085,7 +5113,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@1"
+                "$ref": "#/rules@7"
               },
               "arguments": []
             }
@@ -5101,7 +5129,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@111"
+                "$ref": "#/rules@112"
               },
               "arguments": []
             },
@@ -5127,28 +5155,28 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@112"
+              "$ref": "#/rules@113"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@119"
+              "$ref": "#/rules@120"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@124"
+              "$ref": "#/rules@125"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@126"
+              "$ref": "#/rules@127"
             },
             "arguments": []
           }
@@ -5186,7 +5214,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@113"
+                    "$ref": "#/rules@114"
                   },
                   "arguments": []
                 }
@@ -5205,7 +5233,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                     "terminal": {
                       "$type": "RuleCall",
                       "rule": {
-                        "$ref": "#/rules@113"
+                        "$ref": "#/rules@114"
                       },
                       "arguments": []
                     }
@@ -5253,7 +5281,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@114"
+                "$ref": "#/rules@115"
               },
               "arguments": []
             },
@@ -5279,13 +5307,6 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@115"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
               "$ref": "#/rules@116"
             },
             "arguments": []
@@ -5294,6 +5315,13 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "$type": "RuleCall",
             "rule": {
               "$ref": "#/rules@117"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@118"
             },
             "arguments": []
           }
@@ -5399,7 +5427,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@118"
+                "$ref": "#/rules@119"
               },
               "arguments": []
             }
@@ -5486,7 +5514,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@1"
+                "$ref": "#/rules@7"
               },
               "arguments": []
             }
@@ -5506,7 +5534,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@120"
+                "$ref": "#/rules@121"
               },
               "arguments": []
             },
@@ -5537,13 +5565,6 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@121"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
               "$ref": "#/rules@122"
             },
             "arguments": []
@@ -5552,6 +5573,13 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "$type": "RuleCall",
             "rule": {
               "$ref": "#/rules@123"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@124"
             },
             "arguments": []
           }
@@ -5697,12 +5725,12 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "CrossReference",
               "type": {
-                "$ref": "#/rules@97"
+                "$ref": "#/rules@98"
               },
               "terminal": {
                 "$type": "RuleCall",
                 "rule": {
-                  "$ref": "#/rules@1"
+                  "$ref": "#/rules@7"
                 },
                 "arguments": []
               },
@@ -5743,7 +5771,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@125"
+                "$ref": "#/rules@126"
               },
               "arguments": []
             }
@@ -5826,7 +5854,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@127"
+                "$ref": "#/rules@128"
               },
               "arguments": []
             }
@@ -5901,7 +5929,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@1"
+                "$ref": "#/rules@7"
               },
               "arguments": []
             }
@@ -5917,7 +5945,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@129"
+                "$ref": "#/rules@130"
               },
               "arguments": []
             },
@@ -5943,13 +5971,6 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@130"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
               "$ref": "#/rules@131"
             },
             "arguments": []
@@ -5964,7 +5985,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@134"
+              "$ref": "#/rules@133"
             },
             "arguments": []
           },
@@ -5979,6 +6000,13 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "$type": "RuleCall",
             "rule": {
               "$ref": "#/rules@136"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@137"
             },
             "arguments": []
           }
@@ -6016,12 +6044,12 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                 "terminal": {
                   "$type": "CrossReference",
                   "type": {
-                    "$ref": "#/rules@31"
+                    "$ref": "#/rules@32"
                   },
                   "terminal": {
                     "$type": "RuleCall",
                     "rule": {
-                      "$ref": "#/rules@1"
+                      "$ref": "#/rules@7"
                     },
                     "arguments": []
                   },
@@ -6043,12 +6071,12 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
                     "terminal": {
                       "$type": "CrossReference",
                       "type": {
-                        "$ref": "#/rules@31"
+                        "$ref": "#/rules@32"
                       },
                       "terminal": {
                         "$type": "RuleCall",
                         "rule": {
-                          "$ref": "#/rules@1"
+                          "$ref": "#/rules@7"
                         },
                         "arguments": []
                       },
@@ -6145,7 +6173,7 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@133"
+                "$ref": "#/rules@134"
               },
               "arguments": []
             },
@@ -6180,12 +6208,12 @@ export const ActOneGrammar = (): Grammar => loadedActOneGrammar ?? (loadedActOne
             "terminal": {
               "$type": "CrossReference",
               "type": {
-                "$ref": "#/rules@31"
+                "$ref": "#/rules@32"
               },
               "terminal": {
                 "$type": "RuleCall",
                 "rule": {
-                  "$ref": "#/rules@1"
+                  "$ref": "#/rules@7"
                 },
                 "arguments": []
               },

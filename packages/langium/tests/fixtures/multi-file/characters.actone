@@ -1,0 +1,65 @@
+// Multi-file character definitions for cross-file scope resolution tests
+story "The Scattered Tale" {
+
+  character Aria {
+    nature: Human,
+    bio: "A cartographer who reads landscapes like others read books.",
+    role: "Protagonist",
+    voice: "Observational and precise, with sudden bursts of poetic wonder.",
+    personality: {
+      curiosity: 90,
+      courage: 65,
+      empathy: 70,
+    },
+    goals: [
+      {
+        goal: "Map the uncharted territories",
+        priority: Primary,
+        stakes: "Proving that the old maps are wrong",
+      },
+    ],
+    relationships: [
+      {
+        to: Bram,
+        weight: 60,
+        label: "trusted companion",
+        dynamic: true,
+      },
+    ],
+    arc: {
+      description: "From observer to participant.",
+      start: "Views the world through her maps.",
+      end: "Learns that some landscapes cannot be mapped.",
+    },
+    symbols: ["compass rose", "blank parchment"],
+  }
+
+  character Bram {
+    nature: Human,
+    bio: "A former soldier who now seeks peace in the wilderness.",
+    role: "Deuteragonist",
+    voice: "Laconic and grounded, speaks in short declarative sentences.",
+    personality: {
+      stoicism: 85,
+      loyalty: 90,
+      gentleness: 55,
+    },
+    goals: [
+      {
+        goal: "Find a place to call home",
+        priority: Primary,
+        stakes: "His sense of self after the war",
+      },
+    ],
+    relationships: [
+      {
+        to: Aria,
+        weight: 60,
+        label: "trusted companion",
+      },
+    ],
+    strengths: ["navigation", "survival skills"],
+    flaws: ["avoids confronting his past"],
+  }
+
+}

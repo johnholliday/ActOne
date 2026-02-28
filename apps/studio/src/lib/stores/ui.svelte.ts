@@ -8,6 +8,8 @@ export type DiagramView =
   | 'timeline'
   | 'interaction-sequence';
 
+export type DockPosition = 'right' | 'bottom';
+
 class UiStore {
   /** Whether the sidebar (project navigator) is visible */
   sidebarVisible = $state(true);
@@ -20,6 +22,15 @@ class UiStore {
 
   /** Width of the sidebar in pixels */
   sidebarWidth = $state(256);
+
+  /** Whether the outline panel is visible */
+  outlineVisible = $state(true);
+
+  /** Width of the outline panel in pixels */
+  outlineWidth = $state(224);
+
+  /** Dock position of the outline panel */
+  outlineDockPosition = $state<DockPosition>('right');
 
   /** Currently active diagram view (null if editor is showing) */
   activeDiagramView = $state<DiagramView | null>(null);
@@ -52,6 +63,18 @@ class UiStore {
 
   resizeBottomPanel(height: number) {
     this.bottomPanelHeight = Math.max(100, Math.min(height, 500));
+  }
+
+  toggleOutline() {
+    this.outlineVisible = !this.outlineVisible;
+  }
+
+  resizeOutline(width: number) {
+    this.outlineWidth = Math.max(150, Math.min(500, width));
+  }
+
+  setOutlineDockPosition(pos: DockPosition) {
+    this.outlineDockPosition = pos;
   }
 }
 

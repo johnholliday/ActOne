@@ -26,6 +26,12 @@ class EditorStore {
   /** Number of diagnostics (errors + warnings) */
   diagnosticCount = $state(0);
 
+  /** Current save status */
+  saveStatus = $state<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
+  /** Timestamp of last successful save */
+  lastSavedAt = $state<Date | null>(null);
+
   /** The active open file entry */
   activeFile = $derived(
     this.openFiles.find((f) => f.id === this.activeFileId) ?? null,
@@ -69,6 +75,13 @@ class EditorStore {
 
   updateDiagnosticCount(count: number) {
     this.diagnosticCount = count;
+  }
+
+  setSaveStatus(status: 'idle' | 'saving' | 'saved' | 'error') {
+    this.saveStatus = status;
+    if (status === 'saved') {
+      this.lastSavedAt = new Date();
+    }
   }
 
   closeAll() {

@@ -13,9 +13,30 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "test": {
+      "outputs": ["coverage/**"],
+      "cache": true
+    },
+    "test:e2e": {
+      "cache": false,
+      "persistent": false
+    },
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "clean": {
+      "cache": false
+    },
+    "preview": {
+      "cache": false,
+      "persistent": true
+    },
+    "db:migration:generate": {
+      "cache": false
+    },
+    "db:migration:push": {
+      "cache": false
     }
   }
 }

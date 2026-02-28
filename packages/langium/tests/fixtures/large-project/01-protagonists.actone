@@ -1,0 +1,327 @@
+// Performance benchmark: protagonists with full properties
+story "The Grand Tapestry" {
+
+  character Lyra {
+    nature: Human,
+    bio: "A master weaver from the highland city of Tessara, trained since childhood to read patterns in the fabric of reality. Her family lineage carries the gift of seeing threads that connect all living things.",
+    role: "Protagonist — the reluctant seer who must weave disparate realities together.",
+    voice: "Measured and melodic, with an undertow of urgency. Uses textile metaphors instinctively. Her sentences lengthen when she is frightened.",
+    personality: {
+      perception: 95,
+      empathy: 80,
+      courage: 60,
+      stubbornness: 75,
+    },
+    goals: [
+      {
+        goal: "Repair the Great Tapestry before it unravels completely",
+        priority: Primary,
+        stakes: "The coherence of all connected worlds",
+      },
+      {
+        goal: "Find her missing brother Dorian who vanished into a torn thread",
+        priority: Secondary,
+        stakes: "Her family and her sanity",
+      },
+    ],
+    relationships: [
+      {
+        to: Fen,
+        weight: 65,
+        label: "childhood friend and reluctant ally",
+        history: "Grew up together in Tessara. Fen left; Lyra stayed.",
+        dynamic: true,
+      },
+      {
+        to: Khalid,
+        weight: 40,
+        label: "uneasy mentor",
+        history: "Khalid trained her but withholds crucial knowledge.",
+        dynamic: true,
+      },
+      {
+        to: Sable,
+        weight: 55,
+        label: "trusted confidante",
+        history: "Sable saved Lyra during the first unraveling.",
+        dynamic: true,
+      },
+      {
+        to: Rowan,
+        weight: 30,
+        label: "wary respect",
+        history: "Rowan's methods frighten Lyra but his results are undeniable.",
+        dynamic: true,
+      },
+    ],
+    arc: {
+      description: "From isolated observer to collaborative leader.",
+      start: "Watches the world through the loom, afraid to act.",
+      catalyst: "The Great Tapestry tears and her brother disappears into the void.",
+      midpoint: "Accepts that weaving alone is insufficient — she needs others.",
+      turning_point: "Chooses to cut a thread to save a life, violating everything she was taught.",
+      end: "Becomes the first weaver to work without a loom, weaving with bare hands.",
+    },
+    symbols: ["silver thread", "the loom"],
+    secret: "She accidentally caused the first tear in the Tapestry during a childhood experiment.",
+    notes: ["Voice should fracture into shorter clauses under stress.", "Her perception trait means she notices details others miss — narrate accordingly."],
+  }
+
+  character Fen {
+    nature: Human,
+    bio: "A former apothecary turned smuggler who navigates the Frayed Edges — regions where the Tapestry has thinned. Quick-witted and cynical, but deeply loyal to those who earn his trust.",
+    role: "Deuteragonist — the pragmatist who grounds the group in reality.",
+    voice: "Fast, sardonic, peppered with underworld slang. Drops into quiet sincerity when caught off guard. Avoids abstractions.",
+    personality: {
+      resourcefulness: 90,
+      loyalty: 85,
+      cynicism: 70,
+      bravery: 65,
+    },
+    goals: [
+      {
+        goal: "Keep the group alive through the Frayed Edges",
+        priority: Primary,
+        stakes: "The lives of people he has come to care about",
+      },
+      {
+        goal: "Clear his name from false smuggling charges",
+        priority: Secondary,
+        stakes: "His freedom and reputation",
+      },
+    ],
+    relationships: [
+      {
+        to: Lyra,
+        weight: 65,
+        label: "childhood friend",
+        history: "Left Tessara after a falling out. Reconnected during the crisis.",
+        dynamic: true,
+      },
+      {
+        to: Sable,
+        weight: 50,
+        label: "growing affection",
+        history: "Met during a smuggling run. She surprised him.",
+        dynamic: true,
+      },
+      {
+        to: Khalid,
+        weight: -20,
+        label: "deep distrust",
+        history: "Believes Khalid manipulates Lyra for his own ends.",
+        dynamic: true,
+      },
+    ],
+    arc: {
+      description: "From self-serving loner to selfless protector.",
+      start: "Trusts no one, survives alone.",
+      catalyst: "Lyra asks for help and he cannot refuse.",
+      midpoint: "Risks his life for someone other than himself for the first time.",
+      turning_point: "Discovers his smuggling routes follow ancient Thread paths — he was always part of the pattern.",
+      end: "Accepts his place in the Tapestry willingly.",
+    },
+    symbols: ["lockpick", "tattered map"],
+    secret: "He can see the Threads faintly — a gift he has hidden his entire life.",
+  }
+
+  character Khalid {
+    nature: Human,
+    bio: "An elder Thread scholar from the desert city of Marath, keeper of forbidden lore about the Tapestry's origins. His knowledge is vast but his motives are opaque.",
+    role: "Mentor figure with hidden agenda.",
+    voice: "Deliberate and oracular. Speaks in parables when direct answers would suffice. His silences carry meaning.",
+    personality: {
+      wisdom: 92,
+      patience: 88,
+      secrecy: 80,
+      compassion: 55,
+    },
+    goals: [
+      {
+        goal: "Guide Lyra to fulfill the prophecy of the Mending",
+        priority: Primary,
+        stakes: "The survival of all woven worlds",
+      },
+      {
+        goal: "Atone for his role in the original Sundering",
+        priority: Hidden,
+        stakes: "His soul and legacy",
+      },
+    ],
+    relationships: [
+      {
+        to: Lyra,
+        weight: 60,
+        label: "student he is grooming for destiny",
+        history: "Sought her out after recognizing her latent gift.",
+        dynamic: true,
+      },
+      {
+        to: Rowan,
+        weight: -40,
+        label: "former colleague turned adversary",
+        history: "They studied together before the Sundering. Rowan blames Khalid.",
+        dynamic: true,
+      },
+    ],
+    arc: {
+      description: "From hidden manipulator to honest confessor.",
+      start: "Controls information to control outcomes.",
+      catalyst: "Lyra discovers one of his lies.",
+      midpoint: "Begins to trust the group with fragments of the full truth.",
+      turning_point: "Confesses his role in the Sundering to the entire group.",
+      end: "Accepts judgment and offers his remaining knowledge freely.",
+    },
+    symbols: ["hourglass", "sealed scroll"],
+    secret: "He was one of the three scholars who caused the original Sundering that tore the Tapestry.",
+  }
+
+  character Sable {
+    nature: Human,
+    bio: "A former soldier from the coastal fortress of Korrath, now a wandering protector. She fights not for nations but for individuals. Carries the scars of a war fought for the wrong reasons.",
+    role: "The moral compass and physical protector of the group.",
+    voice: "Direct, economical, tinged with dry humor. Opens up in private moments with unexpected tenderness. Speaks in action verbs.",
+    personality: {
+      courage: 95,
+      honor: 85,
+      gentleness: 60,
+      guilt: 70,
+    },
+    goals: [
+      {
+        goal: "Protect the group at any cost",
+        priority: Primary,
+        stakes: "The lives she has sworn to defend",
+      },
+      {
+        goal: "Find redemption for the village she failed to save",
+        priority: Secondary,
+        stakes: "Her sense of self-worth",
+      },
+    ],
+    relationships: [
+      {
+        to: Lyra,
+        weight: 70,
+        label: "sworn protector",
+        history: "Pledged herself to Lyra after witnessing the first unraveling.",
+        dynamic: true,
+      },
+      {
+        to: Fen,
+        weight: 50,
+        label: "unexpected kinship",
+        history: "Recognized a fellow survivor in him.",
+        dynamic: true,
+      },
+    ],
+    arc: {
+      description: "From guilt-driven warrior to purposeful guardian.",
+      start: "Fights to die, not to live.",
+      catalyst: "Someone she protects protects her in return.",
+      midpoint: "Begins to believe she deserves to survive.",
+      turning_point: "Chooses mercy over vengeance in a critical moment.",
+      end: "Finds peace in service freely chosen.",
+    },
+    symbols: ["broken shield", "wildflowers"],
+    secret: "She was ordered to burn the village she claims she failed to save. She obeyed.",
+  }
+
+  character Rowan {
+    nature: Human,
+    bio: "A rogue Thread manipulator who discovered how to cut and splice the Tapestry's threads. Brilliant and dangerous, he believes destruction is a form of creation.",
+    role: "The wildcard — neither fully ally nor fully enemy.",
+    voice: "Precise and theatrical. Relishes wordplay and double meanings. Every sentence is a performance. Becomes quiet and genuine only when talking about lost things.",
+    personality: {
+      intellect: 93,
+      charisma: 80,
+      volatility: 75,
+      grief: 60,
+    },
+    goals: [
+      {
+        goal: "Prove that the Tapestry can be rewoven in a better pattern",
+        priority: Primary,
+        stakes: "Vindication of his radical theories",
+      },
+      {
+        goal: "Recover the thread of his dead daughter",
+        priority: Hidden,
+        stakes: "Everything he has left to lose",
+      },
+    ],
+    relationships: [
+      {
+        to: Khalid,
+        weight: -40,
+        label: "bitter former colleague",
+        history: "Blames Khalid for not preventing the Sundering that killed his daughter.",
+        dynamic: true,
+      },
+      {
+        to: Lyra,
+        weight: 35,
+        label: "reluctant admiration",
+        history: "Recognizes her gift exceeds his own.",
+        dynamic: true,
+      },
+    ],
+    arc: {
+      description: "From destructive genius to cautious collaborator.",
+      start: "Believes tearing down is the only path to rebuilding.",
+      catalyst: "Witnesses Lyra weave something he cannot.",
+      midpoint: "Agrees to work with the group, but on his terms.",
+      turning_point: "Sacrifices a chance to recover his daughter's thread to save a stranger.",
+      end: "Accepts that some patterns cannot be restored, only honored.",
+    },
+    symbols: ["shears", "a child's ribbon"],
+    secret: "His daughter's thread is woven into the heart of the Tapestry — recovering it would destroy everything.",
+  }
+
+  // World for the protagonists' origin
+  world Tessara {
+    period: "A timeless era where magic and craft intertwine",
+    sensory: ["the hum of looms", "lanolin and dye", "threads catching light", "stone corridors echoing"],
+    locations: [
+      {
+        name: WeavingHall,
+        description: "A vast chamber filled with looms of every size. Threads of light stretch between them, visible only to those with the gift.",
+        atmosphere: {
+          wonder: 85,
+          reverence: 70,
+          unease: 40,
+        },
+        connects_to: [ThreadArchive, HighTower],
+      },
+      {
+        name: ThreadArchive,
+        description: "Underground vaults containing millennia of woven records. The air is dry and smells of old wool and cedar.",
+        atmosphere: {
+          mystery: 75,
+          melancholy: 60,
+        },
+        connects_to: [WeavingHall],
+      },
+      {
+        name: HighTower,
+        description: "The tallest point in Tessara, where master weavers observe the Tapestry's overall pattern. Wind carries whispers from other worlds.",
+        atmosphere: {
+          awe: 90,
+          isolation: 65,
+        },
+        connects_to: [WeavingHall],
+      },
+    ],
+    rules: [
+      {
+        rule: "Only those born with the Sight can perceive the Threads.",
+        category: Metaphysical,
+      },
+      {
+        rule: "Cutting a Thread without proper ritual causes cascading damage.",
+        category: Physical,
+      },
+    ],
+  }
+
+}

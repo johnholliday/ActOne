@@ -15,9 +15,12 @@
   import { loadSidecar, saveSidecar, setOverride, applyOverrides } from '$lib/diagrams/layout/sidecar.js';
   import { diagramStore } from '$lib/stores/diagrams.svelte.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
+  import { projectStore } from '$lib/stores/project.svelte.js';
   import { parseStableId } from '$lib/diagrams/operations/stable-refs.js';
   import { generateTextEdits } from '$lib/diagrams/operations/text-edit-generator.js';
   import type { DiagramOperation } from '$lib/diagrams/operations/text-edit-generator.js';
+  import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
+  import EmptyState from '$lib/components/EmptyState.svelte';
 
   const nodeTypes = { scene: SceneNode };
   const edgeTypes = { beat: BeatEdge };
@@ -25,37 +28,46 @@
   let nodes = $state<any[]>([]);
   let edges = $state<any[]>([]);
   let contextMenu = $state<{ x: number; y: number; nodeId?: string } | null>(null);
+  let diagramLoading = $state(true);
 
-  const projectId = 'default'; // TODO: from route param
+  const projectId = $derived(projectStore.project?.id ?? '');
   const viewId = 'story-structure';
 
   async function refresh() {
     const ast = astStore.activeAst;
-    if (!ast) return;
+    if (!ast || !projectId) {
+      diagramLoading = false;
+      return;
+    }
 
-    const result = transformStoryStructure(ast);
-    const layoutNodes = result.nodes.map((n) => ({
-      id: n.id,
-      width: n.width ?? 160,
-      height: n.height ?? 80,
-      parentId: n.parentId,
-    }));
-    const layoutEdges = result.edges.map((e) => ({
-      id: e.id,
-      sources: [e.source],
-      targets: [e.target],
-    }));
+    diagramLoading = true;
+    try {
+      const result = transformStoryStructure(ast);
+      const layoutNodes = result.nodes.map((n) => ({
+        id: n.id,
+        width: n.width ?? 160,
+        height: n.height ?? 80,
+        parentId: n.parentId,
+      }));
+      const layoutEdges = result.edges.map((e) => ({
+        id: e.id,
+        sources: [e.source],
+        targets: [e.target],
+      }));
 
-    const layout = await computeLayout('story-structure', layoutNodes, layoutEdges);
-    const sidecar = loadSidecar(projectId, viewId);
-    const positions = applyOverrides(layout.nodes, sidecar);
+      const layout = await computeLayout('story-structure', layoutNodes, layoutEdges);
+      const sidecar = loadSidecar(projectId, viewId);
+      const positions = applyOverrides(layout.nodes, sidecar);
 
-    nodes = result.nodes.map((n) => {
-      const pos = positions.get(n.id);
-      return { ...n, position: pos ?? n.position };
-    });
-    edges = result.edges;
-    diagramStore.setView('story-structure', nodes, edges);
+      nodes = result.nodes.map((n) => {
+        const pos = positions.get(n.id);
+        return { ...n, position: pos ?? n.position };
+      });
+      edges = result.edges;
+      diagramStore.setView('story-structure', nodes, edges);
+    } finally {
+      diagramLoading = false;
+    }
   }
 
   $effect(() => {
@@ -129,6 +141,15 @@
   }
 </script>
 
+{#if !projectStore.isLoaded}
+  <div class="diagram-container flex items-center justify-center">
+    <EmptyState message="No project loaded" description="Create or open a project to see the story structure diagram." />
+  </div>
+{:else if diagramLoading && nodes.length === 0}
+  <div class="diagram-container flex items-center justify-center">
+    <LoadingSpinner label="Loading diagram..." />
+  </div>
+{:else}
 <div class="diagram-container" role="presentation" oncontextmenu={handleContextMenu}>
   <SvelteFlow
     {nodes}
@@ -168,6 +189,7 @@
     </div>
   {/if}
 </div>
+{/if}
 
 <style>
   .diagram-container {

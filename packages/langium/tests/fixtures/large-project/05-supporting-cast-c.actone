@@ -1,0 +1,76 @@
+// Performance benchmark: supporting cast group C — includes Animal and Spirit natures
+story "The Grand Tapestry" {
+
+  character Whisper {
+    nature: Spirit,
+    bio: "The echo of a weaver who died during the Sundering. She lingers in the ThreadArchive, visible only to those with strong Sight. She remembers what was lost.",
+    personality: {
+      melancholy: 90,
+      wisdom: 80,
+    },
+  }
+
+  character Corvus {
+    nature: Animal,
+    bio: "A raven that has nested in the HighTower for centuries, feeding on Thread energy. It can carry messages between frayed and intact regions of the Tapestry.",
+    personality: {
+      cunning: 85,
+      independence: 95,
+    },
+  }
+
+  character Selene {
+    nature: Spirit,
+    bio: "The ghost of Rowan's daughter, preserved as a Thread-spirit within the Tapestry. She does not know she is dead and experiences the world as a dream.",
+    personality: {
+      innocence: 95,
+      curiosity: 90,
+    },
+  }
+
+  character Fenwick {
+    nature: Human,
+    bio: "A retired Thread guardian who now serves as gatekeeper to the WeavingHall. He has seen three generations of weavers and trusts none of them completely.",
+    personality: {
+      vigilance: 90,
+      cynicism: 75,
+    },
+  }
+
+  character Koda {
+    nature: Animal,
+    bio: "A great wolf bonded to Sable since her military days. Koda can sense Thread disturbances before they become visible, serving as an early warning system.",
+    personality: {
+      loyalty: 100,
+      ferocity: 80,
+    },
+  }
+
+  character Ashara {
+    nature: Human,
+    bio: "A dancer from the southern islands whose movements can temporarily realign disrupted Thread patterns. She considers her art a sacred duty.",
+    personality: {
+      grace: 95,
+      devotion: 85,
+    },
+  }
+
+  character Ember {
+    nature: Spirit,
+    bio: "A fire-spirit that dwells in the forges where Thread-tools are made. It has grown fond of Gunnar and occasionally offers cryptic advice.",
+    personality: {
+      unpredictability: 90,
+      generosity: 55,
+    },
+  }
+
+  character Nadia {
+    nature: Human,
+    bio: "An investigative journalist from the modern quarters of Sundara who has been documenting Mordecai's Thread-harvesting operations for years.",
+    personality: {
+      tenacity: 92,
+      courage: 78,
+    },
+  }
+
+}

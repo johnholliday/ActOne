@@ -1,15 +1,22 @@
 <script lang="ts">
   /**
-   * T111: Gallery page.
+   * T111 + T037-T040: Gallery page.
    *
    * Search, filter by type/character/scene, sort, compare mode,
-   * and approval workflow.
+   * and approval workflow. Wired to server-loaded assets.
    */
+  import { page } from '$app/state';
+  import { projectStore } from '$lib/stores/project.svelte.js';
+  import { filterAndSortAssets, toggleCompareSelection } from '$lib/gallery/gallery-filters.js';
+  import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
+  import EmptyState from '$lib/components/EmptyState.svelte';
+
   let filter = $state<string>('all');
   let searchQuery = $state('');
   let sortBy = $state<'newest' | 'oldest' | 'name'>('newest');
   let compareMode = $state(false);
   let selectedForCompare = $state<string[]>([]);
+  let updatingId = $state<string | null>(null);
 
   interface Asset {
     id: string;
@@ -20,33 +27,58 @@
     createdAt: string;
   }
 
-  let assets = $state<Asset[]>([]);
+  // T038: Consume server-loaded assets from +page.server.ts
+  let assets = $state<Asset[]>((page.data as { assets?: Asset[] }).assets ?? []);
+
+  $effect(() => {
+    const serverAssets = (page.data as { assets?: Asset[] }).assets;
+    if (serverAssets) {
+      assets = serverAssets;
+    }
+  });
 
   const filters = ['all', 'portrait', 'scene', 'cover', 'style-board'];
 
   const filteredAssets = $derived(
-    assets
-      .filter((a) => filter === 'all' || a.type === filter)
-      .filter((a) =>
-        searchQuery === '' ||
-        a.label.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-      .sort((a, b) => {
-        if (sortBy === 'newest') return b.createdAt.localeCompare(a.createdAt);
-        if (sortBy === 'oldest') return a.createdAt.localeCompare(b.createdAt);
-        return a.label.localeCompare(b.label);
-      }),
+    filterAndSortAssets(assets, filter, searchQuery, sortBy),
   );
 
   function toggleCompare(id: string) {
-    if (selectedForCompare.includes(id)) {
-      selectedForCompare = selectedForCompare.filter((s) => s !== id);
-    } else if (selectedForCompare.length < 2) {
-      selectedForCompare = [...selectedForCompare, id];
+    selectedForCompare = toggleCompareSelection(selectedForCompare, id);
+  }
+
+  // T039: Approve/reject action handlers
+  async function updateAssetStatus(assetId: string, status: 'approved' | 'rejected') {
+    updatingId = assetId;
+    try {
+      const supabase = page.data.supabase;
+      const { error } = await supabase
+        .from('assets')
+        .update({ status })
+        .eq('id', assetId);
+
+      if (error) {
+        console.error('Failed to update asset status:', error.message);
+        return;
+      }
+
+      // Reactively update the local asset list
+      assets = assets.map((a) => (a.id === assetId ? { ...a, status } : a));
+    } finally {
+      updatingId = null;
     }
   }
 </script>
 
+{#if !projectStore.isLoaded}
+  <div class="gallery">
+    <EmptyState message="No project loaded" description="Create or open a project to browse visual assets." />
+  </div>
+{:else if projectStore.loading}
+  <div class="gallery gallery-center">
+    <LoadingSpinner label="Loading gallery..." />
+  </div>
+{:else}
 <div class="gallery">
   <div class="gallery-header">
     <h1>Gallery</h1>
@@ -115,6 +147,9 @@
         <div class="asset-info">
           <span class="asset-label">{asset.label}</span>
           <span class="asset-type">{asset.type}</span>
+          <span class="asset-status" class:approved={asset.status === 'approved'} class:rejected={asset.status === 'rejected'}>
+            {asset.status}
+          </span>
         </div>
         <div class="asset-actions">
           {#if compareMode}
@@ -122,18 +157,31 @@
               {selectedForCompare.includes(asset.id) ? 'Deselect' : 'Select'}
             </button>
           {:else}
-            <button class="approve">Approve</button>
-            <button class="reject">Reject</button>
+            <button
+              class="approve"
+              disabled={updatingId === asset.id || asset.status === 'approved'}
+              onclick={() => void updateAssetStatus(asset.id, 'approved')}
+            >
+              {updatingId === asset.id ? '...' : 'Approve'}
+            </button>
+            <button
+              class="reject"
+              disabled={updatingId === asset.id || asset.status === 'rejected'}
+              onclick={() => void updateAssetStatus(asset.id, 'rejected')}
+            >
+              {updatingId === asset.id ? '...' : 'Reject'}
+            </button>
             <button class="regen">Regenerate</button>
           {/if}
         </div>
       </div>
     {/each}
     {#if filteredAssets.length === 0}
-      <div class="empty">No assets yet. Generate visual assets from the Generate menu.</div>
+      <EmptyState message="No assets yet" description="Generate visual assets from the Run menu." />
     {/if}
   </div>
 </div>
+{/if}
 
 <style>
   .gallery { max-width: 1200px; margin: 0 auto; padding: 24px; color: #e2e8f0; }
@@ -203,5 +251,14 @@
   .asset-actions .reject { color: #ef4444; }
   .asset-actions .regen { color: #3b82f6; }
 
-  .empty { grid-column: 1 / -1; text-align: center; color: #475569; padding: 48px; }
+  .gallery-center { display: flex; align-items: center; justify-content: center; min-height: 60vh; }
+
+  .asset-status {
+    font-size: 9px; text-transform: uppercase; padding: 1px 4px;
+    border-radius: 3px; background: #334155; color: #94a3b8;
+  }
+  .asset-status.approved { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+  .asset-status.rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+  .asset-actions button:disabled { opacity: 0.4; cursor: not-allowed; }
 </style>

@@ -1,0 +1,65 @@
+// Multi-file entry — references characters and worlds from companion files
+story "The Scattered Tale" {
+
+  theme Journey {
+    statement: "Every departure is also a homecoming.",
+    motifs: ["roads", "maps", "footprints"],
+  }
+
+  scene Opening {
+    type: Dialogue,
+    location: Tavern,
+    participants: [Aria, Bram],
+    objective: "Aria and Bram plan their journey.",
+    transition: Cut,
+  }
+
+  scene Exploration {
+    type: Action,
+    location: Forest,
+    participants: [Aria],
+    pov: Aria,
+    objective: "Aria explores the dark forest alone.",
+    transition: Dissolve,
+  }
+
+  scene Climax {
+    type: Confrontation,
+    location: Ruins,
+    participants: [Aria, Bram],
+    pov: Omniscient,
+    objective: "The companions face the challenge at the ruins.",
+  }
+
+  plot SimpleArc {
+    conflict_type: Environmental,
+    resolution_pattern: Transformative,
+    beats: [
+      {
+        beat: "The journey begins.",
+        act: 1,
+        type: Setup,
+      },
+      {
+        beat: "Aria discovers the truth.",
+        act: 2,
+        type: Midpoint,
+      },
+      {
+        beat: "They overcome the obstacle together.",
+        act: 3,
+        type: Resolution,
+      },
+    ],
+  }
+
+  interaction AriaBramPlanning {
+    participants: [Aria, Bram],
+    pattern: "question -> deliberation -> agreement",
+    style_mix: {
+      Aria: 55,
+      Bram: 45,
+    },
+  }
+
+}

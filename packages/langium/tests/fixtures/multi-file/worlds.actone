@@ -1,0 +1,60 @@
+// Multi-file world definitions for cross-file scope resolution tests
+story "The Scattered Tale" {
+
+  world Wilderness {
+    period: "Medieval low-fantasy",
+    sensory: ["wind through pines", "distant bird calls", "damp earth"],
+    locations: [
+      {
+        name: Tavern,
+        description: "A weathered waystation at the edge of known lands.",
+        atmosphere: {
+          warmth: 70,
+          unease: 30,
+        },
+        connects_to: [Forest],
+      },
+      {
+        name: Forest,
+        description: "Dense woodland where paths disappear within paces.",
+        atmosphere: {
+          mystery: 80,
+          danger: 50,
+        },
+        connects_to: [Tavern, Ruins],
+      },
+      {
+        name: Ruins,
+        description: "Crumbling stone structures from a forgotten civilization.",
+        atmosphere: {
+          awe: 75,
+          melancholy: 65,
+        },
+        connects_to: [Forest],
+      },
+    ],
+    rules: [
+      {
+        rule: "The forest shifts its paths according to the season.",
+        category: Physical,
+      },
+      {
+        rule: "Ancient ruins respond to the intentions of those who enter.",
+        category: Metaphysical,
+      },
+    ],
+  }
+
+  timeline WildernessTime {
+    structure: Linear,
+    span: "One month journey",
+    layers: [
+      {
+        name: CurrentDay,
+        description: "The current journey.",
+        period: "Autumn",
+      },
+    ],
+  }
+
+}
