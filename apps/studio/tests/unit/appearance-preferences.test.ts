@@ -9,6 +9,7 @@ const DEFAULTS: AppearancePrefs = {
   theme: 'dark',
   fontSize: 14,
   fontFamily: 'JetBrains Mono',
+  wordWrap: false,
 };
 
 describe('parseAppearancePrefs', () => {
@@ -25,12 +26,33 @@ describe('parseAppearancePrefs', () => {
   });
 
   it('parses valid complete prefs', () => {
-    const raw = JSON.stringify({ theme: 'light', fontSize: 18, fontFamily: 'Fira Code' });
+    const raw = JSON.stringify({ theme: 'light', fontSize: 18, fontFamily: 'Fira Code', wordWrap: true });
     expect(parseAppearancePrefs(raw)).toEqual({
       theme: 'light',
       fontSize: 18,
       fontFamily: 'Fira Code',
+      wordWrap: true,
     });
+  });
+
+  it('defaults wordWrap when absent', () => {
+    const raw = JSON.stringify({ theme: 'dark', fontSize: 14, fontFamily: 'Menlo' });
+    expect(parseAppearancePrefs(raw).wordWrap).toBe(false);
+  });
+
+  it('parses wordWrap true', () => {
+    const raw = JSON.stringify({ wordWrap: true });
+    expect(parseAppearancePrefs(raw).wordWrap).toBe(true);
+  });
+
+  it('parses wordWrap false', () => {
+    const raw = JSON.stringify({ wordWrap: false });
+    expect(parseAppearancePrefs(raw).wordWrap).toBe(false);
+  });
+
+  it('ignores non-boolean wordWrap', () => {
+    const raw = JSON.stringify({ wordWrap: 'yes' });
+    expect(parseAppearancePrefs(raw).wordWrap).toBe(false);
   });
 
   it('uses defaults for invalid theme type', () => {
@@ -39,6 +61,7 @@ describe('parseAppearancePrefs', () => {
       theme: 'dark',
       fontSize: 16,
       fontFamily: 'Menlo',
+      wordWrap: false,
     });
   });
 
@@ -48,6 +71,7 @@ describe('parseAppearancePrefs', () => {
       theme: 'dark',
       fontSize: 14,
       fontFamily: 'Menlo',
+      wordWrap: false,
     });
   });
 
@@ -57,6 +81,7 @@ describe('parseAppearancePrefs', () => {
       theme: 'dark',
       fontSize: 16,
       fontFamily: 'JetBrains Mono',
+      wordWrap: false,
     });
   });
 
@@ -73,6 +98,7 @@ describe('parseAppearancePrefs', () => {
       theme: 'system',
       fontSize: 14,
       fontFamily: 'JetBrains Mono',
+      wordWrap: false,
     });
   });
 
@@ -81,6 +107,7 @@ describe('parseAppearancePrefs', () => {
       theme: 'light',
       fontSize: 20,
       fontFamily: 'Cascadia Code',
+      wordWrap: true,
     };
     const serialized = serializeAppearancePrefs(prefs);
     expect(parseAppearancePrefs(serialized)).toEqual(prefs);
@@ -95,6 +122,6 @@ describe('serializeAppearancePrefs', () => {
 
   it('includes all fields', () => {
     const result = JSON.parse(serializeAppearancePrefs(DEFAULTS));
-    expect(result).toEqual({ theme: 'dark', fontSize: 14, fontFamily: 'JetBrains Mono' });
+    expect(result).toEqual({ theme: 'dark', fontSize: 14, fontFamily: 'JetBrains Mono', wordWrap: false });
   });
 });

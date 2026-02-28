@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { EditorView, keymap, lineNumbers, drawSelection } from '@codemirror/view';
-  import { EditorState } from '@codemirror/state';
+  import { EditorState, Compartment } from '@codemirror/state';
   import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
   import {
     bracketMatching,
@@ -22,6 +22,7 @@
   import { actoneKeywordHighlighter } from './actone-keywords.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { editorStore } from '$lib/stores/editor.svelte.js';
+  import { parseAppearancePrefs } from '$lib/settings/appearance.js';
   import type { Diagnostic } from './langium-client.js';
 
   /* ── Props ──────────────────────────────────────────────────────── */
@@ -56,6 +57,9 @@
 
   /** T014: Worker error state for error banner display */
   let workerError = $state<string | null>(null);
+
+  /** Word wrap compartment for dynamic toggling */
+  const wordWrapCompartment = new Compartment();
 
   /** Create a Langium worker using the inline pattern Vite can detect and bundle. */
   function createLangiumWorker(): Worker {
@@ -129,8 +133,12 @@
 
     client = langiumClient;
 
+    // Read initial word wrap preference
+    const storedPrefs = parseAppearancePrefs(localStorage.getItem('actone:appearance'));
+
     // Create CodeMirror editor
     const extensions = [
+      wordWrapCompartment.of(storedPrefs.wordWrap ? EditorView.lineWrapping : []),
       lineNumbers(),
       drawSelection(),
       indentOnInput(),
@@ -292,8 +300,19 @@
     // Set active URI in AST store
     astStore.activeUri = uri;
 
+    // Word wrap toggle listener
+    function handleToggleWordWrap() {
+      const prefs = parseAppearancePrefs(localStorage.getItem('actone:appearance'));
+      const newValue = !prefs.wordWrap;
+      localStorage.setItem('actone:appearance', JSON.stringify({ ...prefs, wordWrap: newValue }));
+      setWordWrap(newValue);
+      window.dispatchEvent(new CustomEvent('actone:word-wrap-changed', { detail: { wordWrap: newValue } }));
+    }
+    window.addEventListener('actone:toggle-word-wrap', handleToggleWordWrap);
+
     return () => {
       // Cleanup
+      window.removeEventListener('actone:toggle-word-wrap', handleToggleWordWrap);
       if (langiumClient.isReady) {
         langiumClient.didClose(uri);
       }
@@ -320,6 +339,14 @@
   }
 
   /* ── Public API ────────────────────────────────────────────────── */
+
+  /** Set word wrap on/off dynamically */
+  export function setWordWrap(enabled: boolean): void {
+    if (!view) return;
+    view.dispatch({
+      effects: wordWrapCompartment.reconfigure(enabled ? EditorView.lineWrapping : []),
+    });
+  }
 
   /** Get the current document text */
   export function getText(): string {

@@ -10,6 +10,7 @@
   let theme = $state<'dark' | 'light' | 'system'>('dark');
   let fontSize = $state(14);
   let fontFamily = $state<string>('JetBrains Mono');
+  let wordWrap = $state(false);
   let saved = $state(false);
 
   const fontOptions = [
@@ -28,10 +29,11 @@
     theme = prefs.theme;
     fontSize = prefs.fontSize;
     fontFamily = prefs.fontFamily;
+    wordWrap = prefs.wordWrap;
   });
 
   function save() {
-    localStorage.setItem('actone:appearance', serializeAppearancePrefs({ theme, fontSize, fontFamily }));
+    localStorage.setItem('actone:appearance', serializeAppearancePrefs({ theme, fontSize, fontFamily, wordWrap }));
     saved = true;
     setTimeout(() => { saved = false; }, 2000);
   }
@@ -105,6 +107,19 @@
       &nbsp;&nbsp;The quick brown fox<br/>
       {'}'}
     </div>
+  </div>
+
+  <!-- Word Wrap -->
+  <div class="mb-6">
+    <label class="flex cursor-pointer items-center gap-3">
+      <input
+        type="checkbox"
+        bind:checked={wordWrap}
+        class="h-4 w-4 rounded border-[#333] bg-surface-900 accent-amber-500"
+      />
+      <span class="text-sm text-zinc-300">Word Wrap</span>
+    </label>
+    <p class="mt-1 text-[11px] text-zinc-500">Wrap long lines instead of scrolling horizontally</p>
   </div>
 
   <button

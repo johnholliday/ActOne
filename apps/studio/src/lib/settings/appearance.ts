@@ -6,12 +6,14 @@ export interface AppearancePrefs {
   theme: 'dark' | 'light' | 'system';
   fontSize: number;
   fontFamily: string;
+  wordWrap: boolean;
 }
 
 const DEFAULTS: AppearancePrefs = {
   theme: 'dark',
   fontSize: 14,
   fontFamily: 'JetBrains Mono',
+  wordWrap: false,
 };
 
 const VALID_THEMES = new Set<string>(['dark', 'light', 'system']);
@@ -37,7 +39,12 @@ export function parseAppearancePrefs(raw: string | null): AppearancePrefs {
         ? parsed.fontFamily
         : DEFAULTS.fontFamily;
 
-    return { theme, fontSize, fontFamily };
+    const wordWrap =
+      typeof parsed.wordWrap === 'boolean'
+        ? parsed.wordWrap
+        : DEFAULTS.wordWrap;
+
+    return { theme, fontSize, fontFamily, wordWrap };
   } catch {
     return { ...DEFAULTS };
   }

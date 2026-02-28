@@ -2,9 +2,11 @@
   /**
    * T059: Menu bar with File, Edit, View, Run, Help menus.
    */
+  import { onMount } from 'svelte';
   import { projectStore } from '$lib/stores/project.svelte.js';
   import { uiStore, type DiagramView } from '$lib/stores/ui.svelte.js';
   import { getValidTargets, getStageLabel } from '$lib/project/lifecycle.js';
+  import { parseAppearancePrefs } from '$lib/settings/appearance.js';
   import type { LifecycleStage } from '@repo/shared';
 
   interface Props {
@@ -19,6 +21,23 @@
   let { oncreateproject, onadvancestage, onsnapshot, ondiagram, ongenerate, onnavigate }: Props = $props();
 
   let openMenu = $state<string | null>(null);
+  let wordWrapEnabled = $state(false);
+
+  onMount(() => {
+    // Read initial word wrap state
+    const prefs = parseAppearancePrefs(localStorage.getItem('actone:appearance'));
+    wordWrapEnabled = prefs.wordWrap;
+
+    function handleWordWrapChanged(e: Event) {
+      const detail = (e as CustomEvent<{ wordWrap: boolean }>).detail;
+      wordWrapEnabled = detail.wordWrap;
+    }
+    window.addEventListener('actone:word-wrap-changed', handleWordWrapChanged);
+
+    return () => {
+      window.removeEventListener('actone:word-wrap-changed', handleWordWrapChanged);
+    };
+  });
 
   function toggleMenu(name: string) {
     openMenu = openMenu === name ? null : name;
@@ -70,6 +89,27 @@
         >
           New Project
         </button>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:open-project')); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Open Project...</span>
+          <span class="text-[10px] text-white/30">Ctrl+O</span>
+        </button>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:save-file')); closeMenus(); }}
+          disabled={!projectStore.isLoaded}
+          role="menuitem"
+        >
+          <span>Save</span>
+          <span class="text-[10px] text-white/30">Ctrl+S</span>
+        </button>
+
+        <div class="my-1 border-t border-[#252525]"></div>
 
         {#if projectStore.isLoaded && validTargets.length > 0}
           <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-white/30">
@@ -174,6 +214,62 @@
           <span>Bottom Panel</span>
           {#if uiStore.bottomPanelVisible}
             <span class="text-[10px] text-amber-400">&check;</span>
+          {/if}
+        </button>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { uiStore.toggleOutline(); window.dispatchEvent(new CustomEvent('actone:persist-layout')); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Outline</span>
+          <span class="flex items-center gap-2">
+            <span class="text-[10px] text-white/30">Ctrl+Shift+O</span>
+            {#if uiStore.outlineVisible}
+              <span class="text-[10px] text-amber-400">&check;</span>
+            {/if}
+          </span>
+        </button>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:toggle-word-wrap')); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Word Wrap</span>
+          <span class="flex items-center gap-2">
+            <span class="text-[10px] text-white/30">Alt+Z</span>
+            {#if wordWrapEnabled}
+              <span class="text-[10px] text-amber-400">&check;</span>
+            {/if}
+          </span>
+        </button>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-white/30">
+          Outline Position
+        </div>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { uiStore.setOutlineDockPosition('right'); window.dispatchEvent(new CustomEvent('actone:persist-layout')); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Dock Right</span>
+          {#if uiStore.outlineDockPosition === 'right'}
+            <span class="text-[10px] text-amber-400">&bull;</span>
+          {/if}
+        </button>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { uiStore.setOutlineDockPosition('bottom'); window.dispatchEvent(new CustomEvent('actone:persist-layout')); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Dock Bottom</span>
+          {#if uiStore.outlineDockPosition === 'bottom'}
+            <span class="text-[10px] text-amber-400">&bull;</span>
           {/if}
         </button>
 
@@ -315,9 +411,13 @@
         </div>
 
         <div class="px-3 py-1.5 text-[11px] text-white/40">
+          <div class="flex justify-between"><span>Save</span><span>Ctrl+S</span></div>
+          <div class="flex justify-between"><span>Open Project</span><span>Ctrl+O</span></div>
           <div class="flex justify-between"><span>Generate Prose</span><span>Ctrl+G</span></div>
           <div class="flex justify-between"><span>Toggle Sidebar</span><span>Ctrl+B</span></div>
           <div class="flex justify-between"><span>Toggle Bottom</span><span>Ctrl+J</span></div>
+          <div class="flex justify-between"><span>Toggle Outline</span><span>Ctrl+Shift+O</span></div>
+          <div class="flex justify-between"><span>Word Wrap</span><span>Alt+Z</span></div>
           <div class="flex justify-between"><span>Format Document</span><span>Ctrl+Shift+F</span></div>
           <div class="flex justify-between"><span>Diagram 1–5</span><span>Ctrl+1–5</span></div>
         </div>

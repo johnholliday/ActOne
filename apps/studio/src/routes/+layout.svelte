@@ -9,11 +9,12 @@
   import { onMount } from 'svelte';
   import '../app.css';
   import { uiStore, type DiagramView } from '$lib/stores/ui.svelte.js';
+  import { parseLayoutPrefs, serializeLayoutPrefs } from '$lib/settings/layout.js';
   import { projectStore, type ProjectMeta, type SourceFileEntry } from '$lib/stores/project.svelte.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { editorStore } from '$lib/stores/editor.svelte.js';
   import { extractAnalytics } from '$lib/project/analytics.js';
-  import { requestTransition } from '$lib/project/lifecycle.js';
+  import { getStageLabel, requestTransition } from '$lib/project/lifecycle.js';
   import MenuBar from '$lib/components/MenuBar.svelte';
   import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
@@ -38,6 +39,22 @@
   let newProjectGenre = $state('');
   let newProjectCreating = $state(false);
   let newProjectError = $state('');
+
+  /* ── Open Project Dialog ─────────────────────────────────── */
+  let showOpenProjectDialog = $state(false);
+  let openProjectSearch = $state('');
+
+  const filteredProjects = $derived.by(() => {
+    const query = openProjectSearch.trim().toLowerCase();
+    if (!query) return data.projects;
+    return data.projects.filter((p) => p.title.toLowerCase().includes(query));
+  });
+
+  async function handleOpenProjectFromDialog(projectId: string) {
+    showOpenProjectDialog = false;
+    openProjectSearch = '';
+    await handleSwitchProject(projectId);
+  }
 
   /* ── Project Selector ─────────────────────────────────────── */
   let projectSelectorOpen = $state(false);
@@ -65,8 +82,6 @@
     return controller.signal;
   }
 
-  let sidebarWidth = $state(256);
-  let bottomHeight = $state(192);
   let resizingSidebar = $state(false);
   let resizingBottom = $state(false);
   let bottomTab = $state<'problems' | 'output' | 'terminal'>('problems');
@@ -252,7 +267,30 @@
     await goto('/auth');
   }
 
+  /** Persist current layout state to localStorage */
+  function persistLayout() {
+    localStorage.setItem('actone:layout', serializeLayoutPrefs({
+      sidebarWidth: uiStore.sidebarWidth,
+      sidebarVisible: uiStore.sidebarVisible,
+      bottomPanelHeight: uiStore.bottomPanelHeight,
+      bottomPanelVisible: uiStore.bottomPanelVisible,
+      outlineWidth: uiStore.outlineWidth,
+      outlineVisible: uiStore.outlineVisible,
+      outlineDockPosition: uiStore.outlineDockPosition,
+    }));
+  }
+
   onMount(() => {
+    // Load layout preferences
+    const layoutPrefs = parseLayoutPrefs(localStorage.getItem('actone:layout'));
+    uiStore.resizeSidebar(layoutPrefs.sidebarWidth);
+    uiStore.sidebarVisible = layoutPrefs.sidebarVisible;
+    uiStore.resizeBottomPanel(layoutPrefs.bottomPanelHeight);
+    uiStore.bottomPanelVisible = layoutPrefs.bottomPanelVisible;
+    uiStore.resizeOutline(layoutPrefs.outlineWidth);
+    uiStore.outlineVisible = layoutPrefs.outlineVisible;
+    uiStore.setOutlineDockPosition(layoutPrefs.outlineDockPosition);
+
     const {
       data: { subscription },
     } = data.supabase.auth.onAuthStateChange((_event: string, newSession: unknown) => {
@@ -289,6 +327,16 @@
 
     // T136: Global keyboard shortcuts
     function handleKeydown(e: KeyboardEvent) {
+      // Ctrl+S: Save file
+      if (e.ctrlKey && !e.shiftKey && e.key === 's') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('actone:save-file'));
+      }
+      // Ctrl+O: Open project dialog
+      if (e.ctrlKey && !e.shiftKey && e.key === 'o') {
+        e.preventDefault();
+        showOpenProjectDialog = true;
+      }
       // Ctrl+G: Generate scene prose
       if (e.ctrlKey && e.key === 'g') {
         e.preventDefault();
@@ -322,25 +370,58 @@
         e.preventDefault();
         window.dispatchEvent(new CustomEvent('actone:format-document'));
       }
+      // Ctrl+Shift+O: Toggle outline
+      if (e.ctrlKey && e.shiftKey && e.key === 'O') {
+        e.preventDefault();
+        uiStore.toggleOutline();
+        persistLayout();
+      }
+      // Alt+Z: Toggle word wrap
+      if (e.altKey && e.key === 'z') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('actone:toggle-word-wrap'));
+      }
     }
     window.addEventListener('keydown', handleKeydown);
+
+    function handleOpenProject() {
+      showOpenProjectDialog = true;
+    }
+    window.addEventListener('actone:open-project', handleOpenProject);
+
+    function handlePersistLayout() {
+      persistLayout();
+    }
+    window.addEventListener('actone:persist-layout', handlePersistLayout);
+
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (editorStore.hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
       subscription.unsubscribe();
       window.removeEventListener('keydown', handleKeydown);
+      window.removeEventListener('actone:open-project', handleOpenProject);
+      window.removeEventListener('actone:persist-layout', handlePersistLayout);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   });
 
   function handleSidebarMouseDown(e: MouseEvent) {
     e.preventDefault();
     resizingSidebar = true;
-    const onMouseMove = (e: MouseEvent) => {
-      sidebarWidth = Math.max(180, Math.min(480, e.clientX));
+    const onMouseMove = (ev: MouseEvent) => {
+      uiStore.resizeSidebar(ev.clientX);
     };
     const onMouseUp = () => {
       resizingSidebar = false;
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
+      persistLayout();
     };
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
@@ -349,13 +430,14 @@
   function handleBottomMouseDown(e: MouseEvent) {
     e.preventDefault();
     resizingBottom = true;
-    const onMouseMove = (e: MouseEvent) => {
-      bottomHeight = Math.max(100, Math.min(500, window.innerHeight - e.clientY));
+    const onMouseMove = (ev: MouseEvent) => {
+      uiStore.resizeBottomPanel(window.innerHeight - ev.clientY);
     };
     const onMouseUp = () => {
       resizingBottom = false;
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
+      persistLayout();
     };
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
@@ -373,7 +455,7 @@
     {#if uiStore.sidebarVisible}
       <aside
         class="flex flex-col border-r border-[#252525] bg-surface-800"
-        style="width: {sidebarWidth}px;"
+        style="width: {uiStore.sidebarWidth}px;"
       >
         <!-- Sidebar header -->
         <div class="flex h-12 items-center gap-2 px-4">
@@ -564,7 +646,7 @@
         <!-- Bottom panel zone (diagnostics, output) -->
         <div
           class="flex flex-col border-t border-[#252525] bg-surface-850"
-          style="height: {bottomHeight}px;"
+          style="height: {uiStore.bottomPanelHeight}px;"
         >
           <!-- Tab bar -->
           <div class="flex h-8 items-center gap-4 border-b border-[#252525] px-3">
@@ -671,6 +753,87 @@
               <LoadingSpinner size="sm" />
             {/if}
             Create Project
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Open Project Dialog -->
+  {#if showOpenProjectDialog}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      role="dialog"
+      aria-modal="true"
+      tabindex="-1"
+      onclick={() => { showOpenProjectDialog = false; openProjectSearch = ''; }}
+      onkeydown={(e) => { if (e.key === 'Escape') { showOpenProjectDialog = false; openProjectSearch = ''; } }}
+    >
+      <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+      <div
+        class="w-full max-w-lg rounded-lg border border-[#252525] bg-surface-800 p-6 shadow-xl"
+        role="presentation"
+        onclick={(e) => e.stopPropagation()}
+      >
+        <h2 class="mb-4 text-lg font-semibold text-white">Open Project</h2>
+
+        <div class="mb-3">
+          <input
+            type="text"
+            bind:value={openProjectSearch}
+            class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none"
+            placeholder="Search projects..."
+            autofocus
+          />
+        </div>
+
+        <div class="max-h-80 overflow-y-auto">
+          {#if filteredProjects.length === 0}
+            <div class="py-8 text-center text-sm text-zinc-500">
+              {#if openProjectSearch.trim()}
+                No projects match "{openProjectSearch.trim()}"
+              {:else}
+                No projects found
+              {/if}
+            </div>
+          {:else}
+            {#each filteredProjects as p}
+              {@const isActive = p.id === projectStore.project?.id}
+              <button
+                class="flex w-full items-center gap-3 rounded px-3 py-2.5 text-left transition-colors
+                  {isActive ? 'bg-amber-500/10 text-amber-300' : 'text-white/70 hover:bg-white/10 hover:text-white/90'}"
+                onclick={() => void handleOpenProjectFromDialog(p.id)}
+              >
+                <span class="w-5 shrink-0 text-center text-amber-400">
+                  {#if isActive}&#10003;{/if}
+                </span>
+                <div class="min-w-0 flex-1">
+                  <div class="truncate text-sm font-medium">{p.title}</div>
+                  <div class="truncate text-[11px] text-zinc-500">
+                    {[p.author_name, p.genre].filter(Boolean).join(' · ')}
+                    {#if p.modified_at}
+                      {#if p.author_name || p.genre} · {/if}
+                      Modified {new Date(p.modified_at).toLocaleDateString()}
+                    {/if}
+                  </div>
+                </div>
+                {#if p.lifecycle_stage}
+                  <span class="shrink-0 rounded bg-white/5 px-2 py-0.5 text-[10px] text-zinc-400">
+                    {getStageLabel(p.lifecycle_stage as import('@repo/shared').LifecycleStage)}
+                  </span>
+                {/if}
+              </button>
+            {/each}
+          {/if}
+        </div>
+
+        <div class="mt-4 flex justify-end">
+          <button
+            class="rounded px-4 py-2 text-sm text-zinc-400 hover:text-white"
+            onclick={() => { showOpenProjectDialog = false; openProjectSearch = ''; }}
+          >
+            Cancel
           </button>
         </div>
       </div>
