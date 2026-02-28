@@ -25,6 +25,7 @@
   import Activity from 'lucide-svelte/icons/activity';
   import File from 'lucide-svelte/icons/file';
   import ChevronUp from 'lucide-svelte/icons/chevron-up';
+  import ChevronDown from 'lucide-svelte/icons/chevron-down';
 
   import type { LifecycleStage } from '@repo/shared';
 
@@ -37,6 +38,9 @@
   let newProjectGenre = $state('');
   let newProjectCreating = $state(false);
   let newProjectError = $state('');
+
+  /* ── Project Selector ─────────────────────────────────────── */
+  let projectSelectorOpen = $state(false);
 
   /* ── User Profile Menu ──────────────────────────────────────── */
   let profileMenuOpen = $state(false);
@@ -130,6 +134,9 @@
       // Load the newly created project into the store
       await projectStore.loadFromServer(data.supabase);
 
+      // Refresh server-side data so data.projects includes the new project
+      await invalidate('supabase:auth');
+
       showNewProjectDialog = false;
       newProjectTitle = '';
       newProjectAuthor = '';
@@ -142,6 +149,17 @@
     } finally {
       newProjectCreating = false;
     }
+  }
+
+  /* ── Project switch handler ────────────────────────────────── */
+  async function handleSwitchProject(projectId: string) {
+    projectSelectorOpen = false;
+    if (projectId === projectStore.project?.id) return;
+    await projectStore.loadById(data.supabase, projectId);
+    // Refresh server-side data to keep data.projects up to date
+    await invalidate('supabase:auth');
+    // Navigate to editor with fresh project
+    await goto('/');
   }
 
   /* ── T021: Advance lifecycle stage handler ─────────────────── */
@@ -245,7 +263,28 @@
 
     // T005: Load the most recent project on mount if server data provides projects
     if (data.session) {
-      void projectStore.loadFromServer(data.supabase);
+      void (async () => {
+        await projectStore.loadFromServer(data.supabase);
+
+        // Auto-create a default project for new users with no projects
+        if (!projectStore.isLoaded) {
+          try {
+            const res = await fetch('/api/project/create', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ title: 'My Story' }),
+            });
+            if (res.ok) {
+              await projectStore.loadFromServer(data.supabase);
+            }
+          } catch {
+            // Silent — user can create manually via New Project dialog
+          }
+        }
+      })();
+    } else {
+      // No session — nothing to load, allow pages to render immediately
+      projectStore.loading = false;
     }
 
     // T136: Global keyboard shortcuts
@@ -323,7 +362,7 @@
   }
 </script>
 
-<svelte:window onclick={() => { profileMenuOpen = false; }} />
+<svelte:window onclick={() => { profileMenuOpen = false; projectSelectorOpen = false; }} />
 
 {#if !data.session}
   <!-- Unauthenticated: render page content directly (e.g. /auth) -->
@@ -357,11 +396,54 @@
           {/each}
         </nav>
 
-        <!-- PROJECT files section -->
-        <div class="flex flex-col px-2 pt-4">
-          <div class="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-600">
-            {projectStore.project?.title ?? 'PROJECT'}
-          </div>
+        <!-- PROJECT files section with project selector -->
+        <div class="relative flex flex-col px-2 pt-4">
+          <button
+            class="flex items-center gap-1 px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-600 hover:text-zinc-400"
+            onclick={(e) => { e.stopPropagation(); projectSelectorOpen = !projectSelectorOpen; }}
+          >
+            <span class="truncate">{projectStore.project?.title ?? 'PROJECT'}</span>
+            <ChevronDown size={10} class="shrink-0 transition-transform {projectSelectorOpen ? 'rotate-180' : ''}" />
+          </button>
+
+          {#if projectSelectorOpen}
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <div
+              class="absolute left-2 right-2 top-full z-50 mt-0.5 max-h-64 overflow-y-auto rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+              role="menu"
+              tabindex="-1"
+              onclick={(e) => e.stopPropagation()}
+            >
+              {#each data.projects as p}
+                <button
+                  class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] text-white/70 hover:bg-white/10"
+                  role="menuitem"
+                  onclick={() => void handleSwitchProject(p.id)}
+                >
+                  {#if p.id === projectStore.project?.id}
+                    <span class="w-4 text-amber-400">&#10003;</span>
+                  {:else}
+                    <span class="w-4"></span>
+                  {/if}
+                  <span class="truncate">{p.title}</span>
+                </button>
+              {/each}
+
+              {#if data.projects.length > 0}
+                <div class="my-1 border-t border-[#252525]"></div>
+              {/if}
+
+              <button
+                class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] text-amber-400 hover:bg-white/10"
+                role="menuitem"
+                onclick={() => { projectSelectorOpen = false; showNewProjectDialog = true; }}
+              >
+                <span class="w-4">+</span>
+                <span>New Project</span>
+              </button>
+            </div>
+          {/if}
+
           <div class="flex flex-col gap-0">
             {#each projectStore.files as file}
               {@const isActive = projectStore.entryFile?.id === file.id}

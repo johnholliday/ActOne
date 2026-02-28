@@ -106,21 +106,25 @@ const diagnosticsField = StateField.define<LspDiagnostic[]>({
 /* ── Semantic Tokens ─────────────────────────────────────────────── */
 
 /**
- * Semantic token legend matching the Langium server's registration.
- * Must align with the token types the server advertises in its
- * ServerCapabilities.semanticTokensProvider.legend.tokenTypes.
+ * Semantic token legend matching Langium's AllSemanticTokenTypes ordering.
+ * Indices are derived from Object.keys(AllSemanticTokenTypes) in langium/lsp:
+ *   0=class, 1=comment, 2=enum, 3=enumMember, 4=event, 5=function,
+ *   6=interface, 7=keyword, 8=macro, 9=method, 10=modifier, 11=namespace,
+ *   12=number, 13=operator, 14=parameter, 15=property, 16=regexp,
+ *   17=string, 18=struct, 19=type, 20=typeParameter, 21=variable, 22=decorator
  */
 const TOKEN_TYPE_MAP: Record<number, string> = {
-  0: 'cm-semantic-comment',
-  1: 'cm-semantic-keyword',
-  2: 'cm-semantic-string',
-  3: 'cm-semantic-number',
-  4: 'cm-semantic-type',
-  5: 'cm-semantic-property',
-  6: 'cm-semantic-variable',
-  7: 'cm-semantic-function',
-  8: 'cm-semantic-enum',
-  9: 'cm-semantic-enumMember',
+  0: 'cm-semantic-type',        // class → style like type
+  1: 'cm-semantic-comment',     // comment
+  2: 'cm-semantic-enum',        // enum
+  3: 'cm-semantic-enumMember',  // enumMember
+  5: 'cm-semantic-function',    // function
+  7: 'cm-semantic-keyword',     // keyword
+  12: 'cm-semantic-number',     // number
+  15: 'cm-semantic-property',   // property
+  17: 'cm-semantic-string',     // string
+  19: 'cm-semantic-type',       // type
+  21: 'cm-semantic-variable',   // variable
 };
 
 const setSemanticDecorations = StateEffect.define<DecorationSet>();
@@ -705,10 +709,15 @@ async function fetchSemanticTokens(
   uri: string,
   view: EditorView,
 ): Promise<void> {
-  if (!client.isReady) return;
+  if (!client.isReady) {
+    console.log('[SemanticTokens] client not ready, skipping');
+    return;
+  }
 
   try {
+    console.log('[SemanticTokens] requesting tokens for', uri);
     const tokens = await client.semanticTokensFull(uri);
+    console.log('[SemanticTokens] response:', tokens ? `${tokens.data?.length ?? 0} data entries` : 'null');
     if (!tokens || !tokens.data || tokens.data.length === 0) {
       view.dispatch({ effects: setSemanticDecorations.of(Decoration.none) });
       return;
@@ -743,9 +752,10 @@ async function fetchSemanticTokens(
       builder.map((b) => Decoration.mark({ class: b.class }).range(b.from, b.to)),
     );
 
+    console.log('[SemanticTokens] applied', builder.length, 'decorations');
     view.dispatch({ effects: setSemanticDecorations.of(decorations) });
-  } catch {
-    // Silently fail — semantic tokens are cosmetic
+  } catch (err) {
+    console.error('[SemanticTokens] error:', err);
   }
 }
 

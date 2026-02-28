@@ -7,6 +7,8 @@
   import EmptyState from '$lib/components/EmptyState.svelte';
   import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
   import type { DocumentSymbol } from '$lib/editor/langium-client.js';
+  import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
+  import { page } from '$app/state';
 
   /* ── State ─────────────────────────────────────────────────────── */
 
@@ -26,6 +28,36 @@
 
   /** Track the active file name for the toolbar */
   const activeFileName = $derived(projectStore.entryFile?.filePath ?? 'model.actone');
+
+  /** URI for the editor document — must match what the LSP workspace uses */
+  const editorUri = $derived(
+    projectStore.entryFile ? `file:///${projectStore.entryFile.filePath}` : 'inmemory://model.actone',
+  );
+
+  /* ── Project context for Langium workspace initialization ────── */
+
+  const projectContext = $derived.by(() => {
+    const project = projectStore.project;
+    if (!project) return null;
+
+    const session = page.data?.session;
+    const authToken = session?.access_token ?? '';
+
+    return {
+      projectId: project.id,
+      supabaseUrl: PUBLIC_SUPABASE_URL,
+      supabaseAnonKey: PUBLIC_SUPABASE_ANON_KEY,
+      authToken,
+      compositionMode: project.compositionMode,
+      // Exclude entry file — it's already opened via didOpen
+      fileOrder: projectStore.files
+        .filter((f) => !f.isEntry)
+        .map((f, i) => ({
+          uri: `file:///${f.filePath}`,
+          priority: i + 1,
+        })),
+    };
+  });
 
   /* ── Derived ───────────────────────────────────────────────────── */
 
@@ -51,7 +83,7 @@
       const client = editorPane?.getClient?.();
       if (!client?.isReady) return;
       try {
-        const result = await client.documentSymbol('inmemory://model.actone');
+        const result = await client.documentSymbol(editorUri);
         symbols = result ?? [];
       } catch {
         // Silently ignore
@@ -105,8 +137,10 @@
       {:else}
         <EditorPane
           bind:this={editorPane}
+          uri={editorUri}
           initialContent={editorContent}
           onchange={handleChange}
+          {projectContext}
         />
       {/if}
     </div>

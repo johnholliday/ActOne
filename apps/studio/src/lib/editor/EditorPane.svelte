@@ -19,11 +19,21 @@
     refreshSemanticTokens,
     refreshFoldingRanges,
   } from './langium-extension.js';
+  import { actoneKeywordHighlighter } from './actone-keywords.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { editorStore } from '$lib/stores/editor.svelte.js';
   import type { Diagnostic } from './langium-client.js';
 
   /* ── Props ──────────────────────────────────────────────────────── */
+
+  interface ProjectContext {
+    projectId: string;
+    supabaseUrl: string;
+    supabaseAnonKey: string;
+    authToken: string;
+    compositionMode: string;
+    fileOrder: Array<{ uri: string; priority: number }>;
+  }
 
   interface Props {
     /** The document URI for LSP protocol */
@@ -32,9 +42,11 @@
     initialContent?: string;
     /** Callback when content changes */
     onchange?: (content: string) => void;
+    /** Project context for initializing the Langium workspace */
+    projectContext?: ProjectContext | null;
   }
 
-  let { uri = 'inmemory://model.actone', initialContent = '', onchange }: Props = $props();
+  let { uri = 'inmemory://model.actone', initialContent = '', onchange, projectContext = null }: Props = $props();
 
   /* ── Refs ───────────────────────────────────────────────────────── */
 
@@ -45,16 +57,23 @@
   /** T014: Worker error state for error banner display */
   let workerError = $state<string | null>(null);
 
+  /** Create a Langium worker using the inline pattern Vite can detect and bundle. */
+  function createLangiumWorker(): Worker {
+    console.log('[EditorPane] creating Langium worker');
+    const w = new Worker(
+      new URL('../worker/langium-worker.ts', import.meta.url),
+      { type: 'module' },
+    );
+    console.log('[EditorPane] worker created successfully');
+    return w;
+  }
+
   /** T014: Retry starting the Langium worker */
   async function retryWorker() {
     workerError = null;
     if (!client) return;
     try {
-      const workerUrl = new URL(
-        '../worker/langium-worker.ts',
-        import.meta.url,
-      );
-      await client.start(workerUrl);
+      await client.start(createLangiumWorker());
     } catch (err) {
       workerError = err instanceof Error ? err.message : 'Worker failed to start';
     }
@@ -70,17 +89,41 @@
         workerError = err instanceof Error ? err.message : 'Language server error';
       },
       onReady: () => {
+        console.log('[EditorPane] onReady fired, uri:', uri, 'content length:', initialContent.length);
         workerError = null;
         // Inform the worker that we have a document open
         langiumClient.didOpen(uri, 'actone', initialContent);
 
-        // Trigger initial semantic token + folding range fetch after a short delay
-        setTimeout(() => {
-          if (view) {
-            refreshSemanticTokens(langiumClient, uri, view);
-            refreshFoldingRanges(langiumClient, uri, view);
-          }
-        }, 300);
+        // Initialize the Langium workspace with full project context
+        console.log('[EditorPane] projectContext:', projectContext ? `projectId=${projectContext.projectId}, files=${projectContext.fileOrder.length}` : 'null');
+        if (projectContext) {
+          langiumClient.openProject(projectContext).then((result) => {
+            console.log('[EditorPane] openProject succeeded:', result);
+            // Refresh semantic tokens and folding ranges after workspace is built
+            if (view) {
+              console.log('[EditorPane] requesting semantic tokens + folding ranges');
+              refreshSemanticTokens(langiumClient, uri, view);
+              refreshFoldingRanges(langiumClient, uri, view);
+            }
+          }).catch((err) => {
+            console.error('[EditorPane] openProject failed:', err);
+            // Still attempt token refresh even if openProject fails
+            if (view) {
+              refreshSemanticTokens(langiumClient, uri, view);
+              refreshFoldingRanges(langiumClient, uri, view);
+            }
+          });
+        } else {
+          console.log('[EditorPane] no projectContext, delayed token refresh');
+          // No project context — fall back to delayed token refresh
+          setTimeout(() => {
+            if (view) {
+              console.log('[EditorPane] delayed: requesting semantic tokens + folding ranges');
+              refreshSemanticTokens(langiumClient, uri, view);
+              refreshFoldingRanges(langiumClient, uri, view);
+            }
+          }, 300);
+        }
       },
     });
 
@@ -98,6 +141,7 @@
       codeFolding(),
       foldGutter(),
       keymap.of([...defaultKeymap, ...historyKeymap, ...closeBracketsKeymap, ...foldKeymap]),
+      actoneKeywordHighlighter,
       langiumExtension(langiumClient, uri),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
@@ -156,6 +200,42 @@
           borderRadius: '6px',
           color: '#e2e8f0',
         },
+        /* Lint tooltip */
+        '.cm-tooltip-lint': {
+          backgroundColor: '#1e1e2e',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '6px',
+        },
+        '.cm-diagnostic': {
+          padding: '4px 8px',
+          color: '#e2e8f0',
+          fontSize: '12px',
+        },
+        '.cm-diagnostic-error': {
+          borderLeft: '4px solid #f44747',
+        },
+        '.cm-diagnostic-warning': {
+          borderLeft: '4px solid #ff9940',
+        },
+        '.cm-diagnostic-info': {
+          borderLeft: '4px solid #6796e6',
+        },
+        '.cm-diagnostic-hint': {
+          borderLeft: '4px solid #89ddff',
+        },
+        '.cm-diagnosticSource': {
+          color: 'rgba(255,255,255,0.5)',
+          fontSize: '11px',
+        },
+        '.cm-diagnosticAction': {
+          backgroundColor: '#333',
+          color: '#e2e8f0',
+          borderRadius: '3px',
+          padding: '2px 6px',
+          marginLeft: '8px',
+          cursor: 'pointer',
+          border: 'none',
+        },
         /* Lint gutter */
         '.cm-lint-marker-error': { content: '"●"' },
         '.cm-lint-marker-warning': { content: '"●"' },
@@ -203,13 +283,8 @@
       parent: editorContainer,
     });
 
-    // Start the Langium worker — local entry re-exports @repo/langium/worker
-    const workerUrl = new URL(
-      '../worker/langium-worker.ts',
-      import.meta.url,
-    );
-
-    langiumClient.start(workerUrl).catch((err) => {
+    // Start the Langium worker — Worker created inline so Vite can detect and bundle it
+    langiumClient.start(createLangiumWorker()).catch((err) => {
       console.error('[EditorPane] Failed to start Langium worker:', err);
       workerError = err instanceof Error ? err.message : 'Language server failed to start';
     });

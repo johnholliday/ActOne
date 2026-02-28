@@ -178,28 +178,76 @@ export class LangiumClient {
 
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
-  /** Spawn the worker, perform LSP initialize/initialized handshake. */
-  async start(workerUrl: URL | string): Promise<void> {
+  /**
+   * Attach to an existing Worker and perform LSP initialize/initialized handshake.
+   *
+   * IMPORTANT: The Worker must be created inline in the calling code using
+   * `new Worker(new URL('...', import.meta.url), { type: 'module' })`
+   * so that Vite can statically detect and bundle the worker entry point.
+   */
+  async start(worker: Worker): Promise<void> {
     if (this.worker) {
       throw new Error('LangiumClient already started');
     }
 
-    this.worker = new Worker(workerUrl, { type: 'module' });
+    console.log('[LSP] start: attaching worker');
+    this.worker = worker;
     this.worker.onmessage = (ev: MessageEvent) => this.handleMessage(ev.data);
     this.worker.onerror = (ev: ErrorEvent) => {
+      console.error('[LSP] worker onerror:', ev.message, ev);
       this.callbacks.onError?.(new Error(`Worker error: ${ev.message}`));
     };
 
     // LSP initialize handshake
+    console.log('[LSP] start: sending initialize request');
     await this.sendRequest('initialize', {
-      capabilities: {},
+      capabilities: {
+        textDocument: {
+          semanticTokens: {
+            dynamicRegistration: false,
+            requests: { full: true },
+            tokenTypes: [
+              'class', 'comment', 'enum', 'enumMember', 'event',
+              'function', 'interface', 'keyword', 'macro', 'method',
+              'modifier', 'namespace', 'number', 'operator', 'parameter',
+              'property', 'regexp', 'string', 'struct', 'type',
+              'typeParameter', 'variable', 'decorator',
+            ],
+            tokenModifiers: [
+              'abstract', 'async', 'declaration', 'defaultLibrary',
+              'definition', 'deprecated', 'documentation', 'modification',
+              'readonly', 'static',
+            ],
+            formats: ['relative'],
+          },
+          publishDiagnostics: {
+            relatedInformation: true,
+          },
+          completion: {
+            completionItem: {
+              snippetSupport: false,
+            },
+          },
+          hover: {
+            contentFormat: ['plaintext'],
+          },
+          foldingRange: {
+            lineFoldingOnly: true,
+          },
+          documentSymbol: {
+            hierarchicalDocumentSymbolSupport: true,
+          },
+        },
+      },
       processId: null,
       rootUri: null,
     });
 
     // Notify initialized
+    console.log('[LSP] start: initialize response received, sending initialized');
     this.sendNotification('initialized', {});
     this.initialized = true;
+    console.log('[LSP] start: calling onReady');
     this.callbacks.onReady?.();
   }
 
@@ -397,6 +445,7 @@ export class LangiumClient {
       params: params ?? undefined,
     };
 
+    console.log(`[LSP] >>> request #${id} ${method}`);
     return new Promise((resolve, reject) => {
       this.pending.set(id, { resolve, reject });
       this.worker!.postMessage(message);
@@ -412,11 +461,13 @@ export class LangiumClient {
       params: params ?? undefined,
     };
 
+    console.log(`[LSP] >>> notification ${method}`);
     this.worker.postMessage(message);
   }
 
   private handleMessage(data: unknown): void {
     const message = data as JsonRpcMessage;
+    console.log('[LSP] <<< message:', JSON.stringify(data).slice(0, 200));
 
     // Response to a pending request
     if ('id' in message && message.id !== undefined) {
@@ -442,17 +493,19 @@ export class LangiumClient {
   }
 
   private handleNotification(notification: JsonRpcNotification): void {
+    console.log('[LSP] <<< notification:', notification.method);
     switch (notification.method) {
       case 'textDocument/publishDiagnostics': {
         const params = notification.params as {
           uri: string;
           diagnostics: Diagnostic[];
         };
+        console.log('[LSP] diagnostics for', params.uri, ':', params.diagnostics.length, 'items');
         this.callbacks.onDiagnostics?.(params.uri, params.diagnostics);
         break;
       }
       default:
-        // Unknown notification — silently ignore
+        console.log('[LSP] unhandled notification:', notification.method);
         break;
     }
   }

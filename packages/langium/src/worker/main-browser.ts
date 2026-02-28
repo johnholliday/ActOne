@@ -34,6 +34,10 @@ const { shared, ActOne } = createActOneServices({
 
 startLanguageServer(shared);
 
+/* ── Debug: verify SemanticTokenProvider registration ──────────────── */
+console.log('[Worker] SemanticTokenProvider registered:', !!ActOne.lsp?.SemanticTokenProvider);
+console.log('[Worker] ServiceRegistry languages:', shared.ServiceRegistry.all.map(s => s.LanguageMetaData?.languageId).join(', '));
+
 /* ── Helper: get scope provider for composition config ───────────── */
 
 function getScopeProvider(): ActOneScopeProvider | null {
@@ -69,8 +73,11 @@ connection.onRequest(
     let loadedFiles = 0;
     for (const entry of params.fileOrder) {
       try {
+        // Extract the file path from the URI (strip file:/// prefix)
+        const filePath = URI.parse(entry.uri).path.replace(/^\//, '');
+
         // Fetch file content from Supabase
-        const supabaseUrl = `${params.supabaseUrl}/rest/v1/source_files?select=content&file_path=eq.${encodeURIComponent(entry.uri)}&project_id=eq.${params.projectId}`;
+        const supabaseUrl = `${params.supabaseUrl}/rest/v1/source_files?select=content&file_path=eq.${encodeURIComponent(filePath)}&project_id=eq.${params.projectId}`;
         const response = await fetch(supabaseUrl, {
           headers: {
             apikey: params.supabaseAnonKey,
@@ -94,9 +101,14 @@ connection.onRequest(
     }
 
     // Build workspace (parse all documents, compute scopes)
-    await shared.workspace.DocumentBuilder.build(
-      Array.from(shared.workspace.LangiumDocuments.all),
-    );
+    const allDocs = Array.from(shared.workspace.LangiumDocuments.all);
+    console.log('[Worker] openProject: building', allDocs.length, 'documents:', allDocs.map(d => d.uri.toString()));
+    await shared.workspace.DocumentBuilder.build(allDocs);
+
+    // Log document states after build
+    for (const doc of shared.workspace.LangiumDocuments.all) {
+      console.log('[Worker] doc:', doc.uri.toString(), 'state:', doc.state, 'parseErrors:', doc.parseResult?.parserErrors?.length ?? '?', 'astType:', doc.parseResult?.value?.$type ?? 'null');
+    }
 
     // Collect diagnostics summary
     let errors = 0;

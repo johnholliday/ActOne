@@ -48,6 +48,14 @@ hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;
 BooleanLiteral returns string:
     'true' | 'false';
 
+/**
+ * Names for definitions and cross-references.
+ * Accepts both bare identifiers (Elena) and quoted strings ("Elena Vasquez").
+ * When using STRING, cross-references must also use the quoted form.
+ */
+DefinitionName returns string:
+    ID | STRING;
+
 /** Signed integers for relationship weights (allows negative values) */
 SignedInt returns number:
     '-'? NUMBER;
@@ -179,7 +187,7 @@ ChapterBreaksSetting:
  * Themes give the runtime a semantic compass for narrative coherence.
  */
 ThemeDef:
-    'theme' name=ID '{'
+    'theme' name=DefinitionName '{'
         properties+=ThemeProperty*
     '}';
 
@@ -217,7 +225,7 @@ ThemeTensionProp:
  * motivation hierarchy. Restructured from v1.x extensions.
  */
 CharacterDef:
-    'character' name=ID '{'
+    'character' name=DefinitionName '{'
         properties+=CharacterProperty*
     '}';
 
@@ -347,7 +355,7 @@ RelationshipsProp:
 
 RelationshipEntry:
     '{'
-        'to' ':' target=[CharacterDef:ID] ','?
+        'to' ':' target=[CharacterDef:DefinitionName] ','?
         properties+=RelProperty*
     '}';
 
@@ -451,7 +459,7 @@ NotesProp:
  * Lesson from Infancy: needed metaphysical rules distinct from physical ones.
  */
 WorldDef:
-    'world' name=ID '{'
+    'world' name=DefinitionName '{'
         properties+=WorldProperty*
     '}';
 
@@ -487,7 +495,7 @@ LocationBlock:
 
 LocationEntry:
     '{'
-        'name' ':' name=ID ','?
+        'name' ':' name=DefinitionName ','?
         properties+=LocationProperty*
     '}';
 
@@ -521,7 +529,7 @@ LocConnectsProp:
  * qualified (NeonNostalgia.MemoryExchange) syntax.
  */
 LocationRef:
-    location=[LocationEntry:ID] | world=[WorldDef:ID] '.' location=[LocationEntry:ID];
+    location=[LocationEntry:DefinitionName] | world=[WorldDef:DefinitionName] '.' location=[LocationEntry:DefinitionName];
 
 /**
  * v2.0: Categorized world rules.
@@ -569,7 +577,7 @@ RuleCategory returns string:
  * would have signaled this to the runtime.
  */
 TimelineDef:
-    'timeline' name=ID '{'
+    'timeline' name=DefinitionName '{'
         properties+=TimelineProperty*
     '}';
 
@@ -598,7 +606,7 @@ TimelineLayersProp:
 
 TimelineLayer:
     '{'
-        'name' ':' name=ID ','?
+        'name' ':' name=DefinitionName ','?
         properties+=TimelineLayerProperty*
     '}';
 
@@ -624,7 +632,7 @@ LayerPeriodProp:
  * Making them explicit gives the runtime precise generation targets.
  */
 SceneDef:
-    'scene' name=ID '{'
+    'scene' name=DefinitionName '{'
         properties+=SceneProperty*
     '}';
 
@@ -655,7 +663,7 @@ SceneLocationProp:
  * Can be 'Omniscient' or reference a specific character.
  */
 ScenePovProp:
-    'pov' ':' (character=[CharacterDef:ID] | omniscient='Omniscient') ','?;
+    'pov' ':' (character=[CharacterDef:DefinitionName] | omniscient='Omniscient') ','?;
 
 /**
  * v2.0: Which temporal layer this scene belongs to.
@@ -663,12 +671,12 @@ ScenePovProp:
  * different generation contexts.
  */
 SceneLayerProp:
-    'layer' ':' layer=[TimelineLayer:ID] ','?;
+    'layer' ':' layer=[TimelineLayer:DefinitionName] ','?;
 
 /** Which characters are present */
 SceneParticipantsProp:
     'participants' ':' '['
-        (participants+=[CharacterDef:ID] (',' participants+=[CharacterDef:ID])* ','?)?
+        (participants+=[CharacterDef:DefinitionName] (',' participants+=[CharacterDef:DefinitionName])* ','?)?
     ']' ','?;
 
 /** Mood vector for the scene's emotional register */
@@ -710,7 +718,7 @@ TransitionType returns string:
  * Beats naturally grouped into acts, but the grammar couldn't express this.
  */
 PlotDef:
-    'plot' name=ID '{'
+    'plot' name=DefinitionName '{'
         properties+=PlotProperty*
     '}';
 
@@ -755,7 +763,7 @@ BeatType returns string:
  * secondary plot threads or their convergence points.
  */
 PlotSubplotProp:
-    'subplot' name=ID ':' '{'
+    'subplot' name=DefinitionName ':' '{'
         properties+=SubplotProperty*
     '}' ','?;
 
@@ -772,7 +780,7 @@ SubplotBeatsProp:
 
 /** Scene where this subplot merges with the main plot */
 SubplotConvergesProp:
-    'converges_at' ':' scene=[SceneDef:ID] ','?;
+    'converges_at' ':' scene=[SceneDef:DefinitionName] ','?;
 
 PlotConflictTypeProp:
     'conflict_type' ':' value=ConflictType ','?;
@@ -814,7 +822,7 @@ ResolutionPattern returns string:
  * this gap between surface and depth.
  */
 InteractionDef:
-    'interaction' name=ID '{'
+    'interaction' name=DefinitionName '{'
         properties+=InteractionProperty*
     '}';
 
@@ -825,7 +833,7 @@ InteractionProperty:
 
 InteractionParticipantsProp:
     'participants' ':' '['
-        (participants+=[CharacterDef:ID] (',' participants+=[CharacterDef:ID])* ','?)?
+        (participants+=[CharacterDef:DefinitionName] (',' participants+=[CharacterDef:DefinitionName])* ','?)?
     ']' ','?;
 
 /** Rhythm pattern using arrow notation */
@@ -839,7 +847,7 @@ InteractionStyleMixProp:
     '}' ','?;
 
 StyleMixEntry:
-    character=[CharacterDef:ID] ':' value=NUMBER ','?;
+    character=[CharacterDef:DefinitionName] ':' value=NUMBER ','?;
 
 /**
  * v2.0: What's really being communicated beneath the surface dialogue.

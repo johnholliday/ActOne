@@ -49,6 +49,7 @@
     "@tailwindcss/vite": "^4.2.1",
     "@types/archiver": "^6.0.0",
     "@types/pdfkit": "^0.13.0",
+    "@vitest/ui": "3.2.4",
     "drizzle-kit": "^0.31.0",
     "eslint": "^9.0.0",
     "langium": "~4.2.1",

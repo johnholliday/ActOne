@@ -427,7 +427,7 @@ export function isChapterBreaksSetting(item: unknown): item is ChapterBreaksSett
 export interface CharacterDef extends langium.AstNode {
     readonly $container: Story;
     readonly $type: 'CharacterDef';
-    name: string;
+    name: DefinitionName;
     properties: Array<CharacterProperty>;
 }
 
@@ -521,6 +521,17 @@ export const DefaultPovSetting = {
 
 export function isDefaultPovSetting(item: unknown): item is DefaultPovSetting {
     return reflection.isInstance(item, DefaultPovSetting.$type);
+}
+
+/**
+ * Names for definitions and cross-references.
+ * Accepts both bare identifiers (Elena) and quoted strings ("Elena Vasquez").
+ * When using STRING, cross-references must also use the quoted form.
+ */
+export type DefinitionName = string;
+
+export function isDefinitionName(item: unknown): item is DefinitionName {
+    return (typeof item === 'string' && (/[_a-zA-Z][\w]*/.test(item) || /"[^"]*"|'[^']*'/.test(item)));
 }
 
 /** Weaknesses and vulnerabilities (distinct from internal conflicts) */
@@ -704,7 +715,7 @@ export function isGoalStakesProp(item: unknown): item is GoalStakesProp {
 export interface InteractionDef extends langium.AstNode {
     readonly $container: Story;
     readonly $type: 'InteractionDef';
-    name: string;
+    name: DefinitionName;
     properties: Array<InteractionProperty>;
 }
 
@@ -888,7 +899,7 @@ export function isLocationBlock(item: unknown): item is LocationBlock {
 export interface LocationEntry extends langium.AstNode {
     readonly $container: LocationBlock;
     readonly $type: 'LocationEntry';
-    name: string;
+    name: DefinitionName;
     properties: Array<LocationProperty>;
 }
 
@@ -1180,7 +1191,7 @@ export function isPlotConflictTypeProp(item: unknown): item is PlotConflictTypeP
 export interface PlotDef extends langium.AstNode {
     readonly $container: Story;
     readonly $type: 'PlotDef';
-    name: string;
+    name: DefinitionName;
     properties: Array<PlotProperty>;
 }
 
@@ -1228,7 +1239,7 @@ export function isPlotResolutionProp(item: unknown): item is PlotResolutionProp 
 export interface PlotSubplotProp extends langium.AstNode {
     readonly $container: PlotDef;
     readonly $type: 'PlotSubplotProp';
-    name: string;
+    name: DefinitionName;
     properties: Array<SubplotProperty>;
 }
 
@@ -1515,7 +1526,7 @@ export function isSceneAtmosphereProp(item: unknown): item is SceneAtmospherePro
 export interface SceneDef extends langium.AstNode {
     readonly $container: Story;
     readonly $type: 'SceneDef';
-    name: string;
+    name: DefinitionName;
     properties: Array<SceneProperty>;
 }
 
@@ -1945,7 +1956,7 @@ export function isThemeCounterProp(item: unknown): item is ThemeCounterProp {
 export interface ThemeDef extends langium.AstNode {
     readonly $container: Story;
     readonly $type: 'ThemeDef';
-    name: string;
+    name: DefinitionName;
     properties: Array<ThemeProperty>;
 }
 
@@ -2031,7 +2042,7 @@ export function isThemeTensionProp(item: unknown): item is ThemeTensionProp {
 export interface TimelineDef extends langium.AstNode {
     readonly $container: Story;
     readonly $type: 'TimelineDef';
-    name: string;
+    name: DefinitionName;
     properties: Array<TimelineProperty>;
 }
 
@@ -2048,7 +2059,7 @@ export function isTimelineDef(item: unknown): item is TimelineDef {
 export interface TimelineLayer extends langium.AstNode {
     readonly $container: TimelineLayersProp;
     readonly $type: 'TimelineLayer';
-    name: string;
+    name: DefinitionName;
     properties: Array<TimelineLayerProperty>;
 }
 
@@ -2198,7 +2209,7 @@ export function isVoiceProp(item: unknown): item is VoiceProp {
 export interface WorldDef extends langium.AstNode {
     readonly $container: Story;
     readonly $type: 'WorldDef';
-    name: string;
+    name: DefinitionName;
     properties: Array<WorldProperty>;
 }
 

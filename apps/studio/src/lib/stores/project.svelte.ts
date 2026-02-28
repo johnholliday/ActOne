@@ -1,6 +1,6 @@
 import type { LifecycleStage, CompositionMode } from '@repo/shared';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { loadProjectFromSupabase } from './project-loader.js';
+import { loadProjectFromSupabase, loadProjectByIdFromSupabase } from './project-loader.js';
 
 /** Minimal project metadata for the active project */
 export interface ProjectMeta {
@@ -50,8 +50,8 @@ class ProjectStore {
   /** The entry (main) file of the project */
   entryFile = $derived(this.files.find((f) => f.isEntry) ?? null);
 
-  /** Whether the store is currently loading data */
-  loading = $state(false);
+  /** Whether the store is currently loading data (starts true to prevent premature UI mount) */
+  loading = $state(true);
 
   load(project: ProjectMeta, files: SourceFileEntry[]) {
     this.project = project;
@@ -66,6 +66,25 @@ class ProjectStore {
     this.loading = true;
     try {
       const result = await loadProjectFromSupabase(supabase);
+      if (!result.success) {
+        this.clear();
+        return;
+      }
+      this.project = result.project;
+      this.files = result.files;
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  /**
+   * Load a specific project by ID from the database via Supabase client.
+   * Used by the project selector to switch between projects.
+   */
+  async loadById(supabase: SupabaseClient, projectId: string): Promise<void> {
+    this.loading = true;
+    try {
+      const result = await loadProjectByIdFromSupabase(supabase, projectId);
       if (!result.success) {
         this.clear();
         return;
