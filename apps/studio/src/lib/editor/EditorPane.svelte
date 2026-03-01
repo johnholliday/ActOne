@@ -336,6 +336,13 @@
     if (view && diagnosticUri === uri) {
       pushDiagnostics(view, diagnostics, client ?? undefined, uri);
     }
+
+    // Request serialized AST after diagnostics arrive
+    if (client?.isReady) {
+      client.getSerializedAst(diagnosticUri).then((response) => {
+        astStore.updateAst(diagnosticUri, response.ast, response.valid, response.errors);
+      }).catch(() => { /* silently ignore serialization failures */ });
+    }
   }
 
   /* ── Public API ────────────────────────────────────────────────── */

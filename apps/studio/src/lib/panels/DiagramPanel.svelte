@@ -179,15 +179,15 @@
   /* ── Refresh: transform AST → layout → sidecar → render ─── */
 
   async function refresh() {
-    const ast = astStore.activeAst;
-    if (!ast || !projectId) {
+    const fileAst = astStore.activeAst;
+    if (!fileAst?.ast || !projectId) {
       diagramLoading = false;
       return;
     }
 
     diagramLoading = true;
     try {
-      const result = config.transformer(ast);
+      const result = config.transformer(fileAst.ast);
       const layoutNodes = result.nodes.map((n: any) => ({
         id: n.id,
         ...config.defaultNodeSize(n),

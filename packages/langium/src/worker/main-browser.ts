@@ -8,6 +8,7 @@ import { EmptyFileSystem, URI } from 'langium';
 import { createActOneServices } from '../services/actone-module.js';
 import { isStory } from '../generated/ast.js';
 import { ActOneScopeProvider, type CompositionMode } from '../services/actone-scope.js';
+import { serializeStory } from '../serializer/ast-serializer.js';
 
 // Cast self for the web worker context — this file is only loaded as a Worker
 const workerSelf = self as unknown as {
@@ -164,27 +165,25 @@ connection.onRequest('actone/getSerializedAst', async (params: { uri: string }) 
   const diagnostics = document.diagnostics ?? [];
   const errors = diagnostics.filter((d) => d.severity === 1).length;
 
-  // TODO: Full AST serialization will be implemented with a dedicated serializer utility.
-  // For now, return basic info from the parse result.
-  return {
-    ast: null,
-    valid: errors === 0,
-    errors,
-  };
+  const root = document.parseResult.value;
+  const ast = isStory(root) ? serializeStory(root) : null;
+  return { ast, valid: errors === 0, errors };
 });
 
 /* T056c: actone/getAstForAllFiles — Get merged AST across all files */
 connection.onRequest(
   'actone/getAstForAllFiles',
   async (_params: { projectId: string }) => {
-    const stories: Array<{ uri: string; ast: null; valid: boolean }> = [];
+    const stories: Array<{ uri: string; ast: ReturnType<typeof serializeStory> | null; valid: boolean }> = [];
 
     for (const doc of shared.workspace.LangiumDocuments.all) {
       const diagnostics = doc.diagnostics ?? [];
       const errors = diagnostics.filter((d) => d.severity === 1).length;
+      const root = doc.parseResult.value;
+      const ast = isStory(root) ? serializeStory(root) : null;
       stories.push({
         uri: doc.uri.toString(),
-        ast: null, // TODO: Full serialization
+        ast,
         valid: errors === 0,
       });
     }
