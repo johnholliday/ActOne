@@ -29,13 +29,13 @@
 
 <style>
   .timeline-block {
-    background: #1e293b;
-    border: 1px solid #334155;
+    background: #171717;
+    border: 1px solid #252525;
     border-radius: 4px;
     padding: 6px 10px;
     min-width: 100px;
     font-size: 11px;
-    color: #e2e8f0;
+    color: #f8fafc;
   }
 
   .block-name {
@@ -51,7 +51,7 @@
 
   .block-words {
     font-size: 9px;
-    color: #475569;
+    color: #52525b;
     text-align: right;
   }
 </style>

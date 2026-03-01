@@ -56,7 +56,7 @@ export function transformStoryStructure(story: SerializedStory): StoryStructureR
       );
 
       if (sourceScene && targetScene) {
-        const beatColor = BEAT_TYPE_COLORS[currentBeat.type as keyof typeof BEAT_TYPE_COLORS] ?? '#94a3b8';
+        const beatColor = BEAT_TYPE_COLORS[currentBeat.type as keyof typeof BEAT_TYPE_COLORS] ?? '#a1a1aa';
         edges.push({
           id: stableEdgeId('scene', sourceScene.name, 'scene', targetScene.name, currentBeat.beat),
           source: stableId('scene', sourceScene.name),
@@ -86,7 +86,7 @@ export function transformStoryStructure(story: SerializedStory): StoryStructureR
         data: {
           label: `→`,
           beatType: 'transition',
-          color: '#64748b',
+          color: '#71717a',
         } as BeatEdgeData,
       });
     }

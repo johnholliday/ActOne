@@ -333,6 +333,7 @@
       nodeTypes={config.nodeTypes}
       edgeTypes={config.edgeTypes}
       fitView
+      proOptions={{ hideAttribution: true }}
       on:nodedragstop={handleNodeDragStop}
       on:nodedoubleclick={handleNodeDoubleClick}
       on:nodecontextmenu={handleNodeContextMenu}
@@ -377,7 +378,7 @@
   .diagram-container {
     width: 100%;
     height: 100%;
-    background: #0f172a;
+    background: #0D0D0D;
   }
 
   .context-overlay {
@@ -388,8 +389,8 @@
 
   .context-menu {
     position: fixed;
-    background: #1e293b;
-    border: 1px solid #334155;
+    background: #171717;
+    border: 1px solid #252525;
     border-radius: 6px;
     padding: 4px;
     min-width: 160px;
@@ -403,7 +404,7 @@
     padding: 6px 12px;
     background: none;
     border: none;
-    color: #e2e8f0;
+    color: #f8fafc;
     text-align: left;
     font-size: 13px;
     border-radius: 4px;
@@ -411,7 +412,7 @@
   }
 
   .context-menu button:hover {
-    background: #334155;
+    background: #252525;
   }
 
   .context-menu button.danger {

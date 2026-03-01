@@ -65,7 +65,7 @@
         startOffset="50%"
         text-anchor="middle"
         class="exchange-label"
-        fill="#e2e8f0"
+        fill="#f8fafc"
       >
         {data.label}
       </textPath>
@@ -78,7 +78,7 @@
         startOffset="50%"
         text-anchor="middle"
         class="exchange-mix"
-        fill="#64748b"
+        fill="#71717a"
         dy="14"
       >
         {styleMixLabel}

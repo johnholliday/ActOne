@@ -40,13 +40,13 @@
     border-radius: 6px;
     padding: 6px 12px;
     text-align: center;
-    background: #1e293b;
+    background: #171717;
   }
 
   .lifeline-name {
     font-weight: 700;
     font-size: 12px;
-    color: #e2e8f0;
+    color: #f8fafc;
   }
 
   .lifeline-nature {

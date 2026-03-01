@@ -42,13 +42,13 @@
 
 <style>
   .location-node {
-    background: #1e293b;
-    border: 1px solid #334155;
+    background: #171717;
+    border: 1px solid #252525;
     border-radius: 8px;
     padding: 8px 12px;
     min-width: 120px;
     font-size: 12px;
-    color: #e2e8f0;
+    color: #f8fafc;
   }
 
   .location-name {
@@ -58,7 +58,7 @@
 
   .location-desc {
     font-size: 10px;
-    color: #94a3b8;
+    color: #a1a1aa;
     margin-bottom: 4px;
   }
 
@@ -71,14 +71,14 @@
 
   .attr-badge {
     font-size: 9px;
-    background: #334155;
+    background: #252525;
     padding: 1px 4px;
     border-radius: 3px;
-    color: #cbd5e1;
+    color: #d4d4d8;
   }
 
   .scene-markers {
     font-size: 10px;
-    color: #64748b;
+    color: #71717a;
   }
 </style>
