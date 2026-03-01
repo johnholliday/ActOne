@@ -8,7 +8,7 @@
   import { page } from '$app/state';
   import { onMount } from 'svelte';
   import '../app.css';
-  import { uiStore, type DiagramView } from '$lib/stores/ui.svelte.js';
+  import { uiStore } from '$lib/stores/ui.svelte.js';
   import { parseLayoutPrefs, serializeLayoutPrefs } from '$lib/settings/layout.js';
   import { projectStore, type ProjectMeta, type SourceFileEntry } from '$lib/stores/project.svelte.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
@@ -18,6 +18,9 @@
   import MenuBar from '$lib/components/MenuBar.svelte';
   import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
+  import DockLayout from '$lib/dockview/DockLayout.svelte';
+  import { setDockApi, openPanel } from '$lib/dockview/panel-actions.js';
+  import type { DockviewApi } from 'dockview-core';
   import FileText from 'lucide-svelte/icons/file-text';
   import BookOpen from 'lucide-svelte/icons/book-open';
   import GitBranch from 'lucide-svelte/icons/git-branch';
@@ -83,17 +86,18 @@
   }
 
   let resizingSidebar = $state(false);
-  let resizingBottom = $state(false);
-  let bottomTab = $state<'problems' | 'output' | 'terminal'>('problems');
 
   const navItems = [
-    { icon: FileText, label: 'Editor', route: '/', match: (p: string) => p === '/' },
-    { icon: BookOpen, label: 'Story Bible', route: '/story-bible', match: (p: string) => p.startsWith('/story-bible') },
-    { icon: GitBranch, label: 'Diagrams', route: '/diagram/story-structure', match: (p: string) => p.startsWith('/diagram') },
-    { icon: ImageIcon, label: 'Gallery', route: '/gallery', match: (p: string) => p.startsWith('/gallery') },
-    { icon: Book, label: 'Reading Mode', route: '/reading-mode', match: (p: string) => p.startsWith('/reading-mode') },
-    { icon: Activity, label: 'Statistics', route: '/statistics', match: (p: string) => p.startsWith('/statistics') },
+    { icon: FileText, label: 'Editor', panelId: 'editor' },
+    { icon: BookOpen, label: 'Story Bible', panelId: 'story-bible' },
+    { icon: GitBranch, label: 'Diagrams', panelId: 'diagram-story-structure' },
+    { icon: ImageIcon, label: 'Gallery', panelId: 'gallery' },
+    { icon: Book, label: 'Reading Mode', panelId: 'reading-mode' },
+    { icon: Activity, label: 'Statistics', panelId: 'statistics' },
   ] as const;
+
+  /** Whether the current route is a settings page (rendered outside dockview) */
+  const isSettingsRoute = $derived(page.url.pathname.startsWith('/settings'));
 
   /** Extract user initials from validated user metadata */
   const userInitials = $derived.by(() => {
@@ -237,17 +241,9 @@
     }
   }
 
-  /* ── T023: Diagram navigation handler ──────────────────────── */
-  function handleDiagram(view: DiagramView) {
-    const routeMap: Record<DiagramView, string> = {
-      'story-structure': '/diagram/story-structure',
-      'character-network': '/diagram/character-network',
-      'world-map': '/diagram/world-map',
-      'timeline': '/diagram/timeline',
-      'interaction-sequence': '/diagram/interaction',
-    };
-    uiStore.setDiagramView(view);
-    void goto(routeMap[view]);
+  /* ── Dockview ready handler ────────────────────────────────── */
+  function handleDockReady(api: DockviewApi) {
+    setDockApi(api);
   }
 
   /* ── T024: Generate prose handler ──────────────────────────── */
@@ -267,29 +263,19 @@
     await goto('/auth');
   }
 
-  /** Persist current layout state to localStorage */
+  /** Persist sidebar layout state to localStorage */
   function persistLayout() {
     localStorage.setItem('actone:layout', serializeLayoutPrefs({
       sidebarWidth: uiStore.sidebarWidth,
       sidebarVisible: uiStore.sidebarVisible,
-      bottomPanelHeight: uiStore.bottomPanelHeight,
-      bottomPanelVisible: uiStore.bottomPanelVisible,
-      outlineWidth: uiStore.outlineWidth,
-      outlineVisible: uiStore.outlineVisible,
-      outlineDockPosition: uiStore.outlineDockPosition,
     }));
   }
 
   onMount(() => {
-    // Load layout preferences
+    // Load sidebar preferences (panel layout is managed by dockview persistence)
     const layoutPrefs = parseLayoutPrefs(localStorage.getItem('actone:layout'));
     uiStore.resizeSidebar(layoutPrefs.sidebarWidth);
     uiStore.sidebarVisible = layoutPrefs.sidebarVisible;
-    uiStore.resizeBottomPanel(layoutPrefs.bottomPanelHeight);
-    uiStore.bottomPanelVisible = layoutPrefs.bottomPanelVisible;
-    uiStore.resizeOutline(layoutPrefs.outlineWidth);
-    uiStore.outlineVisible = layoutPrefs.outlineVisible;
-    uiStore.setOutlineDockPosition(layoutPrefs.outlineDockPosition);
 
     const {
       data: { subscription },
@@ -342,39 +328,28 @@
         e.preventDefault();
         handleGenerate();
       }
-      // Ctrl+1–5: Switch diagram views
+      // Ctrl+1–5: Open diagram panels
       if (e.ctrlKey && e.key >= '1' && e.key <= '5') {
         e.preventDefault();
-        const views = [
-          '/diagram/story-structure',
-          '/diagram/character-network',
-          '/diagram/world-map',
-          '/diagram/timeline',
-          '/diagram/interaction',
+        const panels = [
+          'diagram-story-structure',
+          'diagram-character-network',
+          'diagram-world-map',
+          'diagram-timeline',
+          'diagram-interaction',
         ] as const;
         const idx = parseInt(e.key) - 1;
-        if (views[idx]) void goto(views[idx]);
+        if (panels[idx]) openPanel(panels[idx]);
       }
       // Ctrl+B: Toggle sidebar
       if (e.ctrlKey && e.key === 'b') {
         e.preventDefault();
         uiStore.toggleSidebar();
       }
-      // Ctrl+J: Toggle bottom panel
-      if (e.ctrlKey && e.key === 'j') {
-        e.preventDefault();
-        uiStore.toggleBottomPanel();
-      }
       // Ctrl+Shift+F: Format document
       if (e.ctrlKey && e.shiftKey && e.key === 'F') {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent('actone:format-document'));
-      }
-      // Ctrl+Shift+O: Toggle outline
-      if (e.ctrlKey && e.shiftKey && e.key === 'O') {
-        e.preventDefault();
-        uiStore.toggleOutline();
-        persistLayout();
       }
       // Alt+Z: Toggle word wrap
       if (e.altKey && e.key === 'z') {
@@ -389,11 +364,6 @@
     }
     window.addEventListener('actone:open-project', handleOpenProject);
 
-    function handlePersistLayout() {
-      persistLayout();
-    }
-    window.addEventListener('actone:persist-layout', handlePersistLayout);
-
     function handleBeforeUnload(e: BeforeUnloadEvent) {
       if (editorStore.hasUnsavedChanges) {
         e.preventDefault();
@@ -406,7 +376,6 @@
       subscription.unsubscribe();
       window.removeEventListener('keydown', handleKeydown);
       window.removeEventListener('actone:open-project', handleOpenProject);
-      window.removeEventListener('actone:persist-layout', handlePersistLayout);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   });
@@ -427,21 +396,6 @@
     window.addEventListener('mouseup', onMouseUp);
   }
 
-  function handleBottomMouseDown(e: MouseEvent) {
-    e.preventDefault();
-    resizingBottom = true;
-    const onMouseMove = (ev: MouseEvent) => {
-      uiStore.resizeBottomPanel(window.innerHeight - ev.clientY);
-    };
-    const onMouseUp = () => {
-      resizingBottom = false;
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-      persistLayout();
-    };
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  }
 </script>
 
 <svelte:window onclick={() => { profileMenuOpen = false; projectSelectorOpen = false; }} />
@@ -466,15 +420,14 @@
         <!-- Navigation items -->
         <nav class="flex flex-col gap-0.5 px-2 py-2">
           {#each navItems as item}
-            {@const active = item.match(page.url.pathname)}
-            <a
-              href={item.route}
+            <button
               class="flex h-8 items-center gap-2.5 rounded px-2.5 text-[13px] transition-colors
-                {active ? 'bg-[#F59E0B40] text-amber-300' : 'text-zinc-500 hover:bg-white/5 hover:text-zinc-300'}"
+                text-zinc-500 hover:bg-white/5 hover:text-zinc-300"
+              onclick={() => openPanel(item.panelId)}
             >
               <item.icon size={16} />
               <span>{item.label}</span>
-            </a>
+            </button>
           {/each}
         </nav>
 
@@ -622,56 +575,18 @@
           oncreateproject={() => { showNewProjectDialog = true; }}
           onadvancestage={handleAdvanceStage}
           onsnapshot={handleSnapshot}
-          ondiagram={handleDiagram}
           ongenerate={handleGenerate}
-          onnavigate={(path) => void goto(path)}
         />
       </header>
 
-      <!-- Primary content -->
+      <!-- Primary content: DockLayout for workspace, or route children for settings -->
       <main class="flex-1 overflow-hidden">
-        {@render children()}
+        {#if isSettingsRoute}
+          {@render children()}
+        {:else}
+          <DockLayout onReady={handleDockReady} />
+        {/if}
       </main>
-
-      <!-- Bottom panel resize handle -->
-      {#if uiStore.bottomPanelVisible}
-        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-        <div
-          class="h-1 cursor-row-resize bg-transparent hover:bg-amber-500/30 {resizingBottom ? 'bg-amber-500/50' : ''}"
-          role="separator"
-          tabindex="-1"
-          onmousedown={handleBottomMouseDown}
-        ></div>
-
-        <!-- Bottom panel zone (diagnostics, output) -->
-        <div
-          class="flex flex-col border-t border-[#252525] bg-surface-850"
-          style="height: {uiStore.bottomPanelHeight}px;"
-        >
-          <!-- Tab bar -->
-          <div class="flex h-8 items-center gap-4 border-b border-[#252525] px-3">
-            {#each ['problems', 'output', 'terminal'] as tab}
-              <button
-                class="text-[12px] capitalize transition-colors
-                  {bottomTab === tab ? 'font-medium text-amber-300' : 'text-zinc-500 hover:text-zinc-300'}"
-                onclick={() => bottomTab = tab as typeof bottomTab}
-              >
-                {tab === 'problems' ? 'Problems' : tab === 'output' ? 'Output' : 'Terminal'}
-              </button>
-            {/each}
-          </div>
-          <!-- Tab content -->
-          <div class="flex-1 overflow-auto p-3 text-[12px] text-zinc-400">
-            {#if bottomTab === 'problems'}
-              No problems detected.
-            {:else if bottomTab === 'output'}
-              <!-- Output content placeholder -->
-            {:else}
-              <!-- Terminal content placeholder -->
-            {/if}
-          </div>
-        </div>
-      {/if}
     </div>
   </div>
 

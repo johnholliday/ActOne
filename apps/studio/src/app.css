@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
+@import 'dockview-core/dist/styles/dockview.css';
 @import 'tailwindcss';
 
 @theme {
@@ -45,4 +46,48 @@
   --color-beat-falling: #8b5cf6;
   --color-beat-resolution: #06b6d4;
   --color-beat-denouement: #64748b;
+}
+
+/* ── Dockview theme overrides ──────────────────────────────── */
+
+.dv-dockview {
+  --dv-group-view-background-color: #141414;
+  --dv-tabs-and-actions-container-background-color: #171717;
+  --dv-tabs-and-actions-container-height: 32px;
+  --dv-tabs-and-actions-container-font-size: 12px;
+  --dv-tab-font-size: 12px;
+
+  /* Active group — visible (selected) tab */
+  --dv-activegroup-visiblepanel-tab-background-color: #141414;
+  --dv-activegroup-visiblepanel-tab-color: #fbbf24;
+
+  /* Active group — hidden (unselected) tabs */
+  --dv-activegroup-hiddenpanel-tab-background-color: #171717;
+  --dv-activegroup-hiddenpanel-tab-color: #71717a;
+
+  /* Inactive group — visible tab */
+  --dv-inactivegroup-visiblepanel-tab-background-color: #171717;
+  --dv-inactivegroup-visiblepanel-tab-color: #a1a1aa;
+
+  /* Inactive group — hidden tabs */
+  --dv-inactivegroup-hiddenpanel-tab-background-color: #171717;
+  --dv-inactivegroup-hiddenpanel-tab-color: #71717a;
+
+  /* Separator / border */
+  --dv-separator-border: #252525;
+  --dv-tab-divider-color: #252525;
+
+  /* Sash (resize dividers) */
+  --dv-sash-color: transparent;
+  --dv-active-sash-color: rgba(245, 158, 11, 0.5);
+
+  /* Drag-and-drop overlay */
+  --dv-drag-over-background-color: rgba(245, 158, 11, 0.15);
+  --dv-drag-over-border-color: rgba(245, 158, 11, 0.4);
+
+  /* Scrollbar */
+  --dv-scrollbar-background-color: rgba(245, 158, 11, 0.2);
+
+  /* Icon hover */
+  --dv-icon-hover-background-color: rgba(255, 255, 255, 0.1);
 }

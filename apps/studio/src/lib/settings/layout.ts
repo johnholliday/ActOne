@@ -1,30 +1,18 @@
 /**
- * Layout preferences logic for panel sizes, visibility, and dock positions.
+ * Layout preferences logic for sidebar size and visibility.
+ * Panel layout (editor, diagnostics, outline, etc.) is now managed
+ * by dockview's built-in serialization/persistence.
  */
-
-export type DockPosition = 'right' | 'bottom';
 
 export interface LayoutPrefs {
   sidebarWidth: number;
   sidebarVisible: boolean;
-  bottomPanelHeight: number;
-  bottomPanelVisible: boolean;
-  outlineWidth: number;
-  outlineVisible: boolean;
-  outlineDockPosition: DockPosition;
 }
 
 const DEFAULTS: LayoutPrefs = {
   sidebarWidth: 256,
   sidebarVisible: true,
-  bottomPanelHeight: 192,
-  bottomPanelVisible: true,
-  outlineWidth: 224,
-  outlineVisible: true,
-  outlineDockPosition: 'right',
 };
-
-const VALID_DOCK_POSITIONS = new Set<string>(['right', 'bottom']);
 
 export function parseLayoutPrefs(raw: string | null): LayoutPrefs {
   if (!raw) return { ...DEFAULTS };
@@ -42,39 +30,9 @@ export function parseLayoutPrefs(raw: string | null): LayoutPrefs {
         ? parsed.sidebarVisible
         : DEFAULTS.sidebarVisible;
 
-    const bottomPanelHeight =
-      typeof parsed.bottomPanelHeight === 'number'
-        ? parsed.bottomPanelHeight
-        : DEFAULTS.bottomPanelHeight;
-
-    const bottomPanelVisible =
-      typeof parsed.bottomPanelVisible === 'boolean'
-        ? parsed.bottomPanelVisible
-        : DEFAULTS.bottomPanelVisible;
-
-    const outlineWidth =
-      typeof parsed.outlineWidth === 'number'
-        ? parsed.outlineWidth
-        : DEFAULTS.outlineWidth;
-
-    const outlineVisible =
-      typeof parsed.outlineVisible === 'boolean'
-        ? parsed.outlineVisible
-        : DEFAULTS.outlineVisible;
-
-    const outlineDockPosition =
-      typeof parsed.outlineDockPosition === 'string' && VALID_DOCK_POSITIONS.has(parsed.outlineDockPosition)
-        ? (parsed.outlineDockPosition as DockPosition)
-        : DEFAULTS.outlineDockPosition;
-
     return {
       sidebarWidth,
       sidebarVisible,
-      bottomPanelHeight,
-      bottomPanelVisible,
-      outlineWidth,
-      outlineVisible,
-      outlineDockPosition,
     };
   } catch {
     return { ...DEFAULTS };

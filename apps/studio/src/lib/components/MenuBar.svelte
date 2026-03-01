@@ -7,18 +7,19 @@
   import { uiStore, type DiagramView } from '$lib/stores/ui.svelte.js';
   import { getValidTargets, getStageLabel } from '$lib/project/lifecycle.js';
   import { parseAppearancePrefs } from '$lib/settings/appearance.js';
+  import { openPanel, getDockApi } from '$lib/dockview/panel-actions.js';
+  import { clearLayout } from '$lib/dockview/layout-persistence.js';
+  import { applyDefaultLayout } from '$lib/dockview/default-layout.js';
   import type { LifecycleStage } from '@repo/shared';
 
   interface Props {
     oncreateproject?: () => void;
     onadvancestage?: (target: LifecycleStage) => void;
     onsnapshot?: () => void;
-    ondiagram?: (view: DiagramView) => void;
     ongenerate?: () => void;
-    onnavigate?: (path: string) => void;
   }
 
-  let { oncreateproject, onadvancestage, onsnapshot, ondiagram, ongenerate, onnavigate }: Props = $props();
+  let { oncreateproject, onadvancestage, onsnapshot, ongenerate }: Props = $props();
 
   let openMenu = $state<string | null>(null);
   let wordWrapEnabled = $state(false);
@@ -60,6 +61,20 @@
     { id: 'timeline', label: 'Timeline' },
     { id: 'interaction-sequence', label: 'Interaction Sequence' },
   ];
+
+  const diagramPanelMap: Record<DiagramView, string> = {
+    'story-structure': 'diagram-story-structure',
+    'character-network': 'diagram-character-network',
+    'world-map': 'diagram-world-map',
+    'timeline': 'diagram-timeline',
+    'interaction-sequence': 'diagram-interaction',
+  };
+
+  function handleResetLayout() {
+    clearLayout();
+    const api = getDockApi();
+    if (api) applyDefaultLayout(api);
+  }
 </script>
 
 <svelte:window onclick={closeMenus} />
@@ -139,7 +154,7 @@
 
         <button
           class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
-          onclick={() => { onnavigate?.('/export'); closeMenus(); }}
+          onclick={() => { openPanel('export'); closeMenus(); }}
           disabled={!projectStore.isLoaded}
           role="menuitem"
         >
@@ -201,31 +216,9 @@
           role="menuitem"
         >
           <span>Sidebar</span>
-          {#if uiStore.sidebarVisible}
-            <span class="text-[10px] text-amber-400">&check;</span>
-          {/if}
-        </button>
-
-        <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { uiStore.toggleBottomPanel(); closeMenus(); }}
-          role="menuitem"
-        >
-          <span>Bottom Panel</span>
-          {#if uiStore.bottomPanelVisible}
-            <span class="text-[10px] text-amber-400">&check;</span>
-          {/if}
-        </button>
-
-        <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { uiStore.toggleOutline(); window.dispatchEvent(new CustomEvent('actone:persist-layout')); closeMenus(); }}
-          role="menuitem"
-        >
-          <span>Outline</span>
           <span class="flex items-center gap-2">
-            <span class="text-[10px] text-white/30">Ctrl+Shift+O</span>
-            {#if uiStore.outlineVisible}
+            <span class="text-[10px] text-white/30">Ctrl+B</span>
+            {#if uiStore.sidebarVisible}
               <span class="text-[10px] text-amber-400">&check;</span>
             {/if}
           </span>
@@ -247,30 +240,12 @@
 
         <div class="my-1 border-t border-[#252525]"></div>
 
-        <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-white/30">
-          Outline Position
-        </div>
-
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { uiStore.setOutlineDockPosition('right'); window.dispatchEvent(new CustomEvent('actone:persist-layout')); closeMenus(); }}
+          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { handleResetLayout(); closeMenus(); }}
           role="menuitem"
         >
-          <span>Dock Right</span>
-          {#if uiStore.outlineDockPosition === 'right'}
-            <span class="text-[10px] text-amber-400">&bull;</span>
-          {/if}
-        </button>
-
-        <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { uiStore.setOutlineDockPosition('bottom'); window.dispatchEvent(new CustomEvent('actone:persist-layout')); closeMenus(); }}
-          role="menuitem"
-        >
-          <span>Dock Bottom</span>
-          {#if uiStore.outlineDockPosition === 'bottom'}
-            <span class="text-[10px] text-amber-400">&bull;</span>
-          {/if}
+          Reset Layout
         </button>
 
         <div class="my-1 border-t border-[#252525]"></div>
@@ -282,7 +257,7 @@
         {#each diagramViews as view}
           <button
             class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-            onclick={() => { ondiagram?.(view.id); closeMenus(); }}
+            onclick={() => { uiStore.setDiagramView(view.id); openPanel(diagramPanelMap[view.id]); closeMenus(); }}
             role="menuitem"
           >
             <span>{view.label}</span>
@@ -300,7 +275,7 @@
 
         <button
           class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { onnavigate?.('/story-bible'); closeMenus(); }}
+          onclick={() => { openPanel('story-bible'); closeMenus(); }}
           role="menuitem"
         >
           Story Bible
@@ -308,7 +283,7 @@
 
         <button
           class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { onnavigate?.('/statistics'); closeMenus(); }}
+          onclick={() => { openPanel('statistics'); closeMenus(); }}
           role="menuitem"
         >
           Statistics
@@ -322,7 +297,7 @@
 
         <button
           class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { onnavigate?.('/reading-mode'); closeMenus(); }}
+          onclick={() => { openPanel('reading-mode'); closeMenus(); }}
           role="menuitem"
         >
           Reading Mode
@@ -330,7 +305,7 @@
 
         <button
           class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { onnavigate?.('/spread-preview'); closeMenus(); }}
+          onclick={() => { openPanel('spread-preview'); closeMenus(); }}
           role="menuitem"
         >
           Spread Preview
@@ -368,7 +343,7 @@
 
         <button
           class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
-          onclick={() => { onnavigate?.('/gallery'); closeMenus(); }}
+          onclick={() => { openPanel('gallery'); closeMenus(); }}
           disabled={!projectStore.isLoaded}
           role="menuitem"
         >
@@ -415,8 +390,6 @@
           <div class="flex justify-between"><span>Open Project</span><span>Ctrl+O</span></div>
           <div class="flex justify-between"><span>Generate Prose</span><span>Ctrl+G</span></div>
           <div class="flex justify-between"><span>Toggle Sidebar</span><span>Ctrl+B</span></div>
-          <div class="flex justify-between"><span>Toggle Bottom</span><span>Ctrl+J</span></div>
-          <div class="flex justify-between"><span>Toggle Outline</span><span>Ctrl+Shift+O</span></div>
           <div class="flex justify-between"><span>Word Wrap</span><span>Alt+Z</span></div>
           <div class="flex justify-between"><span>Format Document</span><span>Ctrl+Shift+F</span></div>
           <div class="flex justify-between"><span>Diagram 1–5</span><span>Ctrl+1–5</span></div>
