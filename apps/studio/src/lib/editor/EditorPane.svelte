@@ -55,6 +55,11 @@
   let view: EditorView | null = null;
   let client: LangiumClient | null = null;
 
+  /** Mutable URI that can be updated when switching documents.
+   * Intentionally captures initial value — not reactive to prop changes. */
+  // eslint-disable-next-line svelte/valid-compile
+  let currentUri = $state(uri);
+
   /** T014: Worker error state for error banner display */
   let workerError = $state<string | null>(null);
 
@@ -93,10 +98,10 @@
         workerError = err instanceof Error ? err.message : 'Language server error';
       },
       onReady: () => {
-        console.log('[EditorPane] onReady fired, uri:', uri, 'content length:', initialContent.length);
+        console.log('[EditorPane] onReady fired, uri:', currentUri, 'content length:', initialContent.length);
         workerError = null;
         // Inform the worker that we have a document open
-        langiumClient.didOpen(uri, 'actone', initialContent);
+        langiumClient.didOpen(currentUri, 'actone', initialContent);
 
         // Initialize the Langium workspace with full project context
         console.log('[EditorPane] projectContext:', projectContext ? `projectId=${projectContext.projectId}, files=${projectContext.fileOrder.length}` : 'null');
@@ -106,15 +111,15 @@
             // Refresh semantic tokens and folding ranges after workspace is built
             if (view) {
               console.log('[EditorPane] requesting semantic tokens + folding ranges');
-              refreshSemanticTokens(langiumClient, uri, view);
-              refreshFoldingRanges(langiumClient, uri, view);
+              refreshSemanticTokens(langiumClient, currentUri, view);
+              refreshFoldingRanges(langiumClient, currentUri, view);
             }
           }).catch((err) => {
             console.error('[EditorPane] openProject failed:', err);
             // Still attempt token refresh even if openProject fails
             if (view) {
-              refreshSemanticTokens(langiumClient, uri, view);
-              refreshFoldingRanges(langiumClient, uri, view);
+              refreshSemanticTokens(langiumClient, currentUri, view);
+              refreshFoldingRanges(langiumClient, currentUri, view);
             }
           });
         } else {
@@ -123,8 +128,8 @@
           setTimeout(() => {
             if (view) {
               console.log('[EditorPane] delayed: requesting semantic tokens + folding ranges');
-              refreshSemanticTokens(langiumClient, uri, view);
-              refreshFoldingRanges(langiumClient, uri, view);
+              refreshSemanticTokens(langiumClient, currentUri, view);
+              refreshFoldingRanges(langiumClient, currentUri, view);
             }
           }, 300);
         }
@@ -150,7 +155,7 @@
       foldGutter(),
       keymap.of([...defaultKeymap, ...historyKeymap, ...closeBracketsKeymap, ...foldKeymap]),
       actoneKeywordHighlighter,
-      langiumExtension(langiumClient, uri),
+      langiumExtension(langiumClient, () => currentUri),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
           const content = update.state.doc.toString();
@@ -298,7 +303,7 @@
     });
 
     // Set active URI in AST store
-    astStore.activeUri = uri;
+    astStore.activeUri = currentUri;
 
     // Word wrap toggle listener
     function handleToggleWordWrap() {
@@ -314,7 +319,7 @@
       // Cleanup
       window.removeEventListener('actone:toggle-word-wrap', handleToggleWordWrap);
       if (langiumClient.isReady) {
-        langiumClient.didClose(uri);
+        langiumClient.didClose(currentUri);
       }
       langiumClient.stop();
       view?.destroy();
@@ -333,9 +338,14 @@
     editorStore.updateDiagnosticCount(astStore.totalDiagnostics);
 
     // Push to CodeMirror view (with code actions if client available)
-    if (view && diagnosticUri === uri) {
-      pushDiagnostics(view, diagnostics, client ?? undefined, uri);
+    if (view && diagnosticUri === currentUri) {
+      pushDiagnostics(view, diagnostics, client ?? undefined, currentUri);
     }
+
+    // Notify parent that the worker has processed this document
+    window.dispatchEvent(new CustomEvent('actone:diagnostics-ready', {
+      detail: { uri: diagnosticUri },
+    }));
 
     // Request serialized AST after diagnostics arrive
     if (client?.isReady) {
@@ -377,12 +387,56 @@
     if (!client?.isReady || !view) return;
 
     try {
-      const result = await client.formatDocument(uri);
+      const result = await client.formatDocument(currentUri);
       if (result.formattedText) {
         setText(result.formattedText);
       }
     } catch (err) {
       console.error('[EditorPane] Format failed:', err);
+    }
+  }
+
+  /** Move cursor to an LSP position (0-based line/character) and scroll into view */
+  export function revealPosition(line: number, character: number): void {
+    if (!view) return;
+    const cmLine = view.state.doc.line(line + 1);
+    const offset = cmLine.from + character;
+    view.dispatch({
+      selection: { anchor: offset },
+      scrollIntoView: true,
+    });
+    view.focus();
+  }
+
+  /** Switch to a different document without recreating the editor */
+  export function setDocument(newUri: string, content: string): void {
+    if (!view || !client) return;
+
+    // Close old document in language server
+    if (client.isReady) {
+      client.didClose(currentUri);
+    }
+
+    // Replace CodeMirror content
+    view.dispatch({
+      changes: {
+        from: 0,
+        to: view.state.doc.length,
+        insert: content,
+      },
+    });
+
+    // Update mutable URI
+    currentUri = newUri;
+    astStore.activeUri = newUri;
+
+    // Open new document in language server
+    if (client.isReady) {
+      client.didOpen(newUri, 'actone', content);
+
+      // Refresh semantic tokens and folding ranges for the new document
+      refreshSemanticTokens(client, newUri, view);
+      refreshFoldingRanges(client, newUri, view);
     }
   }
 

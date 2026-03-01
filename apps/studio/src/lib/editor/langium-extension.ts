@@ -418,9 +418,9 @@ async function performRename(
  * Create a CodeMirror extension that bridges to the given LangiumClient.
  *
  * @param client - The LangiumClient instance
- * @param uri - The document URI used in LSP protocol
+ * @param getUri - Accessor returning the current document URI (supports document switching)
  */
-export function langiumExtension(client: LangiumClient, uri: string): Extension {
+export function langiumExtension(client: LangiumClient, getUri: () => string): Extension {
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let semanticTimer: ReturnType<typeof setTimeout> | null = null;
   let refClearTimer: ReturnType<typeof setTimeout> | null = null;
@@ -436,13 +436,13 @@ export function langiumExtension(client: LangiumClient, uri: string): Extension 
           if (debounceTimer) clearTimeout(debounceTimer);
           debounceTimer = setTimeout(() => {
             const text = update.state.doc.toString();
-            client.didChange(uri, text);
+            client.didChange(getUri(), text);
 
             // Refresh semantic tokens after a change settles (500ms)
             if (semanticTimer) clearTimeout(semanticTimer);
             semanticTimer = setTimeout(() => {
-              fetchSemanticTokens(client, uri, view);
-              fetchFoldingRanges(client, uri, view);
+              fetchSemanticTokens(client, getUri(), view);
+              fetchFoldingRanges(client, getUri(), view);
             }, 500);
           }, 150);
         }
@@ -477,7 +477,7 @@ export function langiumExtension(client: LangiumClient, uri: string): Extension 
     const pos = cmOffsetToLspPosition(context.state.doc, context.pos);
 
     try {
-      const result = await client.completion(uri, pos);
+      const result = await client.completion(getUri(), pos);
       if (!result) return null;
 
       const items: CompletionItem[] = Array.isArray(result)
@@ -514,7 +514,7 @@ export function langiumExtension(client: LangiumClient, uri: string): Extension 
     const lspPos = cmOffsetToLspPosition(view.state.doc, pos);
 
     try {
-      const hover = await client.hover(uri, lspPos);
+      const hover = await client.hover(getUri(), lspPos);
       if (!hover) return null;
 
       const content =
@@ -549,21 +549,21 @@ export function langiumExtension(client: LangiumClient, uri: string): Extension 
     {
       key: 'F12',
       run(view) {
-        goToDefinition(client, uri, view, view.state.selection.main.head);
+        goToDefinition(client, getUri(), view, view.state.selection.main.head);
         return true;
       },
     },
     {
       key: 'Shift-F12',
       run(view) {
-        findReferences(client, uri, view, view.state.selection.main.head);
+        findReferences(client, getUri(), view, view.state.selection.main.head);
         return true;
       },
     },
     {
       key: 'F2',
       run(view) {
-        performRename(client, uri, view);
+        performRename(client, getUri(), view);
         return true;
       },
     },
@@ -576,7 +576,7 @@ export function langiumExtension(client: LangiumClient, uri: string): Extension 
       const offset = view.posAtCoords({ x: event.clientX, y: event.clientY });
       if (offset === null) return false;
       event.preventDefault();
-      goToDefinition(client, uri, view, offset);
+      goToDefinition(client, getUri(), view, offset);
       return true;
     },
   });

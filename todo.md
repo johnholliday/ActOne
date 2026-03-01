@@ -1,6 +1,11 @@
 # TODO
 
-## Project Creation
+## Layout
 
-* When creating a new project, the initial file should always be named "story.actone", which is different than the project name.  Additional files can be named whatever the user wants, but "story.actone" cannot be renamed, as it is the entry point for the story.
+* Incorporate all views except the sidebar into the Dockview layout manager.
 
+* The SvelteFlow canvas must match the overall styling (e.g., dark theme), but must also support custom background colors set as user preferences.
+
+## Misc
+
+* The Outline should display objects hierarchically in the appropriate categories (World, Characters, Plot, Scenes, Interactions, etc. ). Clicking an object in the outline should automatically navigate to the corresponding object in the active editor.

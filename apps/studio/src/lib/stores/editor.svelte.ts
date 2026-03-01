@@ -20,6 +20,9 @@ class EditorStore {
   /** ID of the active (focused) file */
   activeFileId = $state<string | null>(null);
 
+  /** In-memory content cache for unsaved edits across tab switches */
+  private contentBuffers = new Map<string, string>();
+
   /** Current cursor position */
   cursor = $state<CursorPosition>({ line: 1, column: 1 });
 
@@ -51,6 +54,8 @@ class EditorStore {
   }
 
   close(fileId: string) {
+    if (this.openFiles.length <= 1) return;
+    this.removeBuffer(fileId);
     this.openFiles = this.openFiles.filter((f) => f.id !== fileId);
     if (this.activeFileId === fileId) {
       this.activeFileId = this.openFiles[0]?.id ?? null;
@@ -84,7 +89,28 @@ class EditorStore {
     }
   }
 
+  /** Store content in the buffer for a file */
+  setBuffer(fileId: string, content: string) {
+    this.contentBuffers.set(fileId, content);
+  }
+
+  /** Retrieve buffered content for a file */
+  getBuffer(fileId: string): string | undefined {
+    return this.contentBuffers.get(fileId);
+  }
+
+  /** Remove buffered content for a file */
+  removeBuffer(fileId: string) {
+    this.contentBuffers.delete(fileId);
+  }
+
+  /** Switch active tab without re-opening */
+  setActiveFile(fileId: string) {
+    this.activeFileId = fileId;
+  }
+
   closeAll() {
+    this.contentBuffers.clear();
     this.openFiles = [];
     this.activeFileId = null;
   }
