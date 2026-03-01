@@ -63,7 +63,7 @@
         startOffset="50%"
         text-anchor="middle"
         class="rel-label"
-        fill="#94a3b8"
+        fill="#a1a1aa"
       >
         {data.label}
       </textPath>

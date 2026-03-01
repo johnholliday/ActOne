@@ -61,6 +61,8 @@ Uses ESLint 9 flat config format (`.mjs` files). Base config includes `typescrip
 - N/A (tests use mocks for database and storage; no persistent test data) (003-actone-studio-tests)
 - TypeScript 5.9 (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + SvelteKit 2.53.x, Svelte 5.53.x (runes), Langium 4.2.x, @xyflow/svelte 1.5.x, CodeMirror 6, Drizzle ORM 0.45.x, @supabase/supabase-js 2.97.x, @supabase/ssr 0.8.x, Tailwind CSS 4.2.x, Zod (004-wire-studio-screens)
 - Supabase PostgreSQL (Drizzle ORM for schema/queries, Supabase client for auth/storage) (004-wire-studio-screens)
+- TypeScript 5.9 (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + SvelteKit 2.53.x, Svelte 5.53.x (runes), dockview-core 5.0.0 (new) (005-dockview-layout)
+- Layout state in localStorage (client-side only); no database changes (005-dockview-layout)
 
 ## Recent Changes
 - 001-string-utils: Added TypeScript 5.9 (strict mode, ES2022 target) + None at runtime; Vitest for testing (dev only)

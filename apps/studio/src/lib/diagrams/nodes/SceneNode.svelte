@@ -39,13 +39,13 @@
 
 <style>
   .scene-node {
-    background: #1e293b;
-    border: 1px solid #334155;
+    background: #171717;
+    border: 1px solid #252525;
     border-radius: 6px;
     padding: 8px 12px;
     min-width: 140px;
     font-size: 12px;
-    color: #e2e8f0;
+    color: #f8fafc;
   }
 
   .scene-header {
@@ -67,18 +67,18 @@
 
   .scene-location {
     font-size: 10px;
-    color: #94a3b8;
+    color: #a1a1aa;
   }
 
   .scene-participants {
     font-size: 10px;
-    color: #64748b;
+    color: #71717a;
     margin-top: 4px;
   }
 
   .scene-wordcount {
     font-size: 10px;
-    color: #475569;
+    color: #52525b;
     margin-top: 2px;
     text-align: right;
   }

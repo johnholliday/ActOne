@@ -29,7 +29,7 @@ function atmosphereColor(atmosphere: Array<{ name: string; value: number }>): st
   if (avg >= 0.7) return '#ef4444'; // intense
   if (avg >= 0.5) return '#f59e0b'; // warm
   if (avg >= 0.3) return '#3b82f6'; // moderate
-  return '#94a3b8'; // cool/subdued
+  return '#a1a1aa'; // cool/subdued
 }
 
 export function transformWorldMap(story: SerializedStory): WorldMapResult {
@@ -61,7 +61,7 @@ export function transformWorldMap(story: SerializedStory): WorldMapResult {
         label: world.name,
         name: world.name,
         period: world.period,
-        color: '#1e293b',
+        color: '#171717',
       } as WorldContainerData,
     });
 

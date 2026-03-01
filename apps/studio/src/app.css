@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
+@import 'dockview-core/dist/styles/dockview.css';
 @import 'tailwindcss';
 
 @theme {
@@ -45,4 +46,134 @@
   --color-beat-falling: #8b5cf6;
   --color-beat-resolution: #06b6d4;
   --color-beat-denouement: #64748b;
+}
+
+/* ── Dockview theme overrides ──────────────────────────────── */
+
+.dv-dockview {
+  --dv-group-view-background-color: #141414;
+  --dv-tabs-and-actions-container-background-color: #171717;
+  --dv-tabs-and-actions-container-height: 32px;
+  --dv-tabs-and-actions-container-font-size: 12px;
+  --dv-tab-font-size: 12px;
+
+  /* Active group — visible (selected) tab */
+  --dv-activegroup-visiblepanel-tab-background-color: #141414;
+  --dv-activegroup-visiblepanel-tab-color: #fbbf24;
+
+  /* Active group — hidden (unselected) tabs */
+  --dv-activegroup-hiddenpanel-tab-background-color: #171717;
+  --dv-activegroup-hiddenpanel-tab-color: #71717a;
+
+  /* Inactive group — visible tab */
+  --dv-inactivegroup-visiblepanel-tab-background-color: #171717;
+  --dv-inactivegroup-visiblepanel-tab-color: #a1a1aa;
+
+  /* Inactive group — hidden tabs */
+  --dv-inactivegroup-hiddenpanel-tab-background-color: #171717;
+  --dv-inactivegroup-hiddenpanel-tab-color: #71717a;
+
+  /* Separator / border */
+  --dv-separator-border: #252525;
+  --dv-tab-divider-color: #252525;
+
+  /* Sash (resize dividers) */
+  --dv-sash-color: transparent;
+  --dv-active-sash-color: rgba(245, 158, 11, 0.5);
+
+  /* Drag-and-drop overlay */
+  --dv-drag-over-background-color: rgba(245, 158, 11, 0.15);
+  --dv-drag-over-border-color: rgba(245, 158, 11, 0.4);
+
+  /* Scrollbar */
+  --dv-scrollbar-background-color: rgba(245, 158, 11, 0.2);
+
+  /* Icon hover */
+  --dv-icon-hover-background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ── SvelteFlow theme overrides ──────────────────────────── */
+
+.svelte-flow {
+  --xy-background-color: #0D0D0D;
+  --xy-node-border-radius: 6px;
+  --xy-edge-stroke: #252525;
+  --xy-edge-stroke-selected: #f59e0b;
+  --xy-edge-stroke-width: 2;
+  --xy-connectionline-stroke: #f59e0b;
+  --xy-connectionline-stroke-width: 2;
+  --xy-attribution-background-color: transparent;
+}
+
+.svelte-flow .svelte-flow__controls {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid #252525;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.svelte-flow .svelte-flow__controls button {
+  background: #171717;
+  border-bottom: 1px solid #252525;
+  color: #a1a1aa;
+  fill: #a1a1aa;
+  width: 28px;
+  height: 28px;
+}
+
+.svelte-flow .svelte-flow__controls button:hover {
+  background: #252525;
+  color: #f8fafc;
+  fill: #f8fafc;
+}
+
+.svelte-flow .svelte-flow__controls button:last-child {
+  border-bottom: none;
+}
+
+.svelte-flow .svelte-flow__controls button svg {
+  fill: inherit;
+}
+
+.svelte-flow .svelte-flow__minimap {
+  background: #141414;
+  border: 1px solid #252525;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.svelte-flow .svelte-flow__minimap-mask {
+  fill: rgba(13, 13, 13, 0.7);
+}
+
+.svelte-flow .svelte-flow__minimap-node {
+  fill: #252525;
+  stroke: #3f3f46;
+}
+
+.svelte-flow .svelte-flow__background pattern line {
+  stroke: #1a1a1a;
+}
+
+.svelte-flow .svelte-flow__background pattern circle {
+  fill: #252525;
+}
+
+.svelte-flow .svelte-flow__handle {
+  background: #f59e0b;
+  border: 2px solid #171717;
+  width: 8px;
+  height: 8px;
+}
+
+.svelte-flow .svelte-flow__handle:hover {
+  background: #fbbf24;
+}
+
+.svelte-flow .svelte-flow__node.selected {
+  box-shadow: 0 0 0 2px #f59e0b;
+}
+
+.svelte-flow .svelte-flow__edge.selected .svelte-flow__edge-path {
+  stroke: #f59e0b;
 }

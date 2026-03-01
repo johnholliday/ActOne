@@ -49,7 +49,7 @@
     justify-content: center;
     padding: 8px;
     font-size: 11px;
-    color: #e2e8f0;
+    color: #f8fafc;
     text-align: center;
     overflow: hidden;
   }
@@ -65,7 +65,7 @@
 
   .character-role {
     font-size: 9px;
-    color: #94a3b8;
+    color: #a1a1aa;
   }
 
   .character-nature {
@@ -76,7 +76,7 @@
 
   .character-traits {
     font-size: 8px;
-    color: #64748b;
+    color: #71717a;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

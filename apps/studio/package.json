@@ -23,6 +23,7 @@
     "@supabase/supabase-js": "^2.97.0",
     "@xyflow/svelte": "^1.5.1",
     "archiver": "^7.0.1",
+    "dockview-core": "^5.0.0",
     "docx": "^9.6.0",
     "drizzle-orm": "^0.45.1",
     "elkjs": "^0.11.0",

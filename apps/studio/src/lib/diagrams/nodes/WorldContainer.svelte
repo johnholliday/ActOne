@@ -24,8 +24,8 @@
 
 <style>
   .world-container {
-    background: #0f172a;
-    border: 1px dashed #334155;
+    background: #0D0D0D;
+    border: 1px dashed #252525;
     border-radius: 12px;
     padding: 12px;
     min-width: 300px;
@@ -42,12 +42,12 @@
   .world-name {
     font-weight: 700;
     font-size: 14px;
-    color: #e2e8f0;
+    color: #f8fafc;
   }
 
   .world-period {
     font-size: 11px;
-    color: #64748b;
+    color: #71717a;
     font-style: italic;
   }
 </style>

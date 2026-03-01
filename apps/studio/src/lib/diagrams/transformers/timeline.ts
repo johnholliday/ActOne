@@ -59,7 +59,7 @@ export function transformTimeline(story: SerializedStory): TimelineResult {
           name: layer.name,
           description: layer.description,
           period: layer.period,
-          color: '#334155',
+          color: '#252525',
         } as TimelineLayerData,
       });
 
@@ -100,7 +100,7 @@ export function transformTimeline(story: SerializedStory): TimelineResult {
       data: {
         label: 'Unassigned',
         name: '__default__',
-        color: '#1e293b',
+        color: '#171717',
       } as TimelineLayerData,
     });
 
@@ -140,7 +140,7 @@ export function transformTimeline(story: SerializedStory): TimelineResult {
       // Create a band per act
       for (const [act, beatTypes] of beatsByAct) {
         const dominantType = beatTypes[0] ?? 'action';
-        const bandColor = BEAT_TYPE_COLORS[dominantType as keyof typeof BEAT_TYPE_COLORS] ?? '#64748b';
+        const bandColor = BEAT_TYPE_COLORS[dominantType as keyof typeof BEAT_TYPE_COLORS] ?? '#71717a';
         const startRatio = (act - 1) / 3;
         const endRatio = act / 3;
 
@@ -178,7 +178,7 @@ export function transformTimeline(story: SerializedStory): TimelineResult {
           data: {
             label: '→',
             beatType: 'transition',
-            color: '#64748b',
+            color: '#71717a',
           } as BeatEdgeData,
         });
       }

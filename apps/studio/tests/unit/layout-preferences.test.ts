@@ -8,11 +8,6 @@ import {
 const DEFAULTS: LayoutPrefs = {
   sidebarWidth: 256,
   sidebarVisible: true,
-  bottomPanelHeight: 192,
-  bottomPanelVisible: true,
-  outlineWidth: 224,
-  outlineVisible: true,
-  outlineDockPosition: 'right',
 };
 
 describe('parseLayoutPrefs', () => {
@@ -32,11 +27,6 @@ describe('parseLayoutPrefs', () => {
     const prefs: LayoutPrefs = {
       sidebarWidth: 300,
       sidebarVisible: false,
-      bottomPanelHeight: 250,
-      bottomPanelVisible: false,
-      outlineWidth: 180,
-      outlineVisible: false,
-      outlineDockPosition: 'bottom',
     };
     const raw = JSON.stringify(prefs);
     expect(parseLayoutPrefs(raw)).toEqual(prefs);
@@ -60,47 +50,18 @@ describe('parseLayoutPrefs', () => {
     expect(parseLayoutPrefs(raw).sidebarVisible).toBe(true);
   });
 
-  it('uses default for invalid bottomPanelHeight type', () => {
-    const raw = JSON.stringify({ bottomPanelHeight: null });
-    expect(parseLayoutPrefs(raw).bottomPanelHeight).toBe(192);
-  });
-
-  it('uses default for invalid bottomPanelVisible type', () => {
-    const raw = JSON.stringify({ bottomPanelVisible: 'yes' });
-    expect(parseLayoutPrefs(raw).bottomPanelVisible).toBe(true);
-  });
-
-  it('uses default for invalid outlineWidth type', () => {
-    const raw = JSON.stringify({ outlineWidth: false });
-    expect(parseLayoutPrefs(raw).outlineWidth).toBe(224);
-  });
-
-  it('uses default for invalid outlineVisible type', () => {
-    const raw = JSON.stringify({ outlineVisible: 0 });
-    expect(parseLayoutPrefs(raw).outlineVisible).toBe(true);
-  });
-
-  it('uses default for invalid outlineDockPosition', () => {
-    const raw = JSON.stringify({ outlineDockPosition: 'left' });
-    expect(parseLayoutPrefs(raw).outlineDockPosition).toBe('right');
-  });
-
-  it('accepts both valid dock positions', () => {
-    for (const pos of ['right', 'bottom'] as const) {
-      const raw = JSON.stringify({ outlineDockPosition: pos });
-      expect(parseLayoutPrefs(raw).outlineDockPosition).toBe(pos);
-    }
+  it('ignores unknown fields', () => {
+    const raw = JSON.stringify({ sidebarWidth: 280, extra: 'ignored' });
+    expect(parseLayoutPrefs(raw)).toEqual({
+      sidebarWidth: 280,
+      sidebarVisible: true,
+    });
   });
 
   it('round-trip serialize then parse', () => {
     const prefs: LayoutPrefs = {
       sidebarWidth: 350,
       sidebarVisible: false,
-      bottomPanelHeight: 300,
-      bottomPanelVisible: true,
-      outlineWidth: 200,
-      outlineVisible: false,
-      outlineDockPosition: 'bottom',
     };
     const serialized = serializeLayoutPrefs(prefs);
     expect(parseLayoutPrefs(serialized)).toEqual(prefs);
