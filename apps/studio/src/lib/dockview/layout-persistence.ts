@@ -9,7 +9,7 @@ import { applyDefaultLayout } from './default-layout.js';
 
 const STORAGE_KEY = 'actone:dockview-layout';
 const OLD_STORAGE_KEY = 'actone:layout';
-const LAYOUT_VERSION = 3;
+const LAYOUT_VERSION = 5;
 
 interface VersionedLayout {
   version: number;
@@ -113,13 +113,15 @@ export function migrateOldLayout(): void {
 }
 
 /**
- * Ensure the editor panel's group has its dockview tab header hidden,
- * since EditorPanel provides its own tab bar.
+ * Ensure panels that provide their own tab UI have dockview's
+ * group header hidden. Handles both fresh and restored layouts.
  */
-function hideEditorGroupHeader(api: DockviewApi): void {
-  const editorPanel = api.getPanel('editor');
-  if (editorPanel) {
-    editorPanel.group.model.header.hidden = true;
+function hideManagedGroupHeaders(api: DockviewApi): void {
+  for (const panelId of ['editor', 'diagnostics']) {
+    const panel = api.getPanel(panelId);
+    if (panel) {
+      panel.group.model.header.hidden = true;
+    }
   }
 }
 
@@ -132,6 +134,6 @@ export function restoreOrDefault(api: DockviewApi): void {
   if (!restored) {
     applyDefaultLayout(api);
   }
-  // Always ensure editor group header is hidden (handles pre-existing saved layouts)
-  hideEditorGroupHeader(api);
+  // Always ensure managed group headers are hidden (handles pre-existing saved layouts)
+  hideManagedGroupHeaders(api);
 }

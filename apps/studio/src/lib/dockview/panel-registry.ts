@@ -16,6 +16,13 @@ export interface PanelDefinition {
   renderer: DockviewPanelRenderer;
   singleton: boolean;
   defaultParams?: Record<string, unknown>;
+  /** Where to place this panel when first opened */
+  defaultPosition?: {
+    direction: 'left' | 'right' | 'above' | 'below' | 'within';
+    referencePanel: string;
+  };
+  /** Panels with the same panelGroup share a dockview group (tabbed together) */
+  panelGroup?: string;
 }
 
 /**

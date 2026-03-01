@@ -13,6 +13,7 @@
   import { projectStore } from '$lib/stores/project.svelte.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { editorStore } from '$lib/stores/editor.svelte.js';
+  import { createFile, deleteFile, renameFile, loadFileContent } from '$lib/editor/supabase-client.js';
   import { extractAnalytics } from '$lib/project/analytics.js';
   import { getStageLabel, requestTransition } from '$lib/project/lifecycle.js';
   import MenuBar from '$lib/components/MenuBar.svelte';
@@ -20,7 +21,7 @@
   import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
   import DockLayout from '$lib/dockview/DockLayout.svelte';
-  import OutlinePanel from '$lib/panels/OutlinePanel.svelte';
+  import ReadingModePanel from '$lib/panels/ReadingModePanel.svelte';
   import { setDockApi, openPanel } from '$lib/dockview/panel-actions.js';
   import type { DockviewApi } from 'dockview-core';
   import FileText from 'lucide-svelte/icons/file-text';
@@ -44,6 +45,161 @@
   let newProjectGenre = $state('');
   let newProjectCreating = $state(false);
   let newProjectError = $state('');
+
+  /* ── New File Dialog ────────────────────────────────────────── */
+  let showNewFileDialog = $state(false);
+  let newFileName = $state('');
+  let newFileCreating = $state(false);
+  let newFileError = $state('');
+
+  /* ── File Context Menu ──────────────────────────────────── */
+  import type { SourceFileEntry } from '$lib/stores/project.svelte.js';
+  let fileContextMenu = $state<{ x: number; y: number; file: SourceFileEntry } | null>(null);
+
+  function handleFileContextMenu(e: MouseEvent, file: SourceFileEntry) {
+    e.preventDefault();
+    e.stopPropagation();
+    fileContextMenu = { x: e.clientX, y: e.clientY, file };
+  }
+
+  function closeFileContextMenu() {
+    fileContextMenu = null;
+  }
+
+  /* ── Rename File Dialog ────────────────────────────────── */
+  let showRenameDialog = $state(false);
+  let renameTargetFile = $state<SourceFileEntry | null>(null);
+  let renameNewName = $state('');
+  let renameInProgress = $state(false);
+  let renameError = $state('');
+
+  async function handleRenameFile() {
+    if (!renameTargetFile) return;
+    const trimmed = renameNewName.trim();
+    if (!trimmed) {
+      renameError = 'File name is required';
+      return;
+    }
+    const filePath = trimmed.endsWith('.actone') ? trimmed : `${trimmed}.actone`;
+    if (filePath.toLowerCase() === renameTargetFile.filePath.toLowerCase()) {
+      renameError = 'New name is the same as the current name';
+      return;
+    }
+    const duplicate = projectStore.files.some(
+      (f) => f.id !== renameTargetFile!.id && f.filePath.toLowerCase() === filePath.toLowerCase(),
+    );
+    if (duplicate) {
+      renameError = `A file named "${filePath}" already exists`;
+      return;
+    }
+    renameInProgress = true;
+    renameError = '';
+    try {
+      const ok = await renameFile(data.supabase, renameTargetFile.id, filePath);
+      if (!ok) {
+        renameError = 'Failed to rename file';
+        return;
+      }
+      projectStore.renameFile(renameTargetFile.id, filePath);
+      editorStore.renameFile(renameTargetFile.id, filePath);
+      // If this file is active, tell EditorPanel to update the Langium document URI
+      if (editorStore.activeFileId === renameTargetFile.id) {
+        window.dispatchEvent(
+          new CustomEvent('actone:rename-active-file', {
+            detail: { filePath },
+          }),
+        );
+      }
+      showRenameDialog = false;
+      renameTargetFile = null;
+      renameNewName = '';
+    } catch (err) {
+      renameError = err instanceof Error ? err.message : 'Failed to rename file';
+    } finally {
+      renameInProgress = false;
+    }
+  }
+
+  /* ── Duplicate File Dialog ─────────────────────────────── */
+  let showDuplicateDialog = $state(false);
+  let duplicateTargetFile = $state<SourceFileEntry | null>(null);
+  let duplicateNewName = $state('');
+  let duplicateInProgress = $state(false);
+  let duplicateError = $state('');
+
+  async function handleDuplicateFile() {
+    if (!duplicateTargetFile) return;
+    const trimmed = duplicateNewName.trim();
+    if (!trimmed) {
+      duplicateError = 'File name is required';
+      return;
+    }
+    const filePath = trimmed.endsWith('.actone') ? trimmed : `${trimmed}.actone`;
+    const duplicate = projectStore.files.some(
+      (f) => f.filePath.toLowerCase() === filePath.toLowerCase(),
+    );
+    if (duplicate) {
+      duplicateError = `A file named "${filePath}" already exists`;
+      return;
+    }
+    const projectId = projectStore.project?.id;
+    if (!projectId) return;
+    duplicateInProgress = true;
+    duplicateError = '';
+    try {
+      // Load persisted content from DB (not unsaved buffer)
+      const loaded = await loadFileContent(data.supabase, duplicateTargetFile.id);
+      const content = loaded?.content ?? `// ${filePath}\n`;
+      const newFile = await createFile(data.supabase, projectId, filePath, content);
+      if (!newFile) {
+        duplicateError = 'Failed to duplicate file';
+        return;
+      }
+      projectStore.addFile({
+        id: newFile.id,
+        filePath: newFile.filePath,
+        isEntry: newFile.isEntry,
+      });
+      window.dispatchEvent(
+        new CustomEvent('actone:open-file', {
+          detail: { id: newFile.id, filePath: newFile.filePath },
+        }),
+      );
+      showDuplicateDialog = false;
+      duplicateTargetFile = null;
+      duplicateNewName = '';
+    } catch (err) {
+      duplicateError = err instanceof Error ? err.message : 'Failed to duplicate file';
+    } finally {
+      duplicateInProgress = false;
+    }
+  }
+
+  /* ── Delete File Handler ───────────────────────────────── */
+  async function handleDeleteFile(file: SourceFileEntry) {
+    closeFileContextMenu();
+    const confirmed = confirm(`Delete "${file.filePath}"? This cannot be undone.`);
+    if (!confirmed) return;
+    try {
+      const ok = await deleteFile(data.supabase, file.id);
+      if (!ok) return;
+      editorStore.forceClose(file.id);
+      projectStore.removeFile(file.id);
+      // If no tabs remain, reopen the entry file
+      if (editorStore.openFiles.length === 0) {
+        const entry = projectStore.entryFile;
+        if (entry) {
+          window.dispatchEvent(
+            new CustomEvent('actone:open-file', {
+              detail: { id: entry.id, filePath: entry.filePath },
+            }),
+          );
+        }
+      }
+    } catch {
+      // Silent failure — file remains in sidebar
+    }
+  }
 
   /* ── Open Project Dialog ─────────────────────────────────── */
   let showOpenProjectDialog = $state(false);
@@ -122,7 +278,6 @@
   }
 
   let resizingSidebar = $state(false);
-  let resizingOutline = $state(false);
 
   const navItems = [
     { icon: FileText, label: 'Editor', panelId: 'editor' },
@@ -204,6 +359,51 @@
       newProjectError = err instanceof Error ? err.message : 'Failed to create project';
     } finally {
       newProjectCreating = false;
+    }
+  }
+
+  /* ── New file creation handler ─────────────────────────────── */
+  async function handleCreateFile() {
+    const trimmed = newFileName.trim();
+    if (!trimmed) {
+      newFileError = 'File name is required';
+      return;
+    }
+    const filePath = trimmed.endsWith('.actone') ? trimmed : `${trimmed}.actone`;
+    const duplicate = projectStore.files.some(
+      (f) => f.filePath.toLowerCase() === filePath.toLowerCase(),
+    );
+    if (duplicate) {
+      newFileError = `A file named "${filePath}" already exists`;
+      return;
+    }
+    const projectId = projectStore.project?.id;
+    if (!projectId) return;
+    newFileCreating = true;
+    newFileError = '';
+    try {
+      const defaultContent = `// ${filePath}\n`;
+      const newFile = await createFile(data.supabase, projectId, filePath, defaultContent);
+      if (!newFile) {
+        newFileError = 'Failed to create file';
+        return;
+      }
+      projectStore.addFile({
+        id: newFile.id,
+        filePath: newFile.filePath,
+        isEntry: newFile.isEntry,
+      });
+      window.dispatchEvent(
+        new CustomEvent('actone:open-file', {
+          detail: { id: newFile.id, filePath: newFile.filePath },
+        }),
+      );
+      showNewFileDialog = false;
+      newFileName = '';
+    } catch (err) {
+      newFileError = err instanceof Error ? err.message : 'Failed to create file';
+    } finally {
+      newFileCreating = false;
     }
   }
 
@@ -342,6 +542,7 @@
     // Read reactive values to establish tracking
     void uiStore.sidebarVisible;
     void uiStore.outlineVisible;
+    void uiStore.outlineWidth;
     void uiStore.statusBarVisible;
     // Only persist after initial load to avoid overwriting with defaults
     if (layoutPrefsLoaded) {
@@ -478,31 +679,11 @@
     window.addEventListener('mouseup', onMouseUp);
   }
 
-  /** Reference element for the outline sidebar, used to calculate resize offset */
-  let outlineContainerEl: HTMLDivElement | undefined = $state(undefined);
 
-  function handleOutlineMouseDown(e: MouseEvent) {
-    e.preventDefault();
-    resizingOutline = true;
-    const onMouseMove = (ev: MouseEvent) => {
-      if (!outlineContainerEl) return;
-      // Width = mouse position - left edge of the outline container
-      const rect = outlineContainerEl.getBoundingClientRect();
-      uiStore.resizeOutline(ev.clientX - rect.left);
-    };
-    const onMouseUp = () => {
-      resizingOutline = false;
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-      persistLayout();
-    };
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  }
 
 </script>
 
-<svelte:window onclick={() => { profileMenuOpen = false; projectSelectorOpen = false; projectContextMenu = null; }} />
+<svelte:window onclick={() => { profileMenuOpen = false; projectSelectorOpen = false; projectContextMenu = null; fileContextMenu = null; }} />
 
 {#if !data.session}
   <!-- Unauthenticated: render page content directly (e.g. /auth) -->
@@ -526,8 +707,17 @@
           {#each navItems as item}
             <button
               class="flex h-8 items-center gap-2.5 rounded px-2.5 text-[13px] transition-colors
-                text-zinc-500 hover:bg-white/5 hover:text-zinc-300"
-              onclick={() => openPanel(item.panelId)}
+                {item.panelId === 'reading-mode' && uiStore.readingModeVisible
+                  ? 'text-white bg-white/10'
+                  : 'text-zinc-500 hover:bg-white/5 hover:text-zinc-300'}"
+              onclick={() => {
+                if (item.panelId === 'reading-mode') {
+                  uiStore.toggleReadingMode();
+                } else {
+                  if (uiStore.readingModeVisible) uiStore.readingModeVisible = false;
+                  openPanel(item.panelId);
+                }
+              }}
             >
               <item.icon size={16} />
               <span>{item.label}</span>
@@ -536,23 +726,24 @@
         </nav>
 
         <!-- PROJECT files section with project selector -->
-        <div class="relative flex flex-col px-2 pt-4">
-          <button
-            class="flex items-center gap-1 px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-600 hover:text-zinc-400"
-            onclick={(e) => { e.stopPropagation(); projectSelectorOpen = !projectSelectorOpen; }}
-          >
-            <span class="truncate">{projectStore.project?.title ?? 'PROJECT'}</span>
-            <ChevronDown size={10} class="shrink-0 transition-transform {projectSelectorOpen ? 'rotate-180' : ''}" />
-          </button>
-
-          {#if projectSelectorOpen}
-            <!-- svelte-ignore a11y_click_events_have_key_events -->
-            <div
-              class="absolute left-2 right-2 top-full z-50 mt-0.5 max-h-64 overflow-y-auto rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
-              role="menu"
-              tabindex="-1"
-              onclick={(e) => e.stopPropagation()}
+        <div class="flex flex-col px-2 pt-4">
+          <div class="relative">
+            <button
+              class="flex items-center gap-1 px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-600 hover:text-zinc-400"
+              onclick={(e) => { e.stopPropagation(); projectSelectorOpen = !projectSelectorOpen; }}
             >
+              <span class="truncate">{projectStore.project?.title ?? 'PROJECT'}</span>
+              <ChevronDown size={10} class="shrink-0 transition-transform {projectSelectorOpen ? 'rotate-180' : ''}" />
+            </button>
+
+            {#if projectSelectorOpen}
+              <!-- svelte-ignore a11y_click_events_have_key_events -->
+              <div
+                class="absolute left-0 right-0 top-full z-50 mt-0.5 max-h-64 overflow-y-auto rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+                role="menu"
+                tabindex="-1"
+                onclick={(e) => e.stopPropagation()}
+              >
               {#each data.projects as p}
                 <button
                   class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] text-white/70 hover:bg-white/10"
@@ -582,6 +773,7 @@
               </button>
             </div>
           {/if}
+          </div>
 
           {#if projectStore.isLoaded && projectStore.project}
             <ProjectSection
@@ -593,6 +785,7 @@
                 }));
               }}
               oncontextmenu={handleProjectContextMenu}
+              onfilecontextmenu={handleFileContextMenu}
             />
           {/if}
         </div>
@@ -672,11 +865,12 @@
     {/if}
 
     <!-- Main content area -->
-    <div class="flex flex-1 flex-col overflow-hidden">
+    <div class="relative flex flex-1 flex-col overflow-hidden">
       <!-- Top toolbar zone -->
       <header class="flex h-10 items-center border-b border-[#252525] bg-surface-800 px-2">
         <MenuBar
           oncreateproject={() => { showNewProjectDialog = true; }}
+          oncreatefile={() => { showNewFileDialog = true; }}
           onadvancestage={handleAdvanceStage}
           onsnapshot={handleSnapshot}
           ongenerate={handleGenerate}
@@ -688,30 +882,19 @@
         {#if isSettingsRoute}
           {@render children()}
         {:else}
-          {#if uiStore.outlineVisible}
-            <div
-              bind:this={outlineContainerEl}
-              class="flex shrink-0 border-r border-[#252525]"
-              style="width: {uiStore.outlineWidth}px;"
-            >
-              <div class="flex-1 overflow-hidden">
-                <OutlinePanel />
-              </div>
-              <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-              <div
-                class="w-1 cursor-col-resize bg-transparent hover:bg-amber-500/30 {resizingOutline ? 'bg-amber-500/50' : ''}"
-                role="separator"
-                tabindex="-1"
-                onmousedown={handleOutlineMouseDown}
-              ></div>
-            </div>
-          {/if}
           <DockLayout onReady={handleDockReady} class="flex-1" />
         {/if}
       </main>
 
       {#if !isSettingsRoute && projectStore.isLoaded && uiStore.statusBarVisible}
         <StatusBar onadvancestage={handleAdvanceStage} />
+      {/if}
+
+      <!-- Reading Mode overlay: covers menu bar, main content, and status bar -->
+      {#if uiStore.readingModeVisible && !isSettingsRoute}
+        <div class="absolute inset-0 z-10">
+          <ReadingModePanel />
+        </div>
       {/if}
     </div>
   </div>
@@ -794,6 +977,68 @@
               <LoadingSpinner size="sm" />
             {/if}
             Create Project
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- New File Dialog -->
+  {#if showNewFileDialog}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      role="dialog"
+      aria-modal="true"
+      tabindex="-1"
+      onclick={() => { if (!newFileCreating) { showNewFileDialog = false; newFileError = ''; newFileName = ''; } }}
+    >
+      <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+      <div
+        class="w-full max-w-md rounded-lg border border-[#252525] bg-surface-800 p-6 shadow-xl"
+        role="presentation"
+        onclick={(e) => e.stopPropagation()}
+      >
+        <h2 class="mb-4 text-lg font-semibold text-white">New File</h2>
+
+        {#if newFileError}
+          <div class="mb-3 rounded bg-red-500/10 px-3 py-2 text-xs text-red-400">
+            {newFileError}
+          </div>
+        {/if}
+
+        <div class="mb-4">
+          <label for="nf-name" class="mb-1 block text-xs font-medium text-zinc-400">File Name *</label>
+          <input
+            id="nf-name"
+            type="text"
+            bind:value={newFileName}
+            class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none"
+            placeholder="chapter-2.actone"
+            disabled={newFileCreating}
+            autofocus
+            onkeydown={(e) => { if (e.key === 'Enter') void handleCreateFile(); }}
+          />
+          <p class="mt-1 text-[11px] text-zinc-500">.actone extension will be added automatically if omitted</p>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <button
+            class="rounded px-4 py-2 text-sm text-zinc-400 hover:text-white"
+            onclick={() => { showNewFileDialog = false; newFileError = ''; newFileName = ''; }}
+            disabled={newFileCreating}
+          >
+            Cancel
+          </button>
+          <button
+            class="flex items-center gap-2 rounded bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-500 disabled:opacity-50"
+            onclick={() => void handleCreateFile()}
+            disabled={newFileCreating}
+          >
+            {#if newFileCreating}
+              <LoadingSpinner size="sm" />
+            {/if}
+            Create File
           </button>
         </div>
       </div>
@@ -896,9 +1141,189 @@
       <div class="fixed z-[101] min-w-[160px] rounded-md border border-[#252525] bg-[#171717] py-1 shadow-lg"
            role="menu" style="left: {projectContextMenu.x}px; top: {projectContextMenu.y}px;">
         <button class="flex w-full items-center px-3 py-1.5 text-left text-[13px] text-white/70 hover:bg-white/10"
+                role="menuitem" onclick={() => { closeProjectContextMenu(); showNewFileDialog = true; }}>
+          New File...
+        </button>
+        <div class="my-1 border-t border-[#252525]"></div>
+        <button class="flex w-full items-center px-3 py-1.5 text-left text-[13px] text-white/70 hover:bg-white/10"
                 role="menuitem" onclick={() => void handleCloseProject()}>
           Close Project
         </button>
+      </div>
+    </div>
+  {/if}
+
+  <!-- File context menu -->
+  {#if fileContextMenu}
+    <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+    <div class="fixed inset-0 z-[100]" role="presentation"
+         onclick={closeFileContextMenu}>
+      <div class="fixed z-[101] min-w-[160px] rounded-md border border-[#252525] bg-[#171717] py-1 shadow-lg"
+           role="menu" style="left: {fileContextMenu.x}px; top: {fileContextMenu.y}px;">
+        <button
+          class="flex w-full items-center px-3 py-1.5 text-left text-[13px]
+            {fileContextMenu.file.isEntry ? 'text-white/30 cursor-not-allowed' : 'text-white/70 hover:bg-white/10'}"
+          role="menuitem"
+          disabled={fileContextMenu.file.isEntry}
+          onclick={() => {
+            const file = fileContextMenu!.file;
+            closeFileContextMenu();
+            renameTargetFile = file;
+            renameNewName = file.filePath.replace(/\.actone$/, '');
+            renameError = '';
+            showRenameDialog = true;
+          }}
+        >
+          Rename...
+        </button>
+        <button
+          class="flex w-full items-center px-3 py-1.5 text-left text-[13px] text-white/70 hover:bg-white/10"
+          role="menuitem"
+          onclick={() => {
+            const file = fileContextMenu!.file;
+            closeFileContextMenu();
+            duplicateTargetFile = file;
+            duplicateNewName = `copy-of-${file.filePath.replace(/\.actone$/, '')}`;
+            duplicateError = '';
+            showDuplicateDialog = true;
+          }}
+        >
+          Duplicate...
+        </button>
+        <div class="my-1 border-t border-[#252525]"></div>
+        <button
+          class="flex w-full items-center px-3 py-1.5 text-left text-[13px]
+            {fileContextMenu.file.isEntry ? 'text-red-400/30 cursor-not-allowed' : 'text-red-400 hover:bg-white/10'}"
+          role="menuitem"
+          disabled={fileContextMenu.file.isEntry}
+          onclick={() => { const file = fileContextMenu!.file; closeFileContextMenu(); void handleDeleteFile(file); }}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Rename File Dialog -->
+  {#if showRenameDialog}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      role="dialog"
+      aria-modal="true"
+      tabindex="-1"
+      onclick={() => { if (!renameInProgress) { showRenameDialog = false; renameError = ''; } }}
+    >
+      <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+      <div
+        class="w-full max-w-md rounded-lg border border-[#252525] bg-surface-800 p-6 shadow-xl"
+        role="presentation"
+        onclick={(e) => e.stopPropagation()}
+      >
+        <h2 class="mb-4 text-lg font-semibold text-white">Rename File</h2>
+
+        {#if renameError}
+          <div class="mb-3 rounded bg-red-500/10 px-3 py-2 text-xs text-red-400">
+            {renameError}
+          </div>
+        {/if}
+
+        <div class="mb-4">
+          <label for="rf-name" class="mb-1 block text-xs font-medium text-zinc-400">New File Name *</label>
+          <input
+            id="rf-name"
+            type="text"
+            bind:value={renameNewName}
+            class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none"
+            placeholder="new-name.actone"
+            disabled={renameInProgress}
+            autofocus
+            onkeydown={(e) => { if (e.key === 'Enter') void handleRenameFile(); }}
+          />
+          <p class="mt-1 text-[11px] text-zinc-500">.actone extension will be added automatically if omitted</p>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <button
+            class="rounded px-4 py-2 text-sm text-zinc-400 hover:text-white"
+            onclick={() => { showRenameDialog = false; renameError = ''; }}
+            disabled={renameInProgress}
+          >
+            Cancel
+          </button>
+          <button
+            class="flex items-center gap-2 rounded bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-500 disabled:opacity-50"
+            onclick={() => void handleRenameFile()}
+            disabled={renameInProgress}
+          >
+            {#if renameInProgress}
+              <LoadingSpinner size="sm" />
+            {/if}
+            Rename
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Duplicate File Dialog -->
+  {#if showDuplicateDialog}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      role="dialog"
+      aria-modal="true"
+      tabindex="-1"
+      onclick={() => { if (!duplicateInProgress) { showDuplicateDialog = false; duplicateError = ''; } }}
+    >
+      <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+      <div
+        class="w-full max-w-md rounded-lg border border-[#252525] bg-surface-800 p-6 shadow-xl"
+        role="presentation"
+        onclick={(e) => e.stopPropagation()}
+      >
+        <h2 class="mb-4 text-lg font-semibold text-white">Duplicate File</h2>
+
+        {#if duplicateError}
+          <div class="mb-3 rounded bg-red-500/10 px-3 py-2 text-xs text-red-400">
+            {duplicateError}
+          </div>
+        {/if}
+
+        <div class="mb-4">
+          <label for="df-name" class="mb-1 block text-xs font-medium text-zinc-400">New File Name *</label>
+          <input
+            id="df-name"
+            type="text"
+            bind:value={duplicateNewName}
+            class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none"
+            placeholder="copy-of-file.actone"
+            disabled={duplicateInProgress}
+            autofocus
+            onkeydown={(e) => { if (e.key === 'Enter') void handleDuplicateFile(); }}
+          />
+          <p class="mt-1 text-[11px] text-zinc-500">.actone extension will be added automatically if omitted</p>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <button
+            class="rounded px-4 py-2 text-sm text-zinc-400 hover:text-white"
+            onclick={() => { showDuplicateDialog = false; duplicateError = ''; }}
+            disabled={duplicateInProgress}
+          >
+            Cancel
+          </button>
+          <button
+            class="flex items-center gap-2 rounded bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-500 disabled:opacity-50"
+            onclick={() => void handleDuplicateFile()}
+            disabled={duplicateInProgress}
+          >
+            {#if duplicateInProgress}
+              <LoadingSpinner size="sm" />
+            {/if}
+            Duplicate
+          </button>
+        </div>
       </div>
     </div>
   {/if}

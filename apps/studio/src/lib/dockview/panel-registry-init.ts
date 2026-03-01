@@ -13,7 +13,6 @@ import DiagnosticsPanel from '$lib/panels/DiagnosticsPanel.svelte';
 import DiagramPanel from '$lib/panels/DiagramPanel.svelte';
 import StoryBiblePanel from '$lib/panels/StoryBiblePanel.svelte';
 import GalleryPanel from '$lib/panels/GalleryPanel.svelte';
-import ReadingModePanel from '$lib/panels/ReadingModePanel.svelte';
 import SpreadPreviewPanel from '$lib/panels/SpreadPreviewPanel.svelte';
 import StatisticsPanel from '$lib/panels/StatisticsPanel.svelte';
 import ExportPanel from '$lib/panels/ExportPanel.svelte';
@@ -34,6 +33,7 @@ registerPanel({
   component: DiagnosticsPanel,
   renderer: 'onlyWhenVisible',
   singleton: true,
+  defaultPosition: { direction: 'below', referencePanel: 'editor' },
 });
 
 /* ── Diagram panels (all use DiagramPanel with diagramType param) ── */
@@ -45,6 +45,8 @@ registerPanel({
   renderer: 'onlyWhenVisible',
   singleton: true,
   defaultParams: { diagramType: 'story-structure' },
+  defaultPosition: { direction: 'right', referencePanel: 'editor' },
+  panelGroup: 'diagrams',
 });
 
 registerPanel({
@@ -54,6 +56,8 @@ registerPanel({
   renderer: 'onlyWhenVisible',
   singleton: true,
   defaultParams: { diagramType: 'character-network' },
+  defaultPosition: { direction: 'right', referencePanel: 'editor' },
+  panelGroup: 'diagrams',
 });
 
 registerPanel({
@@ -63,6 +67,8 @@ registerPanel({
   renderer: 'onlyWhenVisible',
   singleton: true,
   defaultParams: { diagramType: 'world-map' },
+  defaultPosition: { direction: 'right', referencePanel: 'editor' },
+  panelGroup: 'diagrams',
 });
 
 registerPanel({
@@ -72,6 +78,8 @@ registerPanel({
   renderer: 'onlyWhenVisible',
   singleton: true,
   defaultParams: { diagramType: 'timeline' },
+  defaultPosition: { direction: 'right', referencePanel: 'editor' },
+  panelGroup: 'diagrams',
 });
 
 registerPanel({
@@ -81,6 +89,8 @@ registerPanel({
   renderer: 'onlyWhenVisible',
   singleton: true,
   defaultParams: { diagramType: 'interaction-sequence' },
+  defaultPosition: { direction: 'right', referencePanel: 'editor' },
+  panelGroup: 'diagrams',
 });
 
 /* ── Content panels ─────────────────────────────────────── */
@@ -91,6 +101,7 @@ registerPanel({
   component: StoryBiblePanel,
   renderer: 'onlyWhenVisible',
   singleton: true,
+  defaultPosition: { direction: 'right', referencePanel: 'editor' },
 });
 
 registerPanel({
@@ -99,14 +110,7 @@ registerPanel({
   component: GalleryPanel,
   renderer: 'onlyWhenVisible',
   singleton: true,
-});
-
-registerPanel({
-  id: 'reading-mode',
-  title: 'Reading Mode',
-  component: ReadingModePanel,
-  renderer: 'onlyWhenVisible',
-  singleton: true,
+  defaultPosition: { direction: 'right', referencePanel: 'editor' },
 });
 
 registerPanel({
@@ -115,6 +119,7 @@ registerPanel({
   component: SpreadPreviewPanel,
   renderer: 'onlyWhenVisible',
   singleton: true,
+  defaultPosition: { direction: 'right', referencePanel: 'editor' },
 });
 
 registerPanel({
@@ -123,6 +128,7 @@ registerPanel({
   component: StatisticsPanel,
   renderer: 'onlyWhenVisible',
   singleton: true,
+  defaultPosition: { direction: 'right', referencePanel: 'editor' },
 });
 
 registerPanel({
@@ -131,4 +137,5 @@ registerPanel({
   component: ExportPanel,
   renderer: 'onlyWhenVisible',
   singleton: true,
+  defaultPosition: { direction: 'right', referencePanel: 'editor' },
 });

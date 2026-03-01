@@ -3,7 +3,7 @@
  *
  * Creates the initial layout: Editor (~80% height) with
  * Diagnostics (~192px) docked below. The Outline panel is
- * rendered outside dockview as a fixed sidebar in +layout.svelte.
+ * rendered inside EditorPanel as a sub-component.
  */
 import type { DockviewApi } from 'dockview-core';
 import { getPanelDefinition } from './panel-registry.js';
@@ -27,7 +27,7 @@ export function applyDefaultLayout(api: DockviewApi): void {
   editorPanel.group.model.header.hidden = true;
 
   // Add diagnostics panel below the editor (~192px)
-  api.addPanel({
+  const diagnosticsPanel = api.addPanel({
     id: 'diagnostics',
     component: 'diagnostics',
     title: diagnosticsDef?.title ?? 'Problems',
@@ -38,4 +38,7 @@ export function applyDefaultLayout(api: DockviewApi): void {
     },
     initialHeight: 192,
   });
+
+  // Hide dockview's tab header for the diagnostics group — DiagnosticsPanel provides its own tabs
+  diagnosticsPanel.group.model.header.hidden = true;
 }

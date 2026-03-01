@@ -8,8 +8,10 @@
   import type { DockviewPanelApi, DockviewApi } from 'dockview-core';
   import type { Writable } from 'svelte/store';
   import EditorPane from '$lib/editor/EditorPane.svelte';
+  import OutlinePanel from '$lib/panels/OutlinePanel.svelte';
   import { editorStore } from '$lib/stores/editor.svelte.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
+  import { uiStore } from '$lib/stores/ui.svelte.js';
   import { projectStore } from '$lib/stores/project.svelte.js';
   import { saveFileContent, loadFileContent } from '$lib/editor/supabase-client.js';
   import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
@@ -32,6 +34,28 @@
   /* ── State ─────────────────────────────────────────────────────── */
 
   let editorPane = $state<EditorPane | undefined>(undefined);
+
+  /* ── Outline resize ──────────────────────────────────────── */
+
+  let resizingOutline = $state(false);
+  let outlineContainerEl: HTMLDivElement | undefined = $state(undefined);
+
+  function handleOutlineMouseDown(e: MouseEvent) {
+    e.preventDefault();
+    resizingOutline = true;
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!outlineContainerEl) return;
+      const rect = outlineContainerEl.getBoundingClientRect();
+      uiStore.resizeOutline(ev.clientX - rect.left);
+    };
+    const onMouseUp = () => {
+      resizingOutline = false;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  }
 
   /* ── Register entry file with editor store ────────────────── */
 
@@ -243,7 +267,7 @@
 
     function handleOpenFile(e: Event) {
       const { id, filePath } = (e as CustomEvent).detail;
-      editorStore.open({ id, filePath });
+      editorStore.ensure({ id, filePath });
       void handleSwitchTab(id);
     }
 
@@ -268,11 +292,19 @@
       }
     }
 
+    function handleRenameActiveFile(e: Event) {
+      const { filePath } = (e as CustomEvent<{ filePath: string }>).detail;
+      const currentContent = editorPane?.getText?.() ?? '';
+      editorPane?.setDocument?.(`file:///${filePath}`, currentContent);
+      refreshSymbols();
+    }
+
     window.addEventListener('actone:save-file', onSaveFile);
     window.addEventListener('actone:open-file', handleOpenFile);
     window.addEventListener('actone:outline-navigate', handleOutlineNavigate);
     window.addEventListener('actone:diagnostics-ready', handleDiagnosticsReady);
     window.addEventListener('actone:request-symbols', handleRequestSymbols);
+    window.addEventListener('actone:rename-active-file', handleRenameActiveFile);
 
     return () => {
       window.removeEventListener('actone:save-file', onSaveFile);
@@ -280,42 +312,66 @@
       window.removeEventListener('actone:outline-navigate', handleOutlineNavigate);
       window.removeEventListener('actone:diagnostics-ready', handleDiagnosticsReady);
       window.removeEventListener('actone:request-symbols', handleRequestSymbols);
+      window.removeEventListener('actone:rename-active-file', handleRenameActiveFile);
       if (autoSaveTimer) clearTimeout(autoSaveTimer);
     };
   });
 </script>
 
-<div class="flex h-full w-full flex-col overflow-hidden" data-editor-panel>
-  {#if editorStore.openFiles.length > 0}
-    <EditorTabBar
-      onswitchtab={handleSwitchTab}
-      onclosetab={handleCloseTab}
-      onformat={handleFormat}
-    />
-    <BreadcrumbBar {symbols} {cursor} fileName={activeFileName} />
+<div class="flex h-full w-full overflow-hidden" data-editor-panel>
+  <!-- Outline sidebar (inside editor panel, left of editor area) -->
+  {#if uiStore.outlineVisible}
+    <div
+      bind:this={outlineContainerEl}
+      class="flex shrink-0 border-r border-[#252525]"
+      style="width: {uiStore.outlineWidth}px;"
+    >
+      <div class="flex-1 overflow-hidden">
+        <OutlinePanel />
+      </div>
+      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+      <div
+        class="w-1 cursor-col-resize bg-transparent hover:bg-amber-500/30 {resizingOutline ? 'bg-amber-500/50' : ''}"
+        role="separator"
+        tabindex="-1"
+        onmousedown={handleOutlineMouseDown}
+      ></div>
+    </div>
   {/if}
 
-  <!-- CodeMirror Editor -->
-  <div class="flex-1 overflow-hidden">
-    {#if projectStore.loading}
-      <div class="flex h-full items-center justify-center">
-        <LoadingSpinner label="Loading project..." />
-      </div>
-    {:else if editorStore.openFiles.length === 0}
-      <div class="flex h-full items-center justify-center">
-        <EmptyState
-          message="No file open"
-          description="Open a project or file to start editing."
-        />
-      </div>
-    {:else}
-      <EditorPane
-        bind:this={editorPane}
-        uri={editorUri}
-        initialContent={editorContent}
-        onchange={handleChange}
-        {projectContext}
+  <!-- Editor area (tabs + breadcrumb + code editor) -->
+  <div class="flex flex-1 flex-col overflow-hidden">
+    {#if editorStore.openFiles.length > 0}
+      <EditorTabBar
+        onswitchtab={handleSwitchTab}
+        onclosetab={handleCloseTab}
+        onformat={handleFormat}
       />
+      <BreadcrumbBar {symbols} {cursor} fileName={activeFileName} />
     {/if}
+
+    <!-- CodeMirror Editor -->
+    <div class="flex-1 overflow-hidden">
+      {#if projectStore.loading}
+        <div class="flex h-full items-center justify-center">
+          <LoadingSpinner label="Loading project..." />
+        </div>
+      {:else if editorStore.openFiles.length === 0}
+        <div class="flex h-full items-center justify-center">
+          <EmptyState
+            message="No file open"
+            description="Open a project or file to start editing."
+          />
+        </div>
+      {:else}
+        <EditorPane
+          bind:this={editorPane}
+          uri={editorUri}
+          initialContent={editorContent}
+          onchange={handleChange}
+          {projectContext}
+        />
+      {/if}
+    </div>
   </div>
 </div>
