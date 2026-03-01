@@ -15,7 +15,7 @@ export default defineConfig({
   timeout: 30_000,
 
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:54530',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -29,7 +29,7 @@ export default defineConfig({
 
   webServer: {
     command: 'pnpm dev',
-    url: 'http://localhost:5173',
+    url: 'http://localhost:54530',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
     cwd: '../..',

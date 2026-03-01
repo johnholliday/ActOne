@@ -16,6 +16,7 @@
     "db:reset": "supabase db reset",
     "db:migration:generate": "turbo run db:migration:generate --filter=studio",
     "db:migration:push": "turbo run db:migration:push --filter=studio",
+    "ports:sync": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/sync-ports.ts",
     "clean": "turbo run clean && rm -rf node_modules/.cache",
     "clean:all": "turbo run clean && rm -rf node_modules **/node_modules .turbo **/.turbo **/dist **/.svelte-kit",
     "typecheck": "turbo run check-types",
@@ -24,6 +25,7 @@
     "studio": "turbo run dev --filter=studio"
   },
   "devDependencies": {
+    "@types/node": "^22.15.3",
     "prettier": "^3.7.4",
     "supabase": "^2.76.15",
     "turbo": "^2.8.12",

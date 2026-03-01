@@ -45,7 +45,7 @@ export function createFakeEvent(options: FakeEventOptions = {}): RequestEvent {
     headers = {},
   } = options;
 
-  const url = new URL('http://localhost:5173/api/test');
+  const url = new URL('http://localhost:54530/api/test');
   for (const [key, value] of Object.entries(searchParams)) {
     url.searchParams.set(key, value);
   }

@@ -64,8 +64,8 @@ export function createLayoutLoadEvent(overrides: LayoutLoadEventOverrides = {}) 
       getAll: () => [],
       serialize: () => '',
     },
-    url: new URL('http://localhost:5173'),
-    request: new Request('http://localhost:5173'),
+    url: new URL('http://localhost:54530'),
+    request: new Request('http://localhost:54530'),
     params: {},
     route: { id: '/' },
     isDataRequest: false,
@@ -96,7 +96,7 @@ export function createPageLoadEvent(overrides: PageLoadEventOverrides = {}) {
 
   return {
     parent: async () => parentData,
-    url: new URL(`http://localhost:5173?${searchParams.toString()}`),
+    url: new URL(`http://localhost:54530?${searchParams.toString()}`),
     locals: {
       supabase: mockSupabaseClient,
     },
@@ -107,7 +107,7 @@ export function createPageLoadEvent(overrides: PageLoadEventOverrides = {}) {
       getAll: () => [],
       serialize: () => '',
     },
-    request: new Request('http://localhost:5173'),
+    request: new Request('http://localhost:54530'),
     params: {},
     route: { id: '/gallery' },
     isDataRequest: false,

@@ -4,6 +4,9 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [tailwindcss(), sveltekit()],
+  server: {
+    port: 54530,
+  },
   build: {
     // CodeMirror + Langium bundle exceeds 500 kB; raise limit to avoid noise
     chunkSizeWarningLimit: 1700,

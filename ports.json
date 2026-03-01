@@ -1,0 +1,22 @@
+{
+  "devServer": {
+    "port": 54530,
+    "host": "127.0.0.1"
+  },
+  "supabase": {
+    "api":           { "port": 54521 },
+    "db":            { "port": 54522 },
+    "dbShadow":      { "port": 54520 },
+    "studio":        { "port": 54523 },
+    "inbucket":      { "port": 54524 },
+    "smtp":          { "port": 54525 },
+    "pop3":          { "port": 54526 },
+    "analytics":     { "port": 54527 },
+    "pooler":        { "port": 54529 },
+    "edgeInspector": { "port": 54528 }
+  },
+  "oauth": {
+    "providers": ["github", "google", "entra_id"],
+    "callbackPath": "/auth/callback"
+  }
+}
