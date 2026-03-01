@@ -17,8 +17,20 @@ function createLocalStorageMock() {
   };
 }
 
+/** Create a mock panel with group.model.header */
+function mockPanel() {
+  return {
+    group: {
+      model: {
+        header: { hidden: false },
+      },
+    },
+  };
+}
+
 /** Create a mock DockviewApi */
 function mockApi(overrides?: Record<string, unknown>): DockviewApi {
+  const panel = mockPanel();
   return {
     toJSON: vi.fn(() => ({
       grid: { root: {}, width: 800, height: 600, orientation: 'HORIZONTAL' },
@@ -27,7 +39,8 @@ function mockApi(overrides?: Record<string, unknown>): DockviewApi {
     })),
     fromJSON: vi.fn(),
     clear: vi.fn(),
-    addPanel: vi.fn(),
+    addPanel: vi.fn(() => panel),
+    getPanel: vi.fn(() => panel),
     ...overrides,
   } as unknown as DockviewApi;
 }
@@ -64,7 +77,7 @@ describe('layout-persistence', () => {
         expect.any(String),
       );
       const parsed = JSON.parse(storageMock.setItem.mock.calls[0]![1] as string);
-      expect(parsed.version).toBe(1);
+      expect(parsed.version).toBe(3);
       expect(parsed.data.grid).toBeDefined();
       expect(parsed.data.panels).toBeDefined();
     });
@@ -113,9 +126,19 @@ describe('layout-persistence', () => {
       expect(restoreLayout(api)).toBe(false);
     });
 
-    it('returns false for missing grid/panels in data', async () => {
+    it('returns false for old version', async () => {
       storageMock.getItem.mockReturnValueOnce(JSON.stringify({
         version: 1,
+        data: { grid: {}, panels: {} },
+      }));
+      const { restoreLayout } = await import('$lib/dockview/layout-persistence.js');
+      const api = mockApi();
+      expect(restoreLayout(api)).toBe(false);
+    });
+
+    it('returns false for missing grid/panels in data', async () => {
+      storageMock.getItem.mockReturnValueOnce(JSON.stringify({
+        version: 3,
         data: { something: 'else' },
       }));
       const { restoreLayout } = await import('$lib/dockview/layout-persistence.js');
@@ -125,7 +148,7 @@ describe('layout-persistence', () => {
 
     it('restores valid layout and returns true', async () => {
       const validLayout = {
-        version: 1,
+        version: 3,
         data: {
           grid: { root: {}, width: 800, height: 600, orientation: 'HORIZONTAL' },
           panels: { editor: {} },
@@ -142,7 +165,7 @@ describe('layout-persistence', () => {
 
     it('returns false if fromJSON throws', async () => {
       const validLayout = {
-        version: 1,
+        version: 3,
         data: { grid: { root: {} }, panels: {} },
       };
       storageMock.getItem.mockReturnValueOnce(JSON.stringify(validLayout));
@@ -182,7 +205,7 @@ describe('layout-persistence', () => {
   describe('restoreOrDefault', () => {
     it('restores saved layout if available', async () => {
       const validLayout = {
-        version: 1,
+        version: 3,
         data: { grid: { root: {} }, panels: {} },
       };
       storageMock.getItem.mockImplementation((key: string) =>

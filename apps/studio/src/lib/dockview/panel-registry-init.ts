@@ -9,7 +9,7 @@ import { registerPanel } from './panel-registry.js';
 
 import EditorPanel from '$lib/panels/EditorPanel.svelte';
 import DiagnosticsPanel from '$lib/panels/DiagnosticsPanel.svelte';
-import OutlinePanel from '$lib/panels/OutlinePanel.svelte';
+
 import DiagramPanel from '$lib/panels/DiagramPanel.svelte';
 import StoryBiblePanel from '$lib/panels/StoryBiblePanel.svelte';
 import GalleryPanel from '$lib/panels/GalleryPanel.svelte';
@@ -32,14 +32,6 @@ registerPanel({
   id: 'diagnostics',
   title: 'Problems',
   component: DiagnosticsPanel,
-  renderer: 'onlyWhenVisible',
-  singleton: true,
-});
-
-registerPanel({
-  id: 'outline',
-  title: 'Outline',
-  component: OutlinePanel,
   renderer: 'onlyWhenVisible',
   singleton: true,
 });

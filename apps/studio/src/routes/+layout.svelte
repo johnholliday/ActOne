@@ -10,15 +10,17 @@
   import '../app.css';
   import { uiStore } from '$lib/stores/ui.svelte.js';
   import { parseLayoutPrefs, serializeLayoutPrefs } from '$lib/settings/layout.js';
-  import { projectStore, type ProjectMeta, type SourceFileEntry } from '$lib/stores/project.svelte.js';
+  import { projectStore } from '$lib/stores/project.svelte.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { editorStore } from '$lib/stores/editor.svelte.js';
   import { extractAnalytics } from '$lib/project/analytics.js';
   import { getStageLabel, requestTransition } from '$lib/project/lifecycle.js';
   import MenuBar from '$lib/components/MenuBar.svelte';
+  import StatusBar from '$lib/components/StatusBar.svelte';
   import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
   import DockLayout from '$lib/dockview/DockLayout.svelte';
+  import OutlinePanel from '$lib/panels/OutlinePanel.svelte';
   import { setDockApi, openPanel } from '$lib/dockview/panel-actions.js';
   import type { DockviewApi } from 'dockview-core';
   import FileText from 'lucide-svelte/icons/file-text';
@@ -27,9 +29,9 @@
   import ImageIcon from 'lucide-svelte/icons/image';
   import Book from 'lucide-svelte/icons/book';
   import Activity from 'lucide-svelte/icons/activity';
-  import File from 'lucide-svelte/icons/file';
   import ChevronUp from 'lucide-svelte/icons/chevron-up';
   import ChevronDown from 'lucide-svelte/icons/chevron-down';
+  import ProjectSection from '$lib/components/ProjectSection.svelte';
 
   import type { LifecycleStage } from '@repo/shared';
 
@@ -46,12 +48,46 @@
   /* ── Open Project Dialog ─────────────────────────────────── */
   let showOpenProjectDialog = $state(false);
   let openProjectSearch = $state('');
+  let openProjectHighlight = $state(0);
 
   const filteredProjects = $derived.by(() => {
     const query = openProjectSearch.trim().toLowerCase();
     if (!query) return data.projects;
     return data.projects.filter((p) => p.title.toLowerCase().includes(query));
   });
+
+  // Reset highlight when search filter changes
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    openProjectSearch;
+    openProjectHighlight = 0;
+  });
+
+  function handleOpenProjectKeydown(e: KeyboardEvent) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      openProjectHighlight = Math.min(openProjectHighlight + 1, filteredProjects.length - 1);
+      scrollHighlightedIntoView();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      openProjectHighlight = Math.max(openProjectHighlight - 1, 0);
+      scrollHighlightedIntoView();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const target = filteredProjects[openProjectHighlight];
+      if (target) {
+        void handleOpenProjectFromDialog(target.id);
+      }
+    }
+  }
+
+  function scrollHighlightedIntoView() {
+    // Use requestAnimationFrame to ensure DOM update has happened
+    requestAnimationFrame(() => {
+      const el = document.querySelector('[data-project-highlight="true"]');
+      el?.scrollIntoView({ block: 'nearest' });
+    });
+  }
 
   async function handleOpenProjectFromDialog(projectId: string) {
     showOpenProjectDialog = false;
@@ -86,6 +122,7 @@
   }
 
   let resizingSidebar = $state(false);
+  let resizingOutline = $state(false);
 
   const navItems = [
     { icon: FileText, label: 'Editor', panelId: 'editor' },
@@ -174,11 +211,35 @@
   async function handleSwitchProject(projectId: string) {
     projectSelectorOpen = false;
     if (projectId === projectStore.project?.id) return;
+    editorStore.closeAll();
     await projectStore.loadById(data.supabase, projectId);
     // Refresh server-side data to keep data.projects up to date
     await invalidate('supabase:auth');
     // Navigate to editor with fresh project
     await goto('/');
+  }
+
+  /* ── Project context menu ──────────────────────────────────── */
+  let projectContextMenu = $state<{ x: number; y: number } | null>(null);
+
+  function handleProjectContextMenu(e: MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    projectContextMenu = { x: e.clientX, y: e.clientY };
+  }
+
+  function closeProjectContextMenu() {
+    projectContextMenu = null;
+  }
+
+  async function handleCloseProject() {
+    closeProjectContextMenu();
+    if (editorStore.hasUnsavedChanges) {
+      const confirmed = confirm('You have unsaved changes. Discard changes and close project?');
+      if (!confirmed) return;
+    }
+    editorStore.closeAll();
+    projectStore.clear();
   }
 
   /* ── T021: Advance lifecycle stage handler ─────────────────── */
@@ -268,14 +329,35 @@
     localStorage.setItem('actone:layout', serializeLayoutPrefs({
       sidebarWidth: uiStore.sidebarWidth,
       sidebarVisible: uiStore.sidebarVisible,
+      outlineVisible: uiStore.outlineVisible,
+      outlineWidth: uiStore.outlineWidth,
+      statusBarVisible: uiStore.statusBarVisible,
     }));
   }
+
+  let layoutPrefsLoaded = $state(false);
+
+  // Persist layout prefs reactively when toggle states change
+  $effect(() => {
+    // Read reactive values to establish tracking
+    void uiStore.sidebarVisible;
+    void uiStore.outlineVisible;
+    void uiStore.statusBarVisible;
+    // Only persist after initial load to avoid overwriting with defaults
+    if (layoutPrefsLoaded) {
+      persistLayout();
+    }
+  });
 
   onMount(() => {
     // Load sidebar preferences (panel layout is managed by dockview persistence)
     const layoutPrefs = parseLayoutPrefs(localStorage.getItem('actone:layout'));
     uiStore.resizeSidebar(layoutPrefs.sidebarWidth);
     uiStore.sidebarVisible = layoutPrefs.sidebarVisible;
+    uiStore.outlineVisible = layoutPrefs.outlineVisible;
+    uiStore.resizeOutline(layoutPrefs.outlineWidth);
+    uiStore.statusBarVisible = layoutPrefs.statusBarVisible;
+    layoutPrefsLoaded = true;
 
     const {
       data: { subscription },
@@ -396,9 +478,31 @@
     window.addEventListener('mouseup', onMouseUp);
   }
 
+  /** Reference element for the outline sidebar, used to calculate resize offset */
+  let outlineContainerEl: HTMLDivElement | undefined = $state(undefined);
+
+  function handleOutlineMouseDown(e: MouseEvent) {
+    e.preventDefault();
+    resizingOutline = true;
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!outlineContainerEl) return;
+      // Width = mouse position - left edge of the outline container
+      const rect = outlineContainerEl.getBoundingClientRect();
+      uiStore.resizeOutline(ev.clientX - rect.left);
+    };
+    const onMouseUp = () => {
+      resizingOutline = false;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      persistLayout();
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  }
+
 </script>
 
-<svelte:window onclick={() => { profileMenuOpen = false; projectSelectorOpen = false; }} />
+<svelte:window onclick={() => { profileMenuOpen = false; projectSelectorOpen = false; projectContextMenu = null; }} />
 
 {#if !data.session}
   <!-- Unauthenticated: render page content directly (e.g. /auth) -->
@@ -479,18 +583,18 @@
             </div>
           {/if}
 
-          <div class="flex flex-col gap-0">
-            {#each projectStore.files as file}
-              {@const isActive = projectStore.entryFile?.id === file.id}
-              <button
-                class="flex h-7 items-center gap-2 rounded px-2.5 text-[12px] transition-colors
-                  {isActive ? 'text-white' : 'text-zinc-400 hover:text-zinc-300'}"
-              >
-                <File size={14} />
-                <span class="truncate">{file.filePath}</span>
-              </button>
-            {/each}
-          </div>
+          {#if projectStore.isLoaded && projectStore.project}
+            <ProjectSection
+              project={projectStore.project}
+              files={projectStore.files}
+              onopenfile={(file) => {
+                window.dispatchEvent(new CustomEvent('actone:open-file', {
+                  detail: { id: file.id, filePath: file.filePath },
+                }));
+              }}
+              oncontextmenu={handleProjectContextMenu}
+            />
+          {/if}
         </div>
 
         <!-- Spacer -->
@@ -580,13 +684,35 @@
       </header>
 
       <!-- Primary content: DockLayout for workspace, or route children for settings -->
-      <main class="flex-1 overflow-hidden">
+      <main class="flex flex-1 overflow-hidden">
         {#if isSettingsRoute}
           {@render children()}
         {:else}
-          <DockLayout onReady={handleDockReady} />
+          {#if uiStore.outlineVisible}
+            <div
+              bind:this={outlineContainerEl}
+              class="flex shrink-0 border-r border-[#252525]"
+              style="width: {uiStore.outlineWidth}px;"
+            >
+              <div class="flex-1 overflow-hidden">
+                <OutlinePanel />
+              </div>
+              <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+              <div
+                class="w-1 cursor-col-resize bg-transparent hover:bg-amber-500/30 {resizingOutline ? 'bg-amber-500/50' : ''}"
+                role="separator"
+                tabindex="-1"
+                onmousedown={handleOutlineMouseDown}
+              ></div>
+            </div>
+          {/if}
+          <DockLayout onReady={handleDockReady} class="flex-1" />
         {/if}
       </main>
+
+      {#if !isSettingsRoute && projectStore.isLoaded && uiStore.statusBarVisible}
+        <StatusBar onadvancestage={handleAdvanceStage} />
+      {/if}
     </div>
   </div>
 
@@ -700,6 +826,7 @@
             class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none"
             placeholder="Search projects..."
             autofocus
+            onkeydown={handleOpenProjectKeydown}
           />
         </div>
 
@@ -713,12 +840,18 @@
               {/if}
             </div>
           {:else}
-            {#each filteredProjects as p}
+            {#each filteredProjects as p, i}
               {@const isActive = p.id === projectStore.project?.id}
+              {@const isHighlighted = i === openProjectHighlight}
+              {@const displayStage = isActive && projectStore.project
+                ? projectStore.project.lifecycleStage
+                : (p.lifecycle_stage as import('@repo/shared').LifecycleStage | null)}
               <button
                 class="flex w-full items-center gap-3 rounded px-3 py-2.5 text-left transition-colors
-                  {isActive ? 'bg-amber-500/10 text-amber-300' : 'text-white/70 hover:bg-white/10 hover:text-white/90'}"
+                  {isActive ? 'bg-amber-500/10 text-amber-300' : isHighlighted ? 'bg-white/10 text-white/90' : 'text-white/70 hover:bg-white/10 hover:text-white/90'}"
+                data-project-highlight={isHighlighted ? 'true' : undefined}
                 onclick={() => void handleOpenProjectFromDialog(p.id)}
+                onmouseenter={() => { openProjectHighlight = i; }}
               >
                 <span class="w-5 shrink-0 text-center text-amber-400">
                   {#if isActive}&#10003;{/if}
@@ -733,9 +866,9 @@
                     {/if}
                   </div>
                 </div>
-                {#if p.lifecycle_stage}
+                {#if displayStage}
                   <span class="shrink-0 rounded bg-white/5 px-2 py-0.5 text-[10px] text-zinc-400">
-                    {getStageLabel(p.lifecycle_stage as import('@repo/shared').LifecycleStage)}
+                    {getStageLabel(displayStage)}
                   </span>
                 {/if}
               </button>
@@ -751,6 +884,21 @@
             Cancel
           </button>
         </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Project context menu -->
+  {#if projectContextMenu}
+    <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+    <div class="fixed inset-0 z-[100]" role="presentation"
+         onclick={closeProjectContextMenu}>
+      <div class="fixed z-[101] min-w-[160px] rounded-md border border-[#252525] bg-[#171717] py-1 shadow-lg"
+           role="menu" style="left: {projectContextMenu.x}px; top: {projectContextMenu.y}px;">
+        <button class="flex w-full items-center px-3 py-1.5 text-left text-[13px] text-white/70 hover:bg-white/10"
+                role="menuitem" onclick={() => void handleCloseProject()}>
+          Close Project
+        </button>
       </div>
     </div>
   {/if}

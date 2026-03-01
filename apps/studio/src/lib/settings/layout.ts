@@ -7,11 +7,17 @@
 export interface LayoutPrefs {
   sidebarWidth: number;
   sidebarVisible: boolean;
+  outlineVisible: boolean;
+  outlineWidth: number;
+  statusBarVisible: boolean;
 }
 
 const DEFAULTS: LayoutPrefs = {
   sidebarWidth: 256,
   sidebarVisible: true,
+  outlineVisible: true,
+  outlineWidth: 240,
+  statusBarVisible: true,
 };
 
 export function parseLayoutPrefs(raw: string | null): LayoutPrefs {
@@ -30,9 +36,27 @@ export function parseLayoutPrefs(raw: string | null): LayoutPrefs {
         ? parsed.sidebarVisible
         : DEFAULTS.sidebarVisible;
 
+    const outlineVisible =
+      typeof parsed.outlineVisible === 'boolean'
+        ? parsed.outlineVisible
+        : DEFAULTS.outlineVisible;
+
+    const outlineWidth =
+      typeof parsed.outlineWidth === 'number'
+        ? parsed.outlineWidth
+        : DEFAULTS.outlineWidth;
+
+    const statusBarVisible =
+      typeof parsed.statusBarVisible === 'boolean'
+        ? parsed.statusBarVisible
+        : DEFAULTS.statusBarVisible;
+
     return {
       sidebarWidth,
       sidebarVisible,
+      outlineVisible,
+      outlineWidth,
+      statusBarVisible,
     };
   } catch {
     return { ...DEFAULTS };

@@ -18,11 +18,28 @@ class UiStore {
   /** Currently active diagram view (null if editor is showing) */
   activeDiagramView = $state<DiagramView | null>(null);
 
+  /** Whether the outline panel is visible in the sidebar area */
+  outlineVisible = $state(true);
+
+  /** Width of the outline sidebar in pixels */
+  outlineWidth = $state(240);
+
+  /** Whether the status bar at the bottom is visible */
+  statusBarVisible = $state(true);
+
   /** Whether the editor or diagram canvas has focus */
   activePane = $state<'editor' | 'diagram'>('editor');
 
   toggleSidebar() {
     this.sidebarVisible = !this.sidebarVisible;
+  }
+
+  toggleOutline() {
+    this.outlineVisible = !this.outlineVisible;
+  }
+
+  toggleStatusBar() {
+    this.statusBarVisible = !this.statusBarVisible;
   }
 
   setDiagramView(view: DiagramView | null) {
@@ -38,6 +55,10 @@ class UiStore {
 
   resizeSidebar(width: number) {
     this.sidebarWidth = Math.max(180, Math.min(width, 480));
+  }
+
+  resizeOutline(width: number) {
+    this.outlineWidth = Math.max(160, Math.min(width, 480));
   }
 }
 

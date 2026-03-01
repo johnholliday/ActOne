@@ -11,8 +11,11 @@
   import { editorStore } from '$lib/stores/editor.svelte.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { projectStore } from '$lib/stores/project.svelte.js';
-  import { saveFileContent } from '$lib/editor/supabase-client.js';
+  import { saveFileContent, loadFileContent } from '$lib/editor/supabase-client.js';
   import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
+  import EmptyState from '$lib/components/EmptyState.svelte';
+  import EditorTabBar from '$lib/components/EditorTabBar.svelte';
+  import BreadcrumbBar from '$lib/components/BreadcrumbBar.svelte';
   import type { DocumentSymbol } from '$lib/editor/langium-client.js';
   import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
   import { page } from '$app/state';
@@ -104,10 +107,10 @@
     return `story "Untitled Story" {\n}\n`;
   });
 
-  const activeFileName = $derived(projectStore.entryFile?.filePath ?? 'model.actone');
+  const activeFileName = $derived(editorStore.activeFile?.filePath ?? 'model.actone');
 
   const editorUri = $derived(
-    projectStore.entryFile ? `file:///${projectStore.entryFile.filePath}` : 'inmemory://model.actone',
+    editorStore.activeFile ? `file:///${editorStore.activeFile.filePath}` : 'inmemory://model.actone',
   );
 
   const projectContext = $derived.by(() => {
@@ -176,47 +179,134 @@
     await editorPane?.format?.();
   }
 
-  /* ── Save event listener ─────────────────────────────────── */
+  /* ── Tab switching ───────────────────────────────────────── */
+
+  async function handleSwitchTab(fileId: string) {
+    if (fileId === editorStore.activeFileId) return;
+
+    // Save current content to buffer
+    const content = editorPane?.getText?.();
+    if (editorStore.activeFileId && content != null) {
+      editorStore.setBuffer(editorStore.activeFileId, content);
+    }
+
+    // Switch active file in store
+    editorStore.setActiveFile(fileId);
+
+    // Load content from buffer, project store, or Supabase
+    let newContent = editorStore.getBuffer(fileId);
+    if (newContent == null) {
+      const fileEntry = projectStore.files.find((f) => f.id === fileId);
+      if (fileEntry?.content != null) {
+        newContent = fileEntry.content;
+      } else {
+        const supabase = page.data?.supabase;
+        if (supabase) {
+          const loaded = await loadFileContent(supabase, fileId);
+          newContent = loaded?.content ?? '';
+        } else {
+          newContent = '';
+        }
+      }
+      editorStore.setBuffer(fileId, newContent);
+    }
+
+    // Switch document in CodeMirror
+    const filePath = editorStore.openFiles.find((f) => f.id === fileId)?.filePath ?? 'unknown.actone';
+    editorPane?.setDocument?.(`file:///${filePath}`, newContent);
+
+    // Refresh symbols
+    refreshSymbols();
+  }
+
+  async function handleCloseTab(fileId: string) {
+    if (editorStore.openFiles.length <= 1) return;
+    const file = editorStore.openFiles.find((f) => f.id === fileId);
+    if (file?.isDirty) {
+      if (!confirm(`Discard changes to ${file.filePath}?`)) return;
+    }
+
+    const wasActive = fileId === editorStore.activeFileId;
+    editorStore.close(fileId);
+
+    if (wasActive && editorStore.activeFileId) {
+      await handleSwitchTab(editorStore.activeFileId);
+    }
+  }
+
+  /* ── Save & open-file event listeners ────────────────────── */
 
   onMount(() => {
     function onSaveFile() {
       handleManualSave();
     }
+
+    function handleOpenFile(e: Event) {
+      const { id, filePath } = (e as CustomEvent).detail;
+      editorStore.open({ id, filePath });
+      void handleSwitchTab(id);
+    }
+
+    function handleOutlineNavigate(e: Event) {
+      const { line, character } = (e as CustomEvent<{ line: number; character: number }>).detail;
+      editorPane?.revealPosition?.(line, character);
+    }
+
+    function handleDiagnosticsReady() {
+      refreshSymbols();
+    }
+
+    function handleRequestSymbols() {
+      // Re-dispatch current symbols so the outline can populate on mount
+      if (symbols.length > 0) {
+        window.dispatchEvent(
+          new CustomEvent('actone:symbols-updated', { detail: { symbols } }),
+        );
+      } else {
+        // No cached symbols — trigger a fresh refresh
+        refreshSymbols();
+      }
+    }
+
     window.addEventListener('actone:save-file', onSaveFile);
+    window.addEventListener('actone:open-file', handleOpenFile);
+    window.addEventListener('actone:outline-navigate', handleOutlineNavigate);
+    window.addEventListener('actone:diagnostics-ready', handleDiagnosticsReady);
+    window.addEventListener('actone:request-symbols', handleRequestSymbols);
+
     return () => {
       window.removeEventListener('actone:save-file', onSaveFile);
+      window.removeEventListener('actone:open-file', handleOpenFile);
+      window.removeEventListener('actone:outline-navigate', handleOutlineNavigate);
+      window.removeEventListener('actone:diagnostics-ready', handleDiagnosticsReady);
+      window.removeEventListener('actone:request-symbols', handleRequestSymbols);
       if (autoSaveTimer) clearTimeout(autoSaveTimer);
     };
   });
 </script>
 
-<div class="flex h-full w-full flex-col overflow-hidden">
-  <!-- Editor toolbar -->
-  <div class="flex h-8 items-center gap-2 border-b border-white/10 bg-surface-850 px-3 text-xs text-white/60">
-    <span class="font-medium text-white/80">{activeFileName}</span>
-    {#if editorStore.saveStatus === 'saving'}
-      <span class="text-amber-400">Saving...</span>
-    {:else if editorStore.saveStatus === 'saved'}
-      <span class="text-green-400">Saved</span>
-    {:else if editorStore.saveStatus === 'error'}
-      <span class="text-red-400">Save failed</span>
-    {/if}
-    <span class="ml-auto">
-      Ln {cursor.line}, Col {cursor.column}
-    </span>
-    <button
-      class="rounded px-2 py-0.5 text-white/50 hover:bg-white/10 hover:text-white/80"
-      onclick={handleFormat}
-    >
-      Format
-    </button>
-  </div>
+<div class="flex h-full w-full flex-col overflow-hidden" data-editor-panel>
+  {#if editorStore.openFiles.length > 0}
+    <EditorTabBar
+      onswitchtab={handleSwitchTab}
+      onclosetab={handleCloseTab}
+      onformat={handleFormat}
+    />
+    <BreadcrumbBar {symbols} {cursor} fileName={activeFileName} />
+  {/if}
 
   <!-- CodeMirror Editor -->
   <div class="flex-1 overflow-hidden">
     {#if projectStore.loading}
       <div class="flex h-full items-center justify-center">
         <LoadingSpinner label="Loading project..." />
+      </div>
+    {:else if editorStore.openFiles.length === 0}
+      <div class="flex h-full items-center justify-center">
+        <EmptyState
+          message="No file open"
+          description="Open a project or file to start editing."
+        />
       </div>
     {:else}
       <EditorPane

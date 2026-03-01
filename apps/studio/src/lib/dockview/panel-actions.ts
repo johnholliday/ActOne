@@ -19,6 +19,38 @@ export function getDockApi(): DockviewApi | null {
 }
 
 /**
+ * Toggle a panel by its registry ID.
+ * If the panel exists, remove it. Otherwise, create it.
+ */
+export function togglePanel(panelId: string, params?: Record<string, unknown>): void {
+  if (!dockApi) {
+    console.warn('[ActOne] Cannot toggle panel: dockview API not initialized');
+    return;
+  }
+
+  const existing = dockApi.getPanel(panelId);
+  if (existing) {
+    dockApi.removePanel(existing);
+    return;
+  }
+
+  // Panel doesn't exist — create it
+  const def = getPanelDefinition(panelId);
+  if (!def) {
+    console.warn(`[ActOne] Unknown panel type: ${panelId}`);
+    return;
+  }
+
+  dockApi.addPanel({
+    id: panelId,
+    component: panelId,
+    title: def.title,
+    renderer: def.renderer,
+    params: { ...def.defaultParams, ...params },
+  });
+}
+
+/**
  * Open a panel by its registry ID.
  * If the panel already exists, focus it. Otherwise, create it.
  */

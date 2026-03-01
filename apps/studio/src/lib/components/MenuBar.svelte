@@ -7,7 +7,7 @@
   import { uiStore, type DiagramView } from '$lib/stores/ui.svelte.js';
   import { getValidTargets, getStageLabel } from '$lib/project/lifecycle.js';
   import { parseAppearancePrefs } from '$lib/settings/appearance.js';
-  import { openPanel, getDockApi } from '$lib/dockview/panel-actions.js';
+  import { openPanel, togglePanel, getDockApi } from '$lib/dockview/panel-actions.js';
   import { clearLayout } from '$lib/dockview/layout-persistence.js';
   import { applyDefaultLayout } from '$lib/dockview/default-layout.js';
   import type { LifecycleStage } from '@repo/shared';
@@ -69,6 +69,16 @@
     'timeline': 'diagram-timeline',
     'interaction-sequence': 'diagram-interaction',
   };
+
+  function isPanelOpen(panelId: string): boolean {
+    const api = getDockApi();
+    if (!api) return false;
+    try {
+      return !!api.getPanel(panelId);
+    } catch {
+      return false;
+    }
+  }
 
   function handleResetLayout() {
     clearLayout();
@@ -212,6 +222,30 @@
       >
         <button
           class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { uiStore.toggleOutline(); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Outline</span>
+          {#if uiStore.outlineVisible}
+            <span class="text-[10px] text-amber-400">&check;</span>
+          {/if}
+        </button>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { uiStore.toggleStatusBar(); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Status Bar</span>
+          {#if uiStore.statusBarVisible}
+            <span class="text-[10px] text-amber-400">&check;</span>
+          {/if}
+        </button>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
           onclick={() => { uiStore.toggleSidebar(); closeMenus(); }}
           role="menuitem"
         >
@@ -257,12 +291,12 @@
         {#each diagramViews as view}
           <button
             class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-            onclick={() => { uiStore.setDiagramView(view.id); openPanel(diagramPanelMap[view.id]); closeMenus(); }}
+            onclick={() => { togglePanel(diagramPanelMap[view.id]); closeMenus(); }}
             role="menuitem"
           >
             <span>{view.label}</span>
-            {#if uiStore.activeDiagramView === view.id}
-              <span class="text-[10px] text-amber-400">&bull;</span>
+            {#if isPanelOpen(diagramPanelMap[view.id])}
+              <span class="text-[10px] text-amber-400">&check;</span>
             {/if}
           </button>
         {/each}
@@ -274,19 +308,25 @@
         </div>
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { openPanel('story-bible'); closeMenus(); }}
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { togglePanel('story-bible'); closeMenus(); }}
           role="menuitem"
         >
-          Story Bible
+          <span>Story Bible</span>
+          {#if isPanelOpen('story-bible')}
+            <span class="text-[10px] text-amber-400">&check;</span>
+          {/if}
         </button>
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { openPanel('statistics'); closeMenus(); }}
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { togglePanel('statistics'); closeMenus(); }}
           role="menuitem"
         >
-          Statistics
+          <span>Statistics</span>
+          {#if isPanelOpen('statistics')}
+            <span class="text-[10px] text-amber-400">&check;</span>
+          {/if}
         </button>
 
         <div class="my-1 border-t border-[#252525]"></div>
@@ -296,19 +336,25 @@
         </div>
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { openPanel('reading-mode'); closeMenus(); }}
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { togglePanel('reading-mode'); closeMenus(); }}
           role="menuitem"
         >
-          Reading Mode
+          <span>Reading Mode</span>
+          {#if isPanelOpen('reading-mode')}
+            <span class="text-[10px] text-amber-400">&check;</span>
+          {/if}
         </button>
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { openPanel('spread-preview'); closeMenus(); }}
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { togglePanel('spread-preview'); closeMenus(); }}
           role="menuitem"
         >
-          Spread Preview
+          <span>Spread Preview</span>
+          {#if isPanelOpen('spread-preview')}
+            <span class="text-[10px] text-amber-400">&check;</span>
+          {/if}
         </button>
       </div>
     {/if}

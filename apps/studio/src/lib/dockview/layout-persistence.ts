@@ -9,7 +9,7 @@ import { applyDefaultLayout } from './default-layout.js';
 
 const STORAGE_KEY = 'actone:dockview-layout';
 const OLD_STORAGE_KEY = 'actone:layout';
-const LAYOUT_VERSION = 1;
+const LAYOUT_VERSION = 3;
 
 interface VersionedLayout {
   version: number;
@@ -61,10 +61,10 @@ export function restoreLayout(api: DockviewApi): boolean {
 
     const versioned = parsed as VersionedLayout;
 
-    // Version check — discard if saved version is from the future or incompatible
-    if (typeof versioned.version !== 'number' || versioned.version > LAYOUT_VERSION) {
+    // Version check — discard if saved version doesn't match current
+    if (typeof versioned.version !== 'number' || versioned.version !== LAYOUT_VERSION) {
       console.warn(
-        `[ActOne] Layout version ${versioned.version} is newer than ${LAYOUT_VERSION}, using default layout.`,
+        `[ActOne] Layout version ${versioned.version} doesn't match current ${LAYOUT_VERSION}, using default layout.`,
       );
       return false;
     }
@@ -113,6 +113,17 @@ export function migrateOldLayout(): void {
 }
 
 /**
+ * Ensure the editor panel's group has its dockview tab header hidden,
+ * since EditorPanel provides its own tab bar.
+ */
+function hideEditorGroupHeader(api: DockviewApi): void {
+  const editorPanel = api.getPanel('editor');
+  if (editorPanel) {
+    editorPanel.group.model.header.hidden = true;
+  }
+}
+
+/**
  * Full restore flow: try saved layout, fall back to default.
  */
 export function restoreOrDefault(api: DockviewApi): void {
@@ -121,4 +132,6 @@ export function restoreOrDefault(api: DockviewApi): void {
   if (!restored) {
     applyDefaultLayout(api);
   }
+  // Always ensure editor group header is hidden (handles pre-existing saved layouts)
+  hideEditorGroupHeader(api);
 }

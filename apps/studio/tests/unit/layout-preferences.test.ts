@@ -8,6 +8,9 @@ import {
 const DEFAULTS: LayoutPrefs = {
   sidebarWidth: 256,
   sidebarVisible: true,
+  outlineVisible: true,
+  outlineWidth: 240,
+  statusBarVisible: true,
 };
 
 describe('parseLayoutPrefs', () => {
@@ -27,6 +30,9 @@ describe('parseLayoutPrefs', () => {
     const prefs: LayoutPrefs = {
       sidebarWidth: 300,
       sidebarVisible: false,
+      outlineVisible: true,
+      outlineWidth: 280,
+      statusBarVisible: true,
     };
     const raw = JSON.stringify(prefs);
     expect(parseLayoutPrefs(raw)).toEqual(prefs);
@@ -53,8 +59,8 @@ describe('parseLayoutPrefs', () => {
   it('ignores unknown fields', () => {
     const raw = JSON.stringify({ sidebarWidth: 280, extra: 'ignored' });
     expect(parseLayoutPrefs(raw)).toEqual({
+      ...DEFAULTS,
       sidebarWidth: 280,
-      sidebarVisible: true,
     });
   });
 
@@ -62,6 +68,9 @@ describe('parseLayoutPrefs', () => {
     const prefs: LayoutPrefs = {
       sidebarWidth: 350,
       sidebarVisible: false,
+      outlineVisible: false,
+      outlineWidth: 200,
+      statusBarVisible: true,
     };
     const serialized = serializeLayoutPrefs(prefs);
     expect(parseLayoutPrefs(serialized)).toEqual(prefs);
