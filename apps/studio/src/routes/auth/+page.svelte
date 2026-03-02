@@ -4,38 +4,38 @@
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-surface-900">
-  <div class="w-full max-w-sm rounded-lg border border-white/10 bg-surface-800 p-8">
+  <div class="w-full max-w-sm rounded-lg border border-border bg-surface-800 p-8">
     <div class="mb-6 flex flex-col items-center gap-1">
       <img src="/images/masks.png" alt="ActOne Studio" class="h-20 w-20" />
-      <span class="text-[24px] font-semibold text-slate-50" style="font-family: 'Cormorant Garamond', serif; letter-spacing: 4px;">ACTONE</span>
-      <span class="text-[11px] font-medium text-zinc-400" style="letter-spacing: 6px;">STUDIO</span>
+      <span class="text-[24px] font-semibold text-text-primary" style="font-family: 'Cormorant Garamond', serif; letter-spacing: 4px;">ACTONE</span>
+      <span class="text-[11px] font-medium text-text-secondary" style="letter-spacing: 6px;">STUDIO</span>
     </div>
-    <h1 class="mb-6 text-center text-2xl font-bold text-white">
+    <h1 class="mb-6 text-center text-2xl font-bold text-text-primary">
       {mode === 'login' ? 'Sign In' : 'Create Account'}
     </h1>
 
     <form method="POST" action="?/{mode}" use:enhance class="space-y-4">
       <div>
-        <label for="email" class="mb-1 block text-sm text-white/70">Email</label>
+        <label for="email" class="mb-1 block text-sm text-text-secondary">Email</label>
         <input
           id="email"
           name="email"
           type="email"
           required
-          class="w-full rounded border border-white/20 bg-surface-700 px-3 py-2 text-white placeholder-white/40 focus:border-accent-500 focus:outline-none"
+          class="w-full rounded border border-border bg-surface-700 px-3 py-2 text-text-primary placeholder-text-muted focus:border-accent-500 focus:outline-none"
           placeholder="you@example.com"
         />
       </div>
 
       <div>
-        <label for="password" class="mb-1 block text-sm text-white/70">Password</label>
+        <label for="password" class="mb-1 block text-sm text-text-secondary">Password</label>
         <input
           id="password"
           name="password"
           type="password"
           required
           minlength="8"
-          class="w-full rounded border border-white/20 bg-surface-700 px-3 py-2 text-white placeholder-white/40 focus:border-accent-500 focus:outline-none"
+          class="w-full rounded border border-border bg-surface-700 px-3 py-2 text-text-primary placeholder-text-muted focus:border-accent-500 focus:outline-none"
           placeholder="Min 8 characters"
         />
       </div>
@@ -49,9 +49,9 @@
     </form>
 
     <div class="my-4 flex items-center gap-3">
-      <div class="h-px flex-1 bg-white/10"></div>
-      <span class="text-xs text-white/40">or</span>
-      <div class="h-px flex-1 bg-white/10"></div>
+      <div class="h-px flex-1 bg-border"></div>
+      <span class="text-xs text-text-muted">or</span>
+      <div class="h-px flex-1 bg-border"></div>
     </div>
 
     <div class="space-y-3">
@@ -85,7 +85,7 @@
       </form>
     </div>
 
-    <p class="mt-4 text-center text-sm text-white/50">
+    <p class="mt-4 text-center text-sm text-text-muted">
       {#if mode === 'login'}
         Don't have an account?
         <button class="text-accent-400 hover:underline" onclick={() => (mode = 'signup')}>

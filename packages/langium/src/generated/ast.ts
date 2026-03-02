@@ -425,7 +425,7 @@ export function isChapterBreaksSetting(item: unknown): item is ChapterBreaksSett
  * motivation hierarchy. Restructured from v1.x extensions.
  */
 export interface CharacterDef extends langium.AstNode {
-    readonly $container: Story;
+    readonly $container: Document | Story;
     readonly $type: 'CharacterDef';
     name: DefinitionName;
     properties: Array<CharacterProperty>;
@@ -534,6 +534,28 @@ export function isDefinitionName(item: unknown): item is DefinitionName {
     return (typeof item === 'string' && (/[_a-zA-Z][\w]*/.test(item) || /"[^"]*"|'[^']*'/.test(item)));
 }
 
+/**
+ * Document is the root of every .actone file. It optionally contains a Story
+ * block and/or standalone StoryElement definitions at the top level.
+ * This enables multi-file project organization: components can live in
+ * separate files without a wrapping `story` block.
+ */
+export interface Document extends langium.AstNode {
+    readonly $type: 'Document';
+    elements: Array<StoryElement>;
+    story?: Story;
+}
+
+export const Document = {
+    $type: 'Document',
+    elements: 'elements',
+    story: 'story'
+} as const;
+
+export function isDocument(item: unknown): item is Document {
+    return reflection.isInstance(item, Document.$type);
+}
+
 /** Weaknesses and vulnerabilities (distinct from internal conflicts) */
 export interface FlawsProp extends langium.AstNode {
     readonly $container: CharacterDef;
@@ -559,7 +581,7 @@ export function isFlawsProp(item: unknown): item is FlawsProp {
  * Making them first-class gives the runtime explicit signals.
  */
 export interface GenerateBlock extends langium.AstNode {
-    readonly $container: Story;
+    readonly $container: Document | Story;
     readonly $type: 'GenerateBlock';
     settings: Array<GenerateSetting>;
 }
@@ -713,7 +735,7 @@ export function isGoalStakesProp(item: unknown): item is GoalStakesProp {
  * this gap between surface and depth.
  */
 export interface InteractionDef extends langium.AstNode {
-    readonly $container: Story;
+    readonly $container: Document | Story;
     readonly $type: 'InteractionDef';
     name: DefinitionName;
     properties: Array<InteractionProperty>;
@@ -1189,7 +1211,7 @@ export function isPlotConflictTypeProp(item: unknown): item is PlotConflictTypeP
  * Beats naturally grouped into acts, but the grammar couldn't express this.
  */
 export interface PlotDef extends langium.AstNode {
-    readonly $container: Story;
+    readonly $container: Document | Story;
     readonly $type: 'PlotDef';
     name: DefinitionName;
     properties: Array<PlotProperty>;
@@ -1524,7 +1546,7 @@ export function isSceneAtmosphereProp(item: unknown): item is SceneAtmospherePro
  * Making them explicit gives the runtime precise generation targets.
  */
 export interface SceneDef extends langium.AstNode {
-    readonly $container: Story;
+    readonly $container: Document | Story;
     readonly $type: 'SceneDef';
     name: DefinitionName;
     properties: Array<SceneProperty>;
@@ -1732,10 +1754,12 @@ export function isSignedInt(item: unknown): item is SignedInt {
 }
 
 /**
- * Story is the top-level container. A single .actone file contains exactly one story.
+ * Story is the named narrative container. Optional in multi-file projects
+ * where standalone components are used. At most one per project across all files.
  * The name is a string to allow spaces/punctuation in titles.
  */
 export interface Story extends langium.AstNode {
+    readonly $container: Document;
     readonly $type: 'Story';
     elements: Array<StoryElement>;
     name: string;
@@ -1752,7 +1776,7 @@ export function isStory(item: unknown): item is Story {
 }
 
 /**
- * All top-level constructs within a story.
+ * All top-level constructs within a story or at the document level.
  * Order-independent to give writers flexibility in organization.
  * v2.0: Added ThemeDef and TimelineDef.
  */
@@ -1954,7 +1978,7 @@ export function isThemeCounterProp(item: unknown): item is ThemeCounterProp {
  * Themes give the runtime a semantic compass for narrative coherence.
  */
 export interface ThemeDef extends langium.AstNode {
-    readonly $container: Story;
+    readonly $container: Document | Story;
     readonly $type: 'ThemeDef';
     name: DefinitionName;
     properties: Array<ThemeProperty>;
@@ -2040,7 +2064,7 @@ export function isThemeTensionProp(item: unknown): item is ThemeTensionProp {
  * would have signaled this to the runtime.
  */
 export interface TimelineDef extends langium.AstNode {
-    readonly $container: Story;
+    readonly $container: Document | Story;
     readonly $type: 'TimelineDef';
     name: DefinitionName;
     properties: Array<TimelineProperty>;
@@ -2207,7 +2231,7 @@ export function isVoiceProp(item: unknown): item is VoiceProp {
  * Lesson from Infancy: needed metaphysical rules distinct from physical ones.
  */
 export interface WorldDef extends langium.AstNode {
-    readonly $container: Story;
+    readonly $container: Document | Story;
     readonly $type: 'WorldDef';
     name: DefinitionName;
     properties: Array<WorldProperty>;
@@ -2293,6 +2317,7 @@ export type ActOneAstType = {
     ConflictsProp: ConflictsProp
     ContinuityLossSetting: ContinuityLossSetting
     DefaultPovSetting: DefaultPovSetting
+    Document: Document
     FlawsProp: FlawsProp
     GenerateBlock: GenerateBlock
     GenerateSetting: GenerateSetting
@@ -2562,6 +2587,19 @@ export class ActOneAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: [GenerateSetting.$type]
+        },
+        Document: {
+            name: Document.$type,
+            properties: {
+                elements: {
+                    name: Document.elements,
+                    defaultValue: []
+                },
+                story: {
+                    name: Document.story
+                }
+            },
+            superTypes: []
         },
         FlawsProp: {
             name: FlawsProp.$type,

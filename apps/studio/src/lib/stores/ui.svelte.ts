@@ -9,6 +9,13 @@ export type DiagramView =
   | 'interaction-sequence';
 
 class UiStore {
+  /** Current theme: dark or light */
+  theme = $state<'dark' | 'light'>(
+    (typeof localStorage !== 'undefined'
+      ? (localStorage.getItem('actone:theme') as 'dark' | 'light')
+      : null) ?? 'dark',
+  );
+
   /** Whether the sidebar (project navigator) is visible */
   sidebarVisible = $state(true);
 
@@ -32,6 +39,22 @@ class UiStore {
 
   /** Whether the editor or diagram canvas has focus */
   activePane = $state<'editor' | 'diagram'>('editor');
+
+  toggleTheme() {
+    this.theme = this.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('actone:theme', this.theme);
+    this.applyTheme();
+  }
+
+  setTheme(t: 'dark' | 'light') {
+    this.theme = t;
+    localStorage.setItem('actone:theme', this.theme);
+    this.applyTheme();
+  }
+
+  applyTheme() {
+    document.documentElement.setAttribute('data-theme', this.theme);
+  }
 
   toggleSidebar() {
     this.sidebarVisible = !this.sidebarVisible;

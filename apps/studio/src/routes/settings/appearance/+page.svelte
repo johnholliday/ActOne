@@ -13,6 +13,7 @@
     type DiagramStyle,
     type BackgroundPattern,
   } from '$lib/settings/diagram.js';
+  import { uiStore } from '$lib/stores/ui.svelte.js';
 
   let theme = $state<'dark' | 'light' | 'system'>('dark');
   let fontSize = $state(14);
@@ -69,7 +70,7 @@
   }
 </script>
 
-<div class="mx-auto max-w-lg px-6 py-12 text-white">
+<div class="mx-auto max-w-lg px-6 py-12 text-text-primary">
   <h1 class="mb-6 text-xl font-bold">Appearance</h1>
 
   {#if saved}
@@ -80,21 +81,33 @@
 
   <!-- Theme -->
   <div class="mb-6">
-    <span class="mb-2 block text-xs font-medium text-zinc-400">Theme</span>
+    <span class="mb-2 block text-xs font-medium text-text-secondary">Theme</span>
     <div class="flex gap-2">
-      <label
-        class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2 text-sm transition-colors border-amber-500/50 bg-amber-500/5 text-white"
-      >
-        <input type="radio" name="theme" value="dark" checked class="sr-only" />
-        Dark
-      </label>
+      {#each [
+        { value: 'dark' as const, label: 'Dark' },
+        { value: 'light' as const, label: 'Light' },
+      ] as opt}
+        <label
+          class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2 text-sm transition-colors
+            {theme === opt.value ? 'border-amber-500/50 bg-amber-500/5 text-text-primary' : 'border-border text-text-secondary hover:border-surface-overlay'}"
+        >
+          <input
+            type="radio"
+            name="theme"
+            value={opt.value}
+            bind:group={theme}
+            onchange={() => { uiStore.setTheme(opt.value); }}
+            class="sr-only"
+          />
+          {opt.label}
+        </label>
+      {/each}
     </div>
-    <p class="mt-1 text-[11px] text-zinc-500">Light and System themes coming soon</p>
   </div>
 
   <!-- Font Size -->
   <div class="mb-6">
-    <label for="ap-fontsize" class="mb-2 block text-xs font-medium text-zinc-400">
+    <label for="ap-fontsize" class="mb-2 block text-xs font-medium text-text-secondary">
       Editor Font Size: {fontSize}px
     </label>
     <input
@@ -106,7 +119,7 @@
       bind:value={fontSize}
       class="w-full accent-amber-500"
     />
-    <div class="mt-1 flex justify-between text-[10px] text-zinc-600">
+    <div class="mt-1 flex justify-between text-[10px] text-text-muted">
       <span>10px</span>
       <span>24px</span>
     </div>
@@ -114,17 +127,17 @@
 
   <!-- Font Family -->
   <div class="mb-6">
-    <label for="ap-fontfamily" class="mb-2 block text-xs font-medium text-zinc-400">Editor Font</label>
+    <label for="ap-fontfamily" class="mb-2 block text-xs font-medium text-text-secondary">Editor Font</label>
     <select
       id="ap-fontfamily"
       bind:value={fontFamily}
-      class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white focus:border-amber-500 focus:outline-none"
+      class="w-full rounded border border-border bg-surface-900 px-3 py-2 text-sm text-text-primary focus:border-amber-500 focus:outline-none"
     >
       {#each fontOptions as font}
         <option value={font}>{font}</option>
       {/each}
     </select>
-    <div class="mt-2 rounded border border-[#333] bg-surface-900 p-3 text-sm text-zinc-300" style="font-family: '{fontFamily}', monospace; font-size: {fontSize}px;">
+    <div class="mt-2 rounded border border-border bg-surface-900 p-3 text-sm text-text-secondary" style="font-family: '{fontFamily}', monospace; font-size: {fontSize}px;">
       story "Preview" {'{'}<br/>
       &nbsp;&nbsp;The quick brown fox<br/>
       {'}'}
@@ -137,19 +150,19 @@
       <input
         type="checkbox"
         bind:checked={wordWrap}
-        class="h-4 w-4 rounded border-[#333] bg-surface-900 accent-amber-500"
+        class="h-4 w-4 rounded border-border bg-surface-900 accent-amber-500"
       />
-      <span class="text-sm text-zinc-300">Word Wrap</span>
+      <span class="text-sm text-text-secondary">Word Wrap</span>
     </label>
-    <p class="mt-1 text-[11px] text-zinc-500">Wrap long lines instead of scrolling horizontally</p>
+    <p class="mt-1 text-[11px] text-text-muted">Wrap long lines instead of scrolling horizontally</p>
   </div>
 
   <!-- ── Diagram Canvas ──────────────────────────────────── -->
-  <h2 class="mb-4 mt-8 border-t border-[#333] pt-6 text-lg font-semibold">Diagram Canvas</h2>
+  <h2 class="mb-4 mt-8 border-t border-border pt-6 text-lg font-semibold">Diagram Canvas</h2>
 
   <!-- Canvas Style -->
   <div class="mb-6">
-    <span class="mb-2 block text-xs font-medium text-zinc-400">Canvas Style</span>
+    <span class="mb-2 block text-xs font-medium text-text-secondary">Canvas Style</span>
     <div class="flex gap-2">
       {#each [
         { value: 'dark', label: 'Dark', bg: '#0D0D0D', dot: '#252525' },
@@ -157,7 +170,7 @@
       ] as opt}
         <label
           class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2 text-sm transition-colors
-            {diagramStyle === opt.value ? 'border-amber-500/50 bg-amber-500/5 text-white' : 'border-[#333] text-zinc-400 hover:border-[#444]'}"
+            {diagramStyle === opt.value ? 'border-amber-500/50 bg-amber-500/5 text-text-primary' : 'border-border text-text-secondary hover:border-surface-overlay'}"
         >
           <input
             type="radio"
@@ -167,7 +180,7 @@
             class="sr-only"
           />
           <span
-            class="inline-block h-4 w-4 rounded border border-[#555]"
+            class="inline-block h-4 w-4 rounded border border-surface-overlay"
             style="background: {opt.bg}; box-shadow: inset 0 0 0 1px {opt.dot};"
           ></span>
           {opt.label}
@@ -178,7 +191,7 @@
 
   <!-- Background Pattern -->
   <div class="mb-6">
-    <span class="mb-2 block text-xs font-medium text-zinc-400">Background Pattern</span>
+    <span class="mb-2 block text-xs font-medium text-text-secondary">Background Pattern</span>
     <div class="flex gap-2">
       {#each [
         { value: 'dots', label: 'Dots' },
@@ -187,7 +200,7 @@
       ] as opt}
         <label
           class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2 text-sm transition-colors
-            {backgroundVariant === opt.value ? 'border-amber-500/50 bg-amber-500/5 text-white' : 'border-[#333] text-zinc-400 hover:border-[#444]'}"
+            {backgroundVariant === opt.value ? 'border-amber-500/50 bg-amber-500/5 text-text-primary' : 'border-border text-text-secondary hover:border-surface-overlay'}"
         >
           <input
             type="radio"
@@ -208,16 +221,16 @@
       <input
         type="checkbox"
         bind:checked={snapToGrid}
-        class="h-4 w-4 rounded border-[#333] bg-surface-900 accent-amber-500"
+        class="h-4 w-4 rounded border-border bg-surface-900 accent-amber-500"
       />
-      <span class="text-sm text-zinc-300">Snap to Grid</span>
+      <span class="text-sm text-text-secondary">Snap to Grid</span>
     </label>
-    <p class="mt-1 text-[11px] text-zinc-500">Snap nodes to the grid when dragging</p>
+    <p class="mt-1 text-[11px] text-text-muted">Snap nodes to the grid when dragging</p>
   </div>
 
   <!-- Grid Size -->
   <div class="mb-6">
-    <label for="ap-gridsize" class="mb-2 block text-xs font-medium text-zinc-400">
+    <label for="ap-gridsize" class="mb-2 block text-xs font-medium text-text-secondary">
       Grid Size: {gridSize}px
     </label>
     <input
@@ -229,7 +242,7 @@
       bind:value={gridSize}
       class="w-full accent-amber-500"
     />
-    <div class="mt-1 flex justify-between text-[10px] text-zinc-600">
+    <div class="mt-1 flex justify-between text-[10px] text-text-muted">
       <span>5px</span>
       <span>100px</span>
     </div>

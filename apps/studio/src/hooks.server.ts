@@ -1,5 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
-import { type Handle, redirect } from '@sveltejs/kit';
+import { type Handle, redirect, json } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 
 import {
@@ -67,6 +67,10 @@ const authGuard: Handle = async ({ event, resolve }) => {
     !event.url.pathname.startsWith('/auth') &&
     !event.url.pathname.startsWith('/api/auth')
   ) {
+    // Return 401 JSON for API routes instead of redirecting to HTML
+    if (event.url.pathname.startsWith('/api/')) {
+      return json({ message: 'Unauthorized — please sign in again' }, { status: 401 });
+    }
     redirect(303, '/auth');
   }
 

@@ -25,11 +25,11 @@
   {#if icon}
     {@render icon()}
   {:else}
-    <FileText size={32} class="text-zinc-600" />
+    <FileText size={32} class="text-text-muted" />
   {/if}
-  <p class="text-sm font-medium text-zinc-400">{message}</p>
+  <p class="text-sm font-medium text-text-secondary">{message}</p>
   {#if description}
-    <p class="max-w-sm text-xs text-zinc-500">{description}</p>
+    <p class="max-w-sm text-xs text-text-muted">{description}</p>
   {/if}
   {#if actionLabel && onaction}
     <button

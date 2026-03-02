@@ -46,11 +46,11 @@
   const breadcrumbPath = $derived(findBreadcrumbPath(symbols, cursor.line, cursor.column));
 </script>
 
-<div class="flex h-[22px] items-center gap-0.5 overflow-hidden border-b border-[#252525] bg-surface-850 px-3 text-[11px] text-white/40">
+<div class="flex h-[22px] items-center gap-0.5 overflow-hidden border-b border-border bg-surface-850 px-3 text-[11px] text-text-muted">
   <FileCode size={11} class="shrink-0 text-amber-500/50" />
   <span class="ml-1 truncate">{fileName}</span>
   {#each breadcrumbPath as sym}
-    <ChevronRight size={10} class="shrink-0 text-white/20" />
+    <ChevronRight size={10} class="shrink-0 text-text-muted" />
     <span class="truncate">{sym.name}</span>
   {/each}
 </div>

@@ -69,13 +69,13 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<footer class="flex h-8 items-center border-t border-[#252525] bg-surface-800 px-3 text-xs">
+<footer class="flex h-8 items-center border-t border-border bg-surface-800 px-3 text-xs">
   <!-- LEFT: lifecycle stage pipeline -->
   <div class="flex items-center gap-1">
     {#if currentStage}
       {#each STAGES as stage, i}
         {#if i > 0}
-          <span class="text-[10px] text-zinc-700">→</span>
+          <span class="text-[10px] text-text-muted">→</span>
         {/if}
         {#if stage === currentStage}
           <div class="relative">
@@ -97,14 +97,14 @@
             {#if dropdownOpen}
               <!-- svelte-ignore a11y_click_events_have_key_events -->
               <div
-                class="absolute bottom-full left-0 z-50 mb-1 min-w-[140px] rounded-md border border-[#252525] bg-[#171717] py-1 shadow-lg"
+                class="absolute bottom-full left-0 z-50 mb-1 min-w-[140px] rounded-md border border-border bg-surface-800 py-1 shadow-lg"
                 role="menu"
                 tabindex="-1"
                 onclick={(e) => e.stopPropagation()}
               >
                 {#each validTargets as target}
                   <button
-                    class="flex w-full items-center px-3 py-1.5 text-left text-[12px] text-white/70 hover:bg-white/10 hover:text-white/90"
+                    class="flex w-full items-center px-3 py-1.5 text-left text-[12px] text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
                     role="menuitem"
                     onclick={() => handleSelectTarget(target)}
                   >
@@ -116,7 +116,7 @@
             {/if}
           </div>
         {:else}
-          <span class="text-[11px] text-zinc-600">{getStageLabel(stage)}</span>
+          <span class="text-[11px] text-text-muted">{getStageLabel(stage)}</span>
         {/if}
       {/each}
     {/if}
@@ -126,9 +126,9 @@
   <div class="flex-1"></div>
 
   <!-- RIGHT: cursor position and diagnostic count -->
-  <div class="flex items-center gap-2 text-zinc-500">
+  <div class="flex items-center gap-2 text-text-secondary">
     <span>Ln {editorStore.cursor.line}, Col {editorStore.cursor.column}</span>
-    <span class="text-white/20">|</span>
+    <span class="text-text-muted">|</span>
     <button
       class="cursor-pointer hover:underline {editorStore.diagnosticCount > 0 ? 'text-red-400' : ''}"
       onclick={() => openPanel('problems')}

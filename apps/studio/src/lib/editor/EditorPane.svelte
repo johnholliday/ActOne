@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { EditorView, keymap, lineNumbers, drawSelection } from '@codemirror/view';
+  import { EditorView, keymap, lineNumbers, drawSelection, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
   import { EditorState, Compartment } from '@codemirror/state';
   import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
   import {
@@ -22,6 +22,7 @@
   import { actoneKeywordHighlighter } from './actone-keywords.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { editorStore } from '$lib/stores/editor.svelte.js';
+  import { uiStore } from '$lib/stores/ui.svelte.js';
   import { parseAppearancePrefs } from '$lib/settings/appearance.js';
   import type { Diagnostic } from './langium-client.js';
 
@@ -66,6 +67,240 @@
   /** Word wrap compartment for dynamic toggling */
   const wordWrapCompartment = new Compartment();
 
+  /** Theme compartment for switching between dark/light editor themes */
+  const themeCompartment = new Compartment();
+
+  const darkEditorTheme = EditorView.theme({
+    '&': {
+      height: '100%',
+      fontSize: '14px',
+      backgroundColor: '#0D0D0D',
+    },
+    '.cm-content': {
+      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+      padding: '8px 0',
+      color: '#f8fafc',
+    },
+    '.cm-gutters': {
+      backgroundColor: 'transparent',
+      borderRight: '1px solid rgba(255,255,255,0.08)',
+      color: 'rgba(255,255,255,0.3)',
+    },
+    '.cm-activeLineGutter': {
+      color: 'var(--color-accent, #f59e0b)',
+      backgroundColor: 'transparent',
+    },
+    '.cm-activeLine': {
+      backgroundColor: 'rgba(255,255,255,0.03)',
+    },
+    '.cm-selectionBackground': {
+      backgroundColor: 'rgba(99,102,241,0.3) !important',
+    },
+    '.cm-cursor': {
+      borderLeftColor: '#818cf8',
+    },
+    /* Semantic token colors */
+    '.cm-semantic-keyword': { color: '#c792ea' },
+    '.cm-semantic-type': { color: '#ffcb6b' },
+    '.cm-semantic-property': { color: '#82aaff' },
+    '.cm-semantic-variable': { color: '#f07178' },
+    '.cm-semantic-string': { color: '#c3e88d' },
+    '.cm-semantic-number': { color: '#f78c6c' },
+    '.cm-semantic-comment': { color: '#546e7a', fontStyle: 'italic' },
+    '.cm-semantic-function': { color: '#82aaff' },
+    '.cm-semantic-enum': { color: '#ffcb6b' },
+    '.cm-semantic-enumMember': { color: '#89ddff' },
+    /* Hover tooltip */
+    '.cm-hover-tooltip': {
+      backgroundColor: '#1e293b',
+      border: '1px solid rgba(255,255,255,0.1)',
+      borderRadius: '6px',
+      color: '#e2e8f0',
+    },
+    /* Lint tooltip */
+    '.cm-tooltip-lint': {
+      backgroundColor: '#1e1e2e',
+      border: '1px solid rgba(255,255,255,0.1)',
+      borderRadius: '6px',
+    },
+    '.cm-diagnostic': {
+      padding: '4px 8px',
+      color: '#e2e8f0',
+      fontSize: '12px',
+    },
+    '.cm-diagnostic-error': {
+      borderLeft: '4px solid #f44747',
+    },
+    '.cm-diagnostic-warning': {
+      borderLeft: '4px solid #ff9940',
+    },
+    '.cm-diagnostic-info': {
+      borderLeft: '4px solid #6796e6',
+    },
+    '.cm-diagnostic-hint': {
+      borderLeft: '4px solid #89ddff',
+    },
+    '.cm-diagnosticSource': {
+      color: 'rgba(255,255,255,0.5)',
+      fontSize: '11px',
+    },
+    '.cm-diagnosticAction': {
+      backgroundColor: '#333',
+      color: '#e2e8f0',
+      borderRadius: '3px',
+      padding: '2px 6px',
+      marginLeft: '8px',
+      cursor: 'pointer',
+      border: 'none',
+    },
+    /* Lint gutter */
+    '.cm-lint-marker-error': { content: '"●"' },
+    '.cm-lint-marker-warning': { content: '"●"' },
+    /* Reference highlights */
+    '.cm-reference-highlight': {
+      backgroundColor: 'rgba(255,191,0,0.15)',
+      borderBottom: '1px solid rgba(255,191,0,0.4)',
+    },
+    /* Fold gutter */
+    '.cm-foldGutter .cm-gutterElement': {
+      color: 'rgba(255,255,255,0.3)',
+      padding: '0 2px',
+    },
+    /* Rename dialog */
+    '.cm-rename-dialog': {
+      backgroundColor: '#171717',
+      borderBottom: '1px solid #252525',
+      color: '#e2e8f0',
+      padding: '4px 8px',
+    },
+    '.cm-rename-dialog input': {
+      backgroundColor: '#0D0D0D',
+      border: '1px solid rgba(255,255,255,0.2)',
+      borderRadius: '4px',
+      color: '#e2e8f0',
+      padding: '2px 6px',
+    },
+    '.cm-rename-dialog input:focus': {
+      borderColor: 'rgba(245,158,11,0.6)',
+    },
+  });
+
+  const lightEditorTheme = EditorView.theme({
+    '&': {
+      height: '100%',
+      fontSize: '14px',
+      backgroundColor: '#ffffff',
+    },
+    '.cm-content': {
+      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+      padding: '8px 0',
+      color: '#1a1a2e',
+    },
+    '.cm-gutters': {
+      backgroundColor: '#f8f9fa',
+      borderRight: '1px solid #e2e5e9',
+      color: '#9ca3af',
+    },
+    '.cm-activeLineGutter': {
+      color: '#b45309',
+      backgroundColor: 'transparent',
+    },
+    '.cm-activeLine': {
+      backgroundColor: 'rgba(59, 130, 246, 0.06)',
+    },
+    '.cm-selectionBackground': {
+      backgroundColor: 'rgba(99,102,241,0.2) !important',
+    },
+    '.cm-cursor': {
+      borderLeftColor: '#6366f1',
+    },
+    /* Semantic token colors — light mode */
+    '.cm-semantic-keyword': { color: '#7c3aed' },
+    '.cm-semantic-type': { color: '#b45309' },
+    '.cm-semantic-property': { color: '#2563eb' },
+    '.cm-semantic-variable': { color: '#dc2626' },
+    '.cm-semantic-string': { color: '#16a34a' },
+    '.cm-semantic-number': { color: '#ea580c' },
+    '.cm-semantic-comment': { color: '#9ca3af', fontStyle: 'italic' },
+    '.cm-semantic-function': { color: '#2563eb' },
+    '.cm-semantic-enum': { color: '#b45309' },
+    '.cm-semantic-enumMember': { color: '#0891b2' },
+    /* Hover tooltip */
+    '.cm-hover-tooltip': {
+      backgroundColor: '#ffffff',
+      border: '1px solid #d1d5db',
+      borderRadius: '6px',
+      color: '#1a1a2e',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    },
+    /* Lint tooltip */
+    '.cm-tooltip-lint': {
+      backgroundColor: '#ffffff',
+      border: '1px solid #d1d5db',
+      borderRadius: '6px',
+    },
+    '.cm-diagnostic': {
+      padding: '4px 8px',
+      color: '#1a1a2e',
+      fontSize: '12px',
+    },
+    '.cm-diagnostic-error': {
+      borderLeft: '4px solid #dc2626',
+    },
+    '.cm-diagnostic-warning': {
+      borderLeft: '4px solid #d97706',
+    },
+    '.cm-diagnostic-info': {
+      borderLeft: '4px solid #2563eb',
+    },
+    '.cm-diagnostic-hint': {
+      borderLeft: '4px solid #0891b2',
+    },
+    '.cm-diagnosticSource': {
+      color: '#9ca3af',
+      fontSize: '11px',
+    },
+    '.cm-diagnosticAction': {
+      backgroundColor: '#e9ecef',
+      color: '#1a1a2e',
+      borderRadius: '3px',
+      padding: '2px 6px',
+      marginLeft: '8px',
+      cursor: 'pointer',
+      border: 'none',
+    },
+    /* Lint gutter */
+    '.cm-lint-marker-error': { content: '"●"' },
+    '.cm-lint-marker-warning': { content: '"●"' },
+    /* Reference highlights */
+    '.cm-reference-highlight': {
+      backgroundColor: 'rgba(180,83,9,0.1)',
+      borderBottom: '1px solid rgba(180,83,9,0.3)',
+    },
+    /* Fold gutter */
+    '.cm-foldGutter .cm-gutterElement': {
+      color: '#9ca3af',
+      padding: '0 2px',
+    },
+    /* Rename dialog */
+    '.cm-rename-dialog': {
+      backgroundColor: '#f8f9fa',
+      borderBottom: '1px solid #d1d5db',
+      color: '#1a1a2e',
+      padding: '4px 8px',
+    },
+    '.cm-rename-dialog input': {
+      backgroundColor: '#ffffff',
+      border: '1px solid #d1d5db',
+      borderRadius: '4px',
+      color: '#1a1a2e',
+      padding: '2px 6px',
+    },
+    '.cm-rename-dialog input:focus': {
+      borderColor: 'rgba(180,83,9,0.6)',
+    },
+  });
+
   /** Create a Langium worker using the inline pattern Vite can detect and bundle. */
   function createLangiumWorker(): Worker {
     console.log('[EditorPane] creating Langium worker');
@@ -108,6 +343,10 @@
         if (projectContext) {
           langiumClient.openProject(projectContext).then((result) => {
             console.log('[EditorPane] openProject succeeded:', result);
+            // Populate merged AST immediately after workspace is built
+            langiumClient.getMergedAst().then((response) => {
+              astStore.updateMergedAst(response.ast, response.valid);
+            }).catch(() => { /* silently ignore merge failures */ });
             // Refresh semantic tokens and folding ranges after workspace is built
             if (view) {
               console.log('[EditorPane] requesting semantic tokens + folding ranges');
@@ -145,6 +384,8 @@
     const extensions = [
       wordWrapCompartment.of(storedPrefs.wordWrap ? EditorView.lineWrapping : []),
       lineNumbers(),
+      highlightActiveLine(),
+      highlightActiveLineGutter(),
       drawSelection(),
       indentOnInput(),
       bracketMatching(),
@@ -169,117 +410,7 @@
           column: head - line.from + 1,
         });
       }),
-      EditorView.theme({
-        '&': {
-          height: '100%',
-          fontSize: '14px',
-        },
-        '.cm-content': {
-          fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-          padding: '8px 0',
-        },
-        '.cm-gutters': {
-          backgroundColor: 'transparent',
-          borderRight: '1px solid rgba(255,255,255,0.08)',
-          color: 'rgba(255,255,255,0.3)',
-        },
-        '.cm-activeLineGutter': {
-          color: 'rgba(255,255,255,0.7)',
-        },
-        '.cm-activeLine': {
-          backgroundColor: 'rgba(255,255,255,0.03)',
-        },
-        '.cm-selectionBackground': {
-          backgroundColor: 'rgba(99,102,241,0.3) !important',
-        },
-        '.cm-cursor': {
-          borderLeftColor: '#818cf8',
-        },
-        /* Semantic token colors */
-        '.cm-semantic-keyword': { color: '#c792ea' },
-        '.cm-semantic-type': { color: '#ffcb6b' },
-        '.cm-semantic-property': { color: '#82aaff' },
-        '.cm-semantic-variable': { color: '#f07178' },
-        '.cm-semantic-string': { color: '#c3e88d' },
-        '.cm-semantic-number': { color: '#f78c6c' },
-        '.cm-semantic-comment': { color: '#546e7a', fontStyle: 'italic' },
-        '.cm-semantic-function': { color: '#82aaff' },
-        '.cm-semantic-enum': { color: '#ffcb6b' },
-        '.cm-semantic-enumMember': { color: '#89ddff' },
-        /* Hover tooltip */
-        '.cm-hover-tooltip': {
-          backgroundColor: '#1e293b',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '6px',
-          color: '#e2e8f0',
-        },
-        /* Lint tooltip */
-        '.cm-tooltip-lint': {
-          backgroundColor: '#1e1e2e',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '6px',
-        },
-        '.cm-diagnostic': {
-          padding: '4px 8px',
-          color: '#e2e8f0',
-          fontSize: '12px',
-        },
-        '.cm-diagnostic-error': {
-          borderLeft: '4px solid #f44747',
-        },
-        '.cm-diagnostic-warning': {
-          borderLeft: '4px solid #ff9940',
-        },
-        '.cm-diagnostic-info': {
-          borderLeft: '4px solid #6796e6',
-        },
-        '.cm-diagnostic-hint': {
-          borderLeft: '4px solid #89ddff',
-        },
-        '.cm-diagnosticSource': {
-          color: 'rgba(255,255,255,0.5)',
-          fontSize: '11px',
-        },
-        '.cm-diagnosticAction': {
-          backgroundColor: '#333',
-          color: '#e2e8f0',
-          borderRadius: '3px',
-          padding: '2px 6px',
-          marginLeft: '8px',
-          cursor: 'pointer',
-          border: 'none',
-        },
-        /* Lint gutter */
-        '.cm-lint-marker-error': { content: '"●"' },
-        '.cm-lint-marker-warning': { content: '"●"' },
-        /* Reference highlights */
-        '.cm-reference-highlight': {
-          backgroundColor: 'rgba(255,191,0,0.15)',
-          borderBottom: '1px solid rgba(255,191,0,0.4)',
-        },
-        /* Fold gutter */
-        '.cm-foldGutter .cm-gutterElement': {
-          color: 'rgba(255,255,255,0.3)',
-          padding: '0 2px',
-        },
-        /* Rename dialog */
-        '.cm-rename-dialog': {
-          backgroundColor: '#171717',
-          borderBottom: '1px solid #252525',
-          color: '#e2e8f0',
-          padding: '4px 8px',
-        },
-        '.cm-rename-dialog input': {
-          backgroundColor: '#0D0D0D',
-          border: '1px solid rgba(255,255,255,0.2)',
-          borderRadius: '4px',
-          color: '#e2e8f0',
-          padding: '2px 6px',
-        },
-        '.cm-rename-dialog input:focus': {
-          borderColor: 'rgba(245,158,11,0.6)',
-        },
-      }),
+      themeCompartment.of(uiStore.theme === 'light' ? lightEditorTheme : darkEditorTheme),
       // Dark base theme
       EditorView.baseTheme({
         '&.cm-focused': {
@@ -328,6 +459,19 @@
     };
   });
 
+  /* ── React to theme changes ──────────────────────────────────── */
+
+  $effect(() => {
+    const currentTheme = uiStore.theme;
+    if (view) {
+      view.dispatch({
+        effects: themeCompartment.reconfigure(
+          currentTheme === 'light' ? lightEditorTheme : darkEditorTheme,
+        ),
+      });
+    }
+  });
+
   /* ── Diagnostic Handler ────────────────────────────────────────── */
 
   function handleDiagnostics(diagnosticUri: string, diagnostics: Diagnostic[]) {
@@ -352,6 +496,11 @@
       client.getSerializedAst(diagnosticUri).then((response) => {
         astStore.updateAst(diagnosticUri, response.ast, response.valid, response.errors);
       }).catch(() => { /* silently ignore serialization failures */ });
+
+      // Also refresh the merged AST (cross-file consolidated view)
+      client.getMergedAst().then((response) => {
+        astStore.updateMergedAst(response.ast, response.valid);
+      }).catch(() => { /* silently ignore merge failures */ });
     }
   }
 
@@ -396,7 +545,7 @@
     }
   }
 
-  /** Move cursor to an LSP position (0-based line/character) and scroll into view */
+  /** Move cursor to an LSP position (0-based line/character) and scroll to center */
   export function revealPosition(line: number, character: number): void {
     if (!view) return;
     const cmLine = view.state.doc.line(line + 1);
@@ -406,6 +555,16 @@
       scrollIntoView: true,
     });
     view.focus();
+    // After the default scroll-into-view, adjust to center the line vertically
+    requestAnimationFrame(() => {
+      if (!view) return;
+      const coords = view.coordsAtPos(offset);
+      if (!coords) return;
+      const editorRect = view.dom.getBoundingClientRect();
+      const lineY = coords.top;
+      const centerOffset = lineY - editorRect.top - editorRect.height / 2;
+      view.scrollDOM.scrollTop += centerOffset;
+    });
   }
 
   /** Switch to a different document without recreating the editor */

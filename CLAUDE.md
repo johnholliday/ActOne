@@ -63,6 +63,8 @@ Uses ESLint 9 flat config format (`.mjs` files). Base config includes `typescrip
 - Supabase PostgreSQL (Drizzle ORM for schema/queries, Supabase client for auth/storage) (004-wire-studio-screens)
 - TypeScript 5.9 (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + SvelteKit 2.53.x, Svelte 5.53.x (runes), dockview-core 5.0.0 (new) (005-dockview-layout)
 - Layout state in localStorage (client-side only); no database changes (005-dockview-layout)
+- TypeScript 5.9 (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + Langium 4.2.x (grammar, parser, scope provider, validator, code generator), SvelteKit 2.53.x, Svelte 5.53.x (006-multi-file-grammar)
+- Supabase PostgreSQL via Drizzle ORM (project files stored in Supabase storage) (006-multi-file-grammar)
 
 ## Recent Changes
 - 001-string-utils: Added TypeScript 5.9 (strict mode, ES2022 target) + None at runtime; Vitest for testing (dev only)

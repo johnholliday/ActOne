@@ -22,6 +22,7 @@ import type {
   SerializedGenerateBlock,
 } from '@repo/shared';
 import type {
+  Document,
   Story,
   StoryElement,
   CharacterDef,
@@ -90,6 +91,21 @@ function cleanName(name: string): string {
 
 /* ── Top-Level Serializer ────────────────────────────────────────────── */
 
+/**
+ * Serialize a Document (the new entry rule root) into a SerializedStory.
+ * Merges elements from the optional `story` block and standalone top-level elements.
+ */
+export function serializeDocument(doc: Document): SerializedStory {
+  const storyElements = doc.story?.elements ?? [];
+  const standaloneElements = doc.elements;
+  const allElements = [...storyElements, ...standaloneElements];
+  return {
+    name: doc.story ? cleanName(doc.story.name) : '',
+    elements: allElements.map(serializeElement),
+  };
+}
+
+/** @deprecated Use serializeDocument instead. Retained as internal helper. */
 export function serializeStory(story: Story): SerializedStory {
   return {
     name: cleanName(story.name),

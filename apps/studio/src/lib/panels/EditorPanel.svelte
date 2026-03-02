@@ -316,12 +316,42 @@
       refreshSymbols();
     }
 
+    function handleReplaceFileContent(e: Event) {
+      const { fileId, content } = (
+        e as CustomEvent<{ fileId: string; content: string }>
+      ).detail;
+      if (fileId === editorStore.activeFileId) {
+        editorPane?.setText?.(content);
+      }
+    }
+
+    function handleUpdateWorkspaceFile(e: Event) {
+      const { filePath, content } = (
+        e as CustomEvent<{ filePath: string; content: string }>
+      ).detail;
+      const client = editorPane?.getClient?.();
+      if (client) {
+        client.updateFile(filePath, content);
+      }
+    }
+
+    function handleRemoveWorkspaceFile(e: Event) {
+      const { filePath } = (e as CustomEvent<{ filePath: string }>).detail;
+      const client = editorPane?.getClient?.();
+      if (client) {
+        client.removeFile(filePath);
+      }
+    }
+
     window.addEventListener('actone:save-file', onSaveFile);
     window.addEventListener('actone:open-file', handleOpenFile);
     window.addEventListener('actone:outline-navigate', handleOutlineNavigate);
     window.addEventListener('actone:diagnostics-ready', handleDiagnosticsReady);
     window.addEventListener('actone:request-symbols', handleRequestSymbols);
     window.addEventListener('actone:rename-active-file', handleRenameActiveFile);
+    window.addEventListener('actone:replace-file-content', handleReplaceFileContent);
+    window.addEventListener('actone:update-workspace-file', handleUpdateWorkspaceFile);
+    window.addEventListener('actone:remove-workspace-file', handleRemoveWorkspaceFile);
 
     return () => {
       window.removeEventListener('actone:save-file', onSaveFile);
@@ -330,6 +360,9 @@
       window.removeEventListener('actone:diagnostics-ready', handleDiagnosticsReady);
       window.removeEventListener('actone:request-symbols', handleRequestSymbols);
       window.removeEventListener('actone:rename-active-file', handleRenameActiveFile);
+      window.removeEventListener('actone:replace-file-content', handleReplaceFileContent);
+      window.removeEventListener('actone:update-workspace-file', handleUpdateWorkspaceFile);
+      window.removeEventListener('actone:remove-workspace-file', handleRemoveWorkspaceFile);
       if (autoSaveTimer) clearTimeout(autoSaveTimer);
     };
   });
@@ -340,7 +373,7 @@
   {#if uiStore.outlineVisible}
     <div
       bind:this={outlineContainerEl}
-      class="flex shrink-0 border-r border-[#252525]"
+      class="flex shrink-0 border-r border-border"
       style="width: {uiStore.outlineWidth}px;"
     >
       <div class="flex-1 overflow-hidden">

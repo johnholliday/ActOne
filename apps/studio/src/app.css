@@ -2,6 +2,17 @@
 @import 'dockview-core/dist/styles/dockview.css';
 @import 'tailwindcss';
 
+/* ── Runtime CSS custom properties ─────────────────────────
+   Tailwind CSS 4's @theme block compiles tokens at build time but does NOT
+   create :root custom properties at runtime. CodeMirror's EditorView.theme()
+   and other JS-injected styles need these values as real CSS variables. */
+:root {
+  --color-accent: #f59e0b;
+  --color-accent-400: #fbbf24;
+  --color-accent-500: #f59e0b;
+  --color-accent-600: #d97706;
+}
+
 @theme {
   /* Insight 365 surface shades (neutral black) */
   --color-surface-900: #0D0D0D;
@@ -48,6 +59,34 @@
   --color-beat-denouement: #64748b;
 }
 
+/* ── Light theme overrides ────────────────────────────────── */
+/* Overrides the @theme-generated CSS custom properties for light mode.
+   All Tailwind utility classes referencing these tokens switch automatically. */
+
+[data-theme="light"] {
+  --color-surface-900: #f8f9fa;
+  --color-surface-850: #f1f3f5;
+  --color-surface-800: #e9ecef;
+  --color-surface-700: #dee2e6;
+
+  --color-surface: #f8f9fa;
+  --color-surface-raised: #6b7280;
+  --color-surface-overlay: #9ca3af;
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #4a5568;
+  --color-text-muted: #718096;
+
+  --color-accent-400: #d97706;
+  --color-accent-500: #b45309;
+  --color-accent-600: #92400e;
+  --color-accent: #b45309;
+  --color-accent-hover: #92400e;
+  --color-border: #d1d5db;
+
+  /* Runtime CSS custom properties for JS-injected styles */
+  --color-accent: #b45309;
+}
+
 /* ── Scrollbar theme ──────────────────────────────────────── */
 
 /* Webkit (Chrome, Edge, Safari) */
@@ -77,6 +116,20 @@
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(161, 161, 170, 0.2) transparent;
+}
+
+/* ── Light scrollbar overrides ────────────────────────────── */
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="light"] * {
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
 }
 
 /* ── Dockview theme overrides ──────────────────────────────── */
@@ -121,6 +174,38 @@
 
   /* Icon hover */
   --dv-icon-hover-background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Dockview light overrides ─────────────────────────────── */
+
+[data-theme="light"] .dv-dockview {
+  --dv-group-view-background-color: #f1f3f5;
+  --dv-tabs-and-actions-container-background-color: #e9ecef;
+
+  --dv-activegroup-visiblepanel-tab-background-color: #f1f3f5;
+  --dv-activegroup-visiblepanel-tab-color: #b45309;
+
+  --dv-activegroup-hiddenpanel-tab-background-color: #e9ecef;
+  --dv-activegroup-hiddenpanel-tab-color: #718096;
+
+  --dv-inactivegroup-visiblepanel-tab-background-color: #e9ecef;
+  --dv-inactivegroup-visiblepanel-tab-color: #4a5568;
+
+  --dv-inactivegroup-hiddenpanel-tab-background-color: #e9ecef;
+  --dv-inactivegroup-hiddenpanel-tab-color: #718096;
+
+  --dv-separator-border: #d1d5db;
+  --dv-tab-divider-color: #d1d5db;
+
+  --dv-sash-color: transparent;
+  --dv-active-sash-color: rgba(180, 83, 9, 0.5);
+
+  --dv-drag-over-background-color: rgba(180, 83, 9, 0.1);
+  --dv-drag-over-border-color: rgba(180, 83, 9, 0.4);
+
+  --dv-scrollbar-background-color: rgba(180, 83, 9, 0.2);
+
+  --dv-icon-hover-background-color: rgba(0, 0, 0, 0.08);
 }
 
 /* Indent panel tab headers */
@@ -204,4 +289,63 @@
 
 .svelte-flow .svelte-flow__edge.selected .svelte-flow__edge-path {
   stroke: #f59e0b;
+}
+
+/* ── SvelteFlow light overrides ──────────────────────────── */
+
+[data-theme="light"] .svelte-flow {
+  --xy-background-color: #ffffff;
+  --xy-edge-stroke: #d1d5db;
+  --xy-edge-stroke-selected: #b45309;
+  --xy-connectionline-stroke: #b45309;
+}
+
+[data-theme="light"] .svelte-flow .svelte-flow__controls {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #d1d5db;
+}
+
+[data-theme="light"] .svelte-flow .svelte-flow__controls button {
+  background: #f8f9fa;
+  border-bottom: 1px solid #d1d5db;
+  color: #4a5568;
+  fill: #4a5568;
+}
+
+[data-theme="light"] .svelte-flow .svelte-flow__controls button:hover {
+  background: #e9ecef;
+  color: #1a1a2e;
+  fill: #1a1a2e;
+}
+
+[data-theme="light"] .svelte-flow .svelte-flow__minimap {
+  background: #f1f3f5;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .svelte-flow .svelte-flow__minimap-mask {
+  fill: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="light"] .svelte-flow .svelte-flow__minimap-node {
+  fill: #d1d5db;
+  stroke: #9ca3af;
+}
+
+[data-theme="light"] .svelte-flow .svelte-flow__handle {
+  background: #b45309;
+  border: 2px solid #f8f9fa;
+}
+
+[data-theme="light"] .svelte-flow .svelte-flow__handle:hover {
+  background: #d97706;
+}
+
+[data-theme="light"] .svelte-flow .svelte-flow__node.selected {
+  box-shadow: 0 0 0 2px #b45309;
+}
+
+[data-theme="light"] .svelte-flow .svelte-flow__edge.selected .svelte-flow__edge-path {
+  stroke: #b45309;
 }

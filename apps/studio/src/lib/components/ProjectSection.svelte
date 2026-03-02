@@ -25,15 +25,15 @@
   <!-- Project header row -->
   <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
   <div
-    class="flex h-7 cursor-pointer items-center gap-1.5 rounded px-2.5 text-[12px] font-medium text-zinc-300 hover:bg-white/5"
+    class="flex h-7 cursor-pointer items-center gap-1.5 rounded px-2.5 text-[12px] font-medium text-text-secondary hover:bg-surface-raised/20"
     onclick={() => { expanded = !expanded; }}
     oncontextmenu={oncontextmenu}
   >
     {#if expanded}
-      <ChevronDown size={12} class="shrink-0 text-zinc-500" />
+      <ChevronDown size={12} class="shrink-0 text-text-muted" />
       <FolderOpen size={14} class="shrink-0 text-amber-500/70" />
     {:else}
-      <ChevronRight size={12} class="shrink-0 text-zinc-500" />
+      <ChevronRight size={12} class="shrink-0 text-text-muted" />
       <FolderClosed size={14} class="shrink-0 text-amber-500/70" />
     {/if}
     <span class="truncate">{project.title}</span>
@@ -46,7 +46,7 @@
         {@const isActive = editorStore.activeFileId === file.id}
         <button
           class="flex h-7 items-center gap-2 rounded px-2.5 text-[12px] transition-colors
-            {isActive ? 'text-white' : 'text-zinc-400 hover:text-zinc-300'}"
+            {isActive ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'}"
           onclick={() => onopenfile({ id: file.id, filePath: file.filePath })}
           oncontextmenu={(e) => onfilecontextmenu(e, file)}
         >
