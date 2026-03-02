@@ -1,8 +1,9 @@
-import type { AstNode, ValidationAcceptor, ValidationChecks } from 'langium';
+import type { AstNode, ValidationAcceptor, ValidationChecks, LangiumDocuments } from 'langium';
 import type { ActOneAstType } from '../generated/ast.js';
 import {
   isCharacterDef,
   isGenerateBlock,
+  isDocument,
   isPersonalityTrait,
   isMoodEntry,
   isRelationshipEntry,
@@ -10,7 +11,9 @@ import {
   isContinuityLossSetting,
   isStyleMixEntry,
   isMaxTokensSetting,
+  type Document,
   type Story,
+  type StoryElement,
   type PersonalityTrait,
   type MoodEntry,
   type RelationshipEntry,
@@ -31,6 +34,7 @@ export function registerActOneValidationChecks(
   const validator = services.validation.ActOneValidator;
 
   const checks: ValidationChecks<ActOneAstType> = {
+    Document: validator.checkDocument,
     Story: validator.checkStory,
     PersonalityTrait: validator.checkTraitRange,
     MoodEntry: validator.checkMoodRange,
@@ -45,6 +49,97 @@ export function registerActOneValidationChecks(
 }
 
 export class ActOneValidator {
+  private readonly documents: LangiumDocuments;
+
+  constructor(services: ActOneServices) {
+    this.documents = services.shared.workspace.LangiumDocuments;
+  }
+
+  /** Cross-document validation for the Document root node */
+  checkDocument(doc: Document, accept: ValidationAcceptor): void {
+    // Collect all Document roots across the workspace
+    const allDocs: Document[] = [];
+    for (const langiumDoc of this.documents.all) {
+      const root = langiumDoc.parseResult.value;
+      if (isDocument(root)) {
+        allDocs.push(root);
+      }
+    }
+
+    // Only run cross-document checks on the first document to avoid duplicate errors
+    const thisUri = doc.$document?.uri?.toString() ?? '';
+    const firstUri = allDocs[0]?.$document?.uri?.toString() ?? '';
+    if (thisUri !== firstUri) return;
+
+    // (1) At most one `story` block across all documents
+    const storyDocs: Array<{ doc: Document; uri: string }> = [];
+    for (const d of allDocs) {
+      if (d.story) {
+        storyDocs.push({ doc: d, uri: d.$document?.uri?.toString() ?? 'unknown' });
+      }
+    }
+    if (storyDocs.length > 1) {
+      const locations = storyDocs.map((s) => s.uri).join(', ');
+      for (const s of storyDocs) {
+        if (s.doc.story) {
+          accept(
+            'error',
+            `Only one story block is allowed across all files. Found ${storyDocs.length} story blocks in: ${locations}`,
+            { node: s.doc.story, keyword: 'story' },
+          );
+        }
+      }
+    }
+
+    // (2) At most one GenerateBlock across all documents
+    const generateLocations: Array<{ element: StoryElement; uri: string }> = [];
+    for (const d of allDocs) {
+      const uri = d.$document?.uri?.toString() ?? 'unknown';
+      const allElements = [...(d.story?.elements ?? []), ...d.elements];
+      for (const el of allElements) {
+        if (isGenerateBlock(el)) {
+          generateLocations.push({ element: el, uri });
+        }
+      }
+    }
+    if (generateLocations.length > 1) {
+      const locations = generateLocations.map((g) => g.uri).join(', ');
+      for (const g of generateLocations) {
+        accept(
+          'error',
+          `Only one generate block is allowed across all files. Found ${generateLocations.length} generate blocks in: ${locations}`,
+          { node: g.element, keyword: 'generate' },
+        );
+      }
+    }
+
+    // (3) No duplicate named definitions of the same type across files
+    const namedDefs = new Map<string, Array<{ name: string; uri: string; node: StoryElement }>>();
+    for (const d of allDocs) {
+      const uri = d.$document?.uri?.toString() ?? 'unknown';
+      const allElements = [...(d.story?.elements ?? []), ...d.elements];
+      for (const el of allElements) {
+        if ('name' in el && typeof el.name === 'string' && el.name) {
+          const key = `${el.$type}:${el.name}`;
+          if (!namedDefs.has(key)) namedDefs.set(key, []);
+          namedDefs.get(key)!.push({ name: el.name, uri, node: el });
+        }
+      }
+    }
+    for (const [, defs] of namedDefs) {
+      if (defs.length > 1) {
+        const locations = defs.map((d) => d.uri).join(', ');
+        for (const d of defs) {
+          accept(
+            'error',
+            `Duplicate definition '${d.name}' (${d.node.$type}). Also defined in: ${locations}`,
+            { node: d.node, property: 'name' },
+          );
+        }
+      }
+    }
+  }
+
   /** Only one GenerateBlock per story */
   checkStory(story: Story, accept: ValidationAcceptor): void {
     const generateBlocks = story.elements.filter(isGenerateBlock);

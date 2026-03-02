@@ -70,7 +70,7 @@ export const ActOneModule: Module<
     CodeActionProvider: () => new ActOneCodeActionProvider(),
   },
   validation: {
-    ActOneValidator: () => new ActOneValidator(),
+    ActOneValidator: (services) => new ActOneValidator(services),
   },
 };
 

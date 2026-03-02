@@ -86,13 +86,8 @@ export function generateEntrySkeleton(title: string, authorName?: string): strin
 /**
  * Generate the entry file path for a project.
  */
-export function generateEntryFilePath(title: string): string {
-  const slug = title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 50);
-  return `${slug || 'story'}.actone`;
+export function generateEntryFilePath(_title: string): string {
+  return 'story.actone';
 }
 
 /**

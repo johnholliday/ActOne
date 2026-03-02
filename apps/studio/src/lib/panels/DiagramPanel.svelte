@@ -218,15 +218,17 @@
   /* ── Refresh: transform AST → layout → sidecar → render ─── */
 
   async function refresh() {
-    const fileAst = astStore.activeAst;
-    if (!fileAst?.ast || !projectId) {
+    // Use the merged AST (cross-file consolidated) for all diagrams.
+    // Falls back to the active file's AST if no merged AST is available yet.
+    const ast = astStore.mergedAst ?? astStore.activeAst?.ast ?? null;
+    if (!ast || !projectId) {
       diagramLoading = false;
       return;
     }
 
     diagramLoading = true;
     try {
-      const result = config.transformer(fileAst.ast);
+      const result = config.transformer(ast);
       const layoutNodes = result.nodes.map((n: any) => ({
         id: n.id,
         ...config.defaultNodeSize(n),

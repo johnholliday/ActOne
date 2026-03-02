@@ -118,7 +118,7 @@
   <!-- File Menu -->
   <div class="relative">
     <button
-      class="rounded px-2.5 py-1 text-white/60 hover:bg-white/10 hover:text-white/90"
+      class="rounded px-2.5 py-1 text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
       onclick={(e) => { e.stopPropagation(); toggleMenu('file'); }}
     >
       File
@@ -126,7 +126,7 @@
 
     {#if openMenu === 'file'}
       <div
-        class="absolute left-0 top-full z-50 mt-0.5 min-w-52 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+        class="absolute left-0 top-full z-50 mt-0.5 min-w-52 rounded-md border border-border bg-surface-800 py-1 shadow-lg"
         role="menu"
         tabindex="-1"
         onkeydown={(e) => { if (e.key === 'Escape') closeMenus(); }}
@@ -134,37 +134,37 @@
       >
         <!-- New File / New Project -->
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
           onclick={() => { oncreatefile?.(); closeMenus(); }}
           onmouseenter={() => { openSubmenu = null; }}
           disabled={!projectStore.isLoaded}
           role="menuitem"
         >
           <span>New File...</span>
-          <span class="text-[10px] text-white/30">Ctrl+N</span>
+          <span class="text-[10px] text-text-muted">Ctrl+N</span>
         </button>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { oncreateproject?.(); closeMenus(); }}
           onmouseenter={() => { openSubmenu = null; }}
           role="menuitem"
         >
           <span>New Project...</span>
-          <span class="text-[10px] text-white/30">Ctrl+Shift+N</span>
+          <span class="text-[10px] text-text-muted">Ctrl+Shift+N</span>
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <!-- Open Project / Open Recent -->
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:open-project')); closeMenus(); }}
           onmouseenter={() => { openSubmenu = null; }}
           role="menuitem"
         >
           <span>Open Project...</span>
-          <span class="text-[10px] text-white/30">Ctrl+O</span>
+          <span class="text-[10px] text-text-muted">Ctrl+O</span>
         </button>
 
         <!-- Open Recent submenu -->
@@ -175,24 +175,24 @@
           role="none"
         >
           <button
-            class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+            class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
             role="menuitem"
           >
             <span>Open Recent</span>
-            <span class="text-[10px] text-white/40">&#9656;</span>
+            <span class="text-[10px] text-text-muted">&#9656;</span>
           </button>
 
           {#if openSubmenu === 'recent'}
             <div
-              class="absolute left-full top-0 z-50 ml-0.5 min-w-44 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+              class="absolute left-full top-0 z-50 ml-0.5 min-w-44 rounded-md border border-border bg-surface-800 py-1 shadow-lg"
               role="menu"
             >
-              <p class="px-3 py-1.5 text-white/30 italic">No recent projects</p>
+              <p class="px-3 py-1.5 text-text-muted italic">No recent projects</p>
 
-              <div class="my-1 border-t border-[#252525]"></div>
+              <div class="my-1 border-t border-border"></div>
 
               <button
-                class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+                class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
                 onclick={() => { window.dispatchEvent(new CustomEvent('actone:clear-recent')); closeMenus(); }}
                 role="menuitem"
               >
@@ -202,47 +202,47 @@
           {/if}
         </div>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <!-- Save / Save As / Save All -->
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:save-file')); closeMenus(); }}
           onmouseenter={() => { openSubmenu = null; }}
           disabled={!projectStore.isLoaded}
           role="menuitem"
         >
           <span>Save</span>
-          <span class="text-[10px] text-white/30">Ctrl+S</span>
+          <span class="text-[10px] text-text-muted">Ctrl+S</span>
         </button>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:save-file-as')); closeMenus(); }}
           onmouseenter={() => { openSubmenu = null; }}
           disabled={!projectStore.isLoaded}
           role="menuitem"
         >
           <span>Save As...</span>
-          <span class="text-[10px] text-white/30">Ctrl+Shift+S</span>
+          <span class="text-[10px] text-text-muted">Ctrl+Shift+S</span>
         </button>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:save-all')); closeMenus(); }}
           onmouseenter={() => { openSubmenu = null; }}
           disabled={!projectStore.isLoaded}
           role="menuitem"
         >
           <span>Save All</span>
-          <span class="text-[10px] text-white/30">Ctrl+K S</span>
+          <span class="text-[10px] text-text-muted">Ctrl+K S</span>
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <!-- Auto Save -->
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { toggleAutoSave(); closeMenus(); }}
           onmouseenter={() => { openSubmenu = null; }}
           role="menuitem"
@@ -261,44 +261,44 @@
           role="none"
         >
           <button
-            class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+            class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
             role="menuitem"
           >
             <span>Preferences</span>
-            <span class="text-[10px] text-white/40">&#9656;</span>
+            <span class="text-[10px] text-text-muted">&#9656;</span>
           </button>
 
           {#if openSubmenu === 'preferences'}
             <div
-              class="absolute left-full top-0 z-50 ml-0.5 min-w-48 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+              class="absolute left-full top-0 z-50 ml-0.5 min-w-48 rounded-md border border-border bg-surface-800 py-1 shadow-lg"
               role="menu"
             >
               <button
-                class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+                class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
                 onclick={() => { void goto('/settings/appearance'); closeMenus(); }}
                 role="menuitem"
               >
                 <span>Settings</span>
-                <span class="text-[10px] text-white/30">Ctrl+,</span>
+                <span class="text-[10px] text-text-muted">Ctrl+,</span>
               </button>
 
               <button
-                class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+                class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
                 onclick={() => { window.dispatchEvent(new CustomEvent('actone:open-keybindings')); closeMenus(); }}
                 role="menuitem"
               >
                 <span>Keyboard Shortcuts</span>
-                <span class="text-[10px] text-white/30">Ctrl+K Ctrl+S</span>
+                <span class="text-[10px] text-text-muted">Ctrl+K Ctrl+S</span>
               </button>
             </div>
           {/if}
         </div>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <!-- Exit -->
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.close(); closeMenus(); }}
           onmouseenter={() => { openSubmenu = null; }}
           role="menuitem"
@@ -312,7 +312,7 @@
   <!-- Edit Menu -->
   <div class="relative">
     <button
-      class="rounded px-2.5 py-1 text-white/60 hover:bg-white/10 hover:text-white/90"
+      class="rounded px-2.5 py-1 text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
       onclick={(e) => { e.stopPropagation(); toggleMenu('edit'); }}
     >
       Edit
@@ -320,108 +320,108 @@
 
     {#if openMenu === 'edit'}
       <div
-        class="absolute left-0 top-full z-50 mt-0.5 min-w-48 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+        class="absolute left-0 top-full z-50 mt-0.5 min-w-48 rounded-md border border-border bg-surface-800 py-1 shadow-lg"
         role="menu"
         tabindex="-1"
         onkeydown={(e) => { if (e.key === 'Escape') closeMenus(); }}
         onclick={(e) => e.stopPropagation()}
       >
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { document.execCommand('undo'); closeMenus(); }}
           role="menuitem"
         >
           <span>Undo</span>
-          <span class="text-[10px] text-white/30">Ctrl+Z</span>
+          <span class="text-[10px] text-text-muted">Ctrl+Z</span>
         </button>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { document.execCommand('redo'); closeMenus(); }}
           role="menuitem"
         >
           <span>Redo</span>
-          <span class="text-[10px] text-white/30">Ctrl+Y</span>
+          <span class="text-[10px] text-text-muted">Ctrl+Y</span>
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { document.execCommand('cut'); closeMenus(); }}
           role="menuitem"
         >
           <span>Cut</span>
-          <span class="text-[10px] text-white/30">Ctrl+X</span>
+          <span class="text-[10px] text-text-muted">Ctrl+X</span>
         </button>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { document.execCommand('copy'); closeMenus(); }}
           role="menuitem"
         >
           <span>Copy</span>
-          <span class="text-[10px] text-white/30">Ctrl+C</span>
+          <span class="text-[10px] text-text-muted">Ctrl+C</span>
         </button>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { document.execCommand('paste'); closeMenus(); }}
           role="menuitem"
         >
           <span>Paste</span>
-          <span class="text-[10px] text-white/30">Ctrl+V</span>
+          <span class="text-[10px] text-text-muted">Ctrl+V</span>
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:format-document')); closeMenus(); }}
           role="menuitem"
         >
           <span>Format Document</span>
-          <span class="text-[10px] text-white/30">Ctrl+Shift+F</span>
+          <span class="text-[10px] text-text-muted">Ctrl+Shift+F</span>
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:find')); closeMenus(); }}
           role="menuitem"
         >
           <span>Find</span>
-          <span class="text-[10px] text-white/30">Ctrl+F</span>
+          <span class="text-[10px] text-text-muted">Ctrl+F</span>
         </button>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:replace')); closeMenus(); }}
           role="menuitem"
         >
           <span>Replace</span>
-          <span class="text-[10px] text-white/30">Ctrl+H</span>
+          <span class="text-[10px] text-text-muted">Ctrl+H</span>
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:find-in-files')); closeMenus(); }}
           role="menuitem"
         >
           <span>Find in Files</span>
-          <span class="text-[10px] text-white/30">Ctrl+Shift+F</span>
+          <span class="text-[10px] text-text-muted">Ctrl+Shift+F</span>
         </button>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:replace-in-files')); closeMenus(); }}
           role="menuitem"
         >
           <span>Replace in Files</span>
-          <span class="text-[10px] text-white/30">Ctrl+Shift+H</span>
+          <span class="text-[10px] text-text-muted">Ctrl+Shift+H</span>
         </button>
       </div>
     {/if}
@@ -430,7 +430,7 @@
   <!-- View Menu -->
   <div class="relative">
     <button
-      class="rounded px-2.5 py-1 text-white/60 hover:bg-white/10 hover:text-white/90"
+      class="rounded px-2.5 py-1 text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
       onclick={(e) => { e.stopPropagation(); toggleMenu('view'); }}
     >
       View
@@ -438,20 +438,20 @@
 
     {#if openMenu === 'view'}
       <div
-        class="absolute left-0 top-full z-50 mt-0.5 min-w-48 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+        class="absolute left-0 top-full z-50 mt-0.5 min-w-48 rounded-md border border-border bg-surface-800 py-1 shadow-lg"
         role="menu"
         tabindex="-1"
         onkeydown={(e) => { if (e.key === 'Escape') closeMenus(); }}
         onclick={(e) => e.stopPropagation()}
       >
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { uiStore.toggleSidebar(); closeMenus(); }}
           role="menuitem"
         >
           <span>Sidebar</span>
           <span class="flex items-center gap-2">
-            <span class="text-[10px] text-white/30">Ctrl+B</span>
+            <span class="text-[10px] text-text-muted">Ctrl+B</span>
             {#if uiStore.sidebarVisible}
               <span class="text-[10px] text-amber-400">&check;</span>
             {/if}
@@ -459,7 +459,7 @@
         </button>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { uiStore.toggleStatusBar(); closeMenus(); }}
           role="menuitem"
         >
@@ -469,10 +469,10 @@
           {/if}
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { uiStore.toggleOutline(); closeMenus(); }}
           role="menuitem"
         >
@@ -483,7 +483,7 @@
         </button>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { togglePanel('problems'); closeMenus(); }}
           role="menuitem"
         >
@@ -494,7 +494,7 @@
         </button>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { togglePanel('output'); closeMenus(); }}
           role="menuitem"
         >
@@ -504,15 +504,15 @@
           {/if}
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
-        <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-white/30">
+        <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-text-muted">
           Diagrams
         </div>
 
         {#each diagramViews as view}
           <button
-            class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+            class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
             onclick={() => { togglePanel(diagramPanelMap[view.id]); closeMenus(); }}
             role="menuitem"
           >
@@ -523,14 +523,14 @@
           </button>
         {/each}
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
-        <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-white/30">
+        <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-text-muted">
           Reference
         </div>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { togglePanel('story-bible'); closeMenus(); }}
           role="menuitem"
         >
@@ -541,7 +541,7 @@
         </button>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { togglePanel('statistics'); closeMenus(); }}
           role="menuitem"
         >
@@ -551,14 +551,14 @@
           {/if}
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
-        <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-white/30">
+        <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-text-muted">
           Preview
         </div>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { uiStore.toggleReadingMode(); closeMenus(); }}
           role="menuitem"
         >
@@ -569,7 +569,7 @@
         </button>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { togglePanel('spread-preview'); closeMenus(); }}
           role="menuitem"
         >
@@ -579,16 +579,16 @@
           {/if}
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:toggle-word-wrap')); closeMenus(); }}
           role="menuitem"
         >
           <span>Word Wrap</span>
           <span class="flex items-center gap-2">
-            <span class="text-[10px] text-white/30">Alt+Z</span>
+            <span class="text-[10px] text-text-muted">Alt+Z</span>
             {#if wordWrapEnabled}
               <span class="text-[10px] text-amber-400">&check;</span>
             {/if}
@@ -596,7 +596,7 @@
         </button>
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { handleResetLayout(); closeMenus(); }}
           role="menuitem"
         >
@@ -609,7 +609,7 @@
   <!-- Run Menu -->
   <div class="relative">
     <button
-      class="rounded px-2.5 py-1 text-white/60 hover:bg-white/10 hover:text-white/90"
+      class="rounded px-2.5 py-1 text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
       onclick={(e) => { e.stopPropagation(); toggleMenu('run'); }}
     >
       Run
@@ -617,24 +617,24 @@
 
     {#if openMenu === 'run'}
       <div
-        class="absolute left-0 top-full z-50 mt-0.5 min-w-48 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+        class="absolute left-0 top-full z-50 mt-0.5 min-w-48 rounded-md border border-border bg-surface-800 py-1 shadow-lg"
         role="menu"
         tabindex="-1"
         onkeydown={(e) => { if (e.key === 'Escape') closeMenus(); }}
         onclick={(e) => e.stopPropagation()}
       >
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
           onclick={() => { ongenerate?.(); closeMenus(); }}
           disabled={!projectStore.isLoaded}
           role="menuitem"
         >
           <span>Scene Prose</span>
-          <span class="text-[10px] text-white/30">Ctrl+G</span>
+          <span class="text-[10px] text-text-muted">Ctrl+G</span>
         </button>
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
           onclick={() => { openPanel('gallery'); closeMenus(); }}
           disabled={!projectStore.isLoaded}
           role="menuitem"
@@ -642,15 +642,15 @@
           Visual Assets
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         {#if projectStore.isLoaded && validTargets.length > 0}
-          <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-white/30">
+          <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-text-muted">
             Advance Stage
           </div>
           {#each validTargets as target}
             <button
-              class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+              class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
               onclick={() => { onadvancestage?.(target); closeMenus(); }}
               role="menuitem"
             >
@@ -660,7 +660,7 @@
         {/if}
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
           onclick={() => { onsnapshot?.(); closeMenus(); }}
           disabled={!projectStore.isLoaded}
           role="menuitem"
@@ -668,10 +668,10 @@
           Take Snapshot
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
           onclick={() => { openPanel('export'); closeMenus(); }}
           disabled={!projectStore.isLoaded}
           role="menuitem"
@@ -685,7 +685,7 @@
   <!-- Help Menu -->
   <div class="relative">
     <button
-      class="rounded px-2.5 py-1 text-white/60 hover:bg-white/10 hover:text-white/90"
+      class="rounded px-2.5 py-1 text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
       onclick={(e) => { e.stopPropagation(); toggleMenu('help'); }}
     >
       Help
@@ -693,14 +693,14 @@
 
     {#if openMenu === 'help'}
       <div
-        class="absolute left-0 top-full z-50 mt-0.5 min-w-56 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+        class="absolute left-0 top-full z-50 mt-0.5 min-w-56 rounded-md border border-border bg-surface-800 py-1 shadow-lg"
         role="menu"
         tabindex="-1"
         onkeydown={(e) => { if (e.key === 'Escape') closeMenus(); }}
         onclick={(e) => e.stopPropagation()}
       >
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:welcome')); closeMenus(); }}
           role="menuitem"
         >
@@ -708,26 +708,26 @@
         </button>
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:users-guide')); closeMenus(); }}
           role="menuitem"
         >
           User's Guide
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:keyboard-shortcuts-ref')); closeMenus(); }}
           role="menuitem"
         >
           <span>Keyboard Shortcuts Reference</span>
-          <span class="text-[10px] text-white/30">Ctrl+K Ctrl+R</span>
+          <span class="text-[10px] text-text-muted">Ctrl+K Ctrl+R</span>
         </button>
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:video-tutorials')); closeMenus(); }}
           role="menuitem"
         >
@@ -735,27 +735,27 @@
         </button>
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:tips-and-tricks')); closeMenus(); }}
           role="menuitem"
         >
           Tips and Tricks
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:report-issue')); closeMenus(); }}
           role="menuitem"
         >
           Report Issue
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:view-license')); closeMenus(); }}
           role="menuitem"
         >
@@ -763,17 +763,17 @@
         </button>
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:privacy-statement')); closeMenus(); }}
           role="menuitem"
         >
           Privacy Statement
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
 
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:about')); closeMenus(); }}
           role="menuitem"
         >

@@ -66,21 +66,31 @@ SignedInt returns number:
 // ============================================================================
 
 /**
- * Story is the top-level container. A single .actone file contains exactly one story.
+ * Document is the root of every .actone file. It optionally contains a Story
+ * block and/or standalone StoryElement definitions at the top level.
+ * This enables multi-file project organization: components can live in
+ * separate files without a wrapping `story` block.
+ */
+entry Document:
+    (story=Story)? (elements+=StoryElement)*;
+
+/**
+ * Story is the named narrative container. Optional in multi-file projects
+ * where standalone components are used. At most one per project across all files.
  * The name is a string to allow spaces/punctuation in titles.
  */
-entry Story:
+Story:
     'story' name=STRING '{'
         elements+=StoryElement*
     '}';
 
 /**
- * All top-level constructs within a story.
+ * All top-level constructs within a story or at the document level.
  * Order-independent to give writers flexibility in organization.
  * v2.0: Added ThemeDef and TimelineDef.
  */
 StoryElement:
-    GenerateBlock | ThemeDef | CharacterDef | WorldDef 
+    GenerateBlock | ThemeDef | CharacterDef | WorldDef
     | TimelineDef | SceneDef | PlotDef | InteractionDef;
 
 

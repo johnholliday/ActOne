@@ -25,6 +25,6 @@
     aria-label={label ?? 'Loading'}
   ></div>
   {#if label}
-    <span class="text-xs text-zinc-500">{label}</span>
+    <span class="text-xs text-text-muted">{label}</span>
   {/if}
 </div>

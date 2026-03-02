@@ -72,8 +72,8 @@
     />
   {:else}
     <h1 class="mb-2 text-xl font-bold">Export Manuscript</h1>
-    <p class="mb-6 text-sm text-zinc-400">
-      Export <span class="font-medium text-white">{projectStore.project?.title}</span> in your preferred format.
+    <p class="mb-6 text-sm text-text-secondary">
+      Export <span class="font-medium text-text-primary">{projectStore.project?.title}</span> in your preferred format.
     </p>
 
     {#if exportError}
@@ -97,8 +97,8 @@
     <div class="mb-6 space-y-2">
       {#each formats as fmt}
         <label
-          class="flex cursor-pointer items-center gap-3 rounded-lg border border-[#252525] p-3 transition-colors
-            {selectedFormat === fmt.value ? 'border-amber-500/50 bg-amber-500/5' : 'hover:border-[#333] hover:bg-white/5'}"
+          class="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-3 transition-colors
+            {selectedFormat === fmt.value ? 'border-amber-500/50 bg-amber-500/5' : 'hover:border-surface-overlay hover:bg-surface-raised/20'}"
         >
           <input
             type="radio"
@@ -109,7 +109,7 @@
           />
           <div>
             <div class="text-sm font-medium">{fmt.label}</div>
-            <div class="text-xs text-zinc-500">{fmt.description}</div>
+            <div class="text-xs text-text-muted">{fmt.description}</div>
           </div>
         </label>
       {/each}
@@ -133,7 +133,7 @@
     max-width: 512px;
     margin: 0 auto;
     padding: 48px 24px;
-    color: white;
+    color: var(--color-text-primary);
     height: 100%;
     overflow-y: auto;
   }

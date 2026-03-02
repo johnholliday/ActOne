@@ -45,7 +45,7 @@
   }
 </script>
 
-<div class="mx-auto max-w-lg px-6 py-12 text-white">
+<div class="mx-auto max-w-lg px-6 py-12 text-text-primary">
   <h1 class="mb-6 text-xl font-bold">Profile Settings</h1>
 
   {#if message}
@@ -55,23 +55,23 @@
   {/if}
 
   <div class="mb-4">
-    <label for="ps-name" class="mb-1 block text-xs font-medium text-zinc-400">Display Name</label>
+    <label for="ps-name" class="mb-1 block text-xs font-medium text-text-secondary">Display Name</label>
     <input
       id="ps-name"
       type="text"
       bind:value={fullName}
-      class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none"
+      class="w-full rounded border border-border bg-surface-900 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:outline-none"
       disabled={saving}
     />
   </div>
 
   <div class="mb-6">
-    <label for="ps-avatar" class="mb-1 block text-xs font-medium text-zinc-400">Avatar URL</label>
+    <label for="ps-avatar" class="mb-1 block text-xs font-medium text-text-secondary">Avatar URL</label>
     <input
       id="ps-avatar"
       type="url"
       bind:value={avatarUrl}
-      class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none"
+      class="w-full rounded border border-border bg-surface-900 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:outline-none"
       placeholder="https://example.com/avatar.jpg"
       disabled={saving}
     />

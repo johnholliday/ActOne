@@ -13,7 +13,7 @@
   import { projectStore } from '$lib/stores/project.svelte.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { editorStore } from '$lib/stores/editor.svelte.js';
-  import { createFile, deleteFile, renameFile, loadFileContent } from '$lib/editor/supabase-client.js';
+  import { createFile, deleteFile, renameFile, loadFileContent, saveFileContent } from '$lib/editor/supabase-client.js';
   import { extractAnalytics } from '$lib/project/analytics.js';
   import { getStageLabel, requestTransition } from '$lib/project/lifecycle.js';
   import MenuBar from '$lib/components/MenuBar.svelte';
@@ -33,6 +33,8 @@
   import ChevronUp from 'lucide-svelte/icons/chevron-up';
   import ChevronDown from 'lucide-svelte/icons/chevron-down';
   import X from 'lucide-svelte/icons/x';
+  import Sun from 'lucide-svelte/icons/sun';
+  import Moon from 'lucide-svelte/icons/moon';
   import ProjectSection from '$lib/components/ProjectSection.svelte';
 
   import type { LifecycleStage } from '@repo/shared';
@@ -186,6 +188,12 @@
       if (!ok) return;
       editorStore.forceClose(file.id);
       projectStore.removeFile(file.id);
+      // Notify Langium workspace so it removes the document from its index
+      window.dispatchEvent(
+        new CustomEvent('actone:remove-workspace-file', {
+          detail: { filePath: `file:///${file.filePath}` },
+        }),
+      );
       // If no tabs remain, reopen the entry file
       if (editorStore.openFiles.length === 0) {
         const entry = projectStore.entryFile;
@@ -327,7 +335,7 @@
     try {
       const res = await fetch('/api/project/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
           title: newProjectTitle.trim(),
           authorName: newProjectAuthor.trim() || undefined,
@@ -335,13 +343,24 @@
         }),
       });
 
+      const contentType = res.headers.get('content-type') ?? '';
+      if (!contentType.includes('application/json')) {
+        newProjectError = res.ok
+          ? 'Unexpected response from server (not JSON). You may need to sign in again.'
+          : `Error ${res.status}: server returned a non-JSON response`;
+        return;
+      }
+
       if (!res.ok) {
-        const text = await res.text();
-        newProjectError = text || `Error ${res.status}`;
+        const body = await res.json().catch(() => null) as { message?: string } | null;
+        newProjectError = body?.message || `Error ${res.status}`;
         return;
       }
 
       const result = await res.json() as { id: string; title: string; entryFilePath: string };
+
+      // Clear old editor state before loading the new project
+      editorStore.closeAll();
 
       // Load the newly created project into the store
       await projectStore.loadFromServer(data.supabase);
@@ -353,6 +372,16 @@
       newProjectTitle = '';
       newProjectAuthor = '';
       newProjectGenre = '';
+
+      // Open the new project's entry file in the editor
+      const entryFile = projectStore.files.find((f) => f.filePath === result.entryFilePath);
+      if (entryFile) {
+        window.dispatchEvent(
+          new CustomEvent('actone:open-file', {
+            detail: { id: entryFile.id, filePath: entryFile.filePath },
+          }),
+        );
+      }
 
       // Navigate to editor
       await goto('/');
@@ -552,6 +581,9 @@
   });
 
   onMount(() => {
+    // Apply theme from localStorage on mount
+    uiStore.applyTheme();
+
     // Load sidebar preferences (panel layout is managed by dockview persistence)
     const layoutPrefs = parseLayoutPrefs(localStorage.getItem('actone:layout'));
     uiStore.resizeSidebar(layoutPrefs.sidebarWidth);
@@ -656,11 +688,169 @@
     }
     window.addEventListener('beforeunload', handleBeforeUnload);
 
+    /* ── Extract element to new file ───────────────────────── */
+
+    const TYPE_KEYWORDS: Record<string, string> = {
+      CharacterDef: 'character',
+      WorldDef: 'world',
+      ThemeDef: 'theme',
+      TimelineDef: 'timeline',
+      SceneDef: 'scene',
+      PlotDef: 'plot',
+      InteractionDef: 'interaction',
+    };
+
+
+    function findElementRange(
+      content: string,
+      elType: string,
+      name: string,
+    ): { startLine: number; endLine: number } | null {
+      const keyword = TYPE_KEYWORDS[elType];
+      if (!keyword) return null;
+
+      const lines = content.split('\n');
+      // Match: keyword Name { or keyword "Name" {
+      const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const pattern = new RegExp(
+        `^\\s*${keyword}\\s+(?:${escaped}|"${escaped}")\\s*\\{`,
+      );
+
+      for (let i = 0; i < lines.length; i++) {
+        if (!pattern.test(lines[i]!)) continue;
+
+        // Found the start — track brace depth to find closing }
+        let depth = 0;
+        for (let j = i; j < lines.length; j++) {
+          for (const ch of lines[j]!) {
+            if (ch === '{') depth++;
+            else if (ch === '}') depth--;
+          }
+          if (depth === 0) {
+            return { startLine: i, endLine: j };
+          }
+        }
+        break; // Unbalanced braces — bail
+      }
+      return null;
+    }
+
+    async function handleExtractElement(e: Event) {
+      const detail = (
+        e as CustomEvent<{ name: string; $type: string; sourceUri: string | null }>
+      ).detail;
+      const name = detail.name;
+      const elType = detail.$type;
+      const sourceUri = detail.sourceUri;
+
+      const projectId = projectStore.project?.id;
+      if (!projectId || !sourceUri) {
+        showToast('Cannot extract: no source file found');
+        return;
+      }
+
+      // Resolve source file
+      const filePath = sourceUri.replace(/^file:\/\/\//, '');
+      const sourceFile = projectStore.files.find((f) => f.filePath === filePath);
+      if (!sourceFile) {
+        showToast('Cannot extract: source file not found');
+        return;
+      }
+
+      // Compute target path
+      const targetPath = name.toLowerCase().replace(/\s+/g, '-') + '.actone';
+      if (projectStore.files.some((f) => f.filePath === targetPath)) {
+        showToast(`File "${targetPath}" already exists`);
+        return;
+      }
+
+      // Get source content (prefer in-memory buffer, fallback to DB)
+      let content = editorStore.getBuffer(sourceFile.id);
+      if (!content) {
+        const loaded = await loadFileContent(data.supabase, sourceFile.id);
+        content = loaded?.content ?? null;
+      }
+      if (!content) {
+        showToast('Cannot extract: could not load source content');
+        return;
+      }
+
+      // Find the element's range in source
+      const range = findElementRange(content, elType, name);
+      if (!range) {
+        showToast(`Cannot extract: could not find "${name}" in source`);
+        return;
+      }
+
+      const lines = content.split('\n');
+      const extractedText = lines.slice(range.startLine, range.endLine + 1).join('\n').trim();
+
+      // Remove the element from source (and clean up consecutive blank lines)
+      const before = lines.slice(0, range.startLine);
+      const after = lines.slice(range.endLine + 1);
+      const joined = [...before, ...after].join('\n');
+      const newSourceContent = joined.replace(/\n{3,}/g, '\n\n').trim() + '\n';
+
+      try {
+        // Create the new file
+        const newFile = await createFile(data.supabase, projectId, targetPath, extractedText);
+        if (!newFile) {
+          showToast('Failed to create extracted file');
+          return;
+        }
+
+        // Update the source file in DB
+        const saved = await saveFileContent(data.supabase, sourceFile.id, newSourceContent);
+        if (!saved) {
+          showToast('Failed to update source file');
+          return;
+        }
+
+        // Update stores
+        projectStore.addFile({ id: newFile.id, filePath: targetPath, isEntry: false });
+        editorStore.setBuffer(sourceFile.id, newSourceContent);
+
+        // Notify Langium workspace about both files so cross-references resolve
+        window.dispatchEvent(
+          new CustomEvent('actone:update-workspace-file', {
+            detail: { filePath: `file:///${sourceFile.filePath}`, content: newSourceContent },
+          }),
+        );
+        window.dispatchEvent(
+          new CustomEvent('actone:update-workspace-file', {
+            detail: { filePath: `file:///${targetPath}`, content: extractedText },
+          }),
+        );
+
+        // If source is currently active in editor, update CodeMirror
+        if (editorStore.activeFileId === sourceFile.id) {
+          window.dispatchEvent(
+            new CustomEvent('actone:replace-file-content', {
+              detail: { fileId: sourceFile.id, content: newSourceContent },
+            }),
+          );
+        }
+
+        // Open the new file in a new tab
+        window.dispatchEvent(
+          new CustomEvent('actone:open-file', {
+            detail: { id: newFile.id, filePath: targetPath },
+          }),
+        );
+
+        showToast(`Extracted "${name}" to ${targetPath}`);
+      } catch (err) {
+        showToast('Extraction failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      }
+    }
+    window.addEventListener('actone:extract-element', handleExtractElement);
+
     return () => {
       subscription.unsubscribe();
       window.removeEventListener('keydown', handleKeydown);
       window.removeEventListener('actone:open-project', handleOpenProject);
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('actone:extract-element', handleExtractElement);
     };
   });
 
@@ -690,17 +880,17 @@
   <!-- Unauthenticated: render page content directly (e.g. /auth) -->
   {@render children()}
 {:else}
-  <div class="flex h-screen w-screen overflow-hidden bg-surface-900 text-white">
+  <div class="flex h-screen w-screen overflow-hidden bg-surface-900 text-text-primary">
     <!-- Sidebar -->
     {#if uiStore.sidebarVisible}
       <aside
-        class="flex flex-col border-r border-[#252525] bg-surface-800"
+        class="flex flex-col border-r border-border bg-surface-800"
         style="width: {uiStore.sidebarWidth}px;"
       >
         <!-- Sidebar header -->
         <div class="flex h-12 items-center gap-2 px-4">
           <img src="/images/masks.png" alt="ActOne" class="h-7 w-7" />
-          <span class="text-[13px] font-semibold text-white" style="font-family: 'Cormorant Garamond', serif; letter-spacing: 4px;">ACTONE</span>
+          <span class="text-[13px] font-semibold text-text-primary" style="font-family: 'Cormorant Garamond', serif; letter-spacing: 4px;">ACTONE</span>
         </div>
 
         <!-- Navigation items -->
@@ -709,8 +899,8 @@
             <button
               class="flex h-8 items-center gap-2.5 rounded px-2.5 text-[13px] transition-colors
                 {item.panelId === 'reading-mode' && uiStore.readingModeVisible
-                  ? 'text-white bg-white/10'
-                  : 'text-zinc-500 hover:bg-white/5 hover:text-zinc-300'}"
+                  ? 'text-text-primary bg-surface-raised/40'
+                  : 'text-text-muted hover:bg-surface-raised/20 hover:text-text-secondary'}"
               onclick={() => {
                 if (item.panelId === 'reading-mode') {
                   uiStore.toggleReadingMode();
@@ -730,24 +920,24 @@
         <div class="flex flex-col px-2 pt-4">
           <div class="relative">
             <button
-              class="flex items-center gap-1 px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-600 hover:text-zinc-400"
+              class="flex items-center gap-1 px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-text-muted hover:text-text-secondary"
               onclick={(e) => { e.stopPropagation(); projectSelectorOpen = !projectSelectorOpen; }}
             >
-              <span class="truncate">{projectStore.project?.title ?? 'PROJECT'}</span>
+              <span class="truncate">PROJECTS</span>
               <ChevronDown size={10} class="shrink-0 transition-transform {projectSelectorOpen ? 'rotate-180' : ''}" />
             </button>
 
             {#if projectSelectorOpen}
               <!-- svelte-ignore a11y_click_events_have_key_events -->
               <div
-                class="absolute left-0 right-0 top-full z-50 mt-0.5 max-h-64 overflow-y-auto rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+                class="absolute left-0 right-0 top-full z-50 mt-0.5 max-h-64 overflow-y-auto rounded-md border border-border bg-surface-800 py-1 shadow-lg"
                 role="menu"
                 tabindex="-1"
                 onclick={(e) => e.stopPropagation()}
               >
               {#each data.projects as p}
                 <button
-                  class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] text-white/70 hover:bg-white/10"
+                  class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] text-text-secondary hover:bg-surface-raised/40"
                   role="menuitem"
                   onclick={() => void handleSwitchProject(p.id)}
                 >
@@ -761,11 +951,11 @@
               {/each}
 
               {#if data.projects.length > 0}
-                <div class="my-1 border-t border-[#252525]"></div>
+                <div class="my-1 border-t border-border"></div>
               {/if}
 
               <button
-                class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] text-amber-400 hover:bg-white/10"
+                class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] text-amber-400 hover:bg-surface-raised/40"
                 role="menuitem"
                 onclick={() => { projectSelectorOpen = false; showNewProjectDialog = true; }}
               >
@@ -797,7 +987,7 @@
         <!-- T031: User profile footer with popup menu -->
         <div class="relative">
           <button
-            class="flex w-full items-center gap-3 border-t border-[#252525] px-3 py-3 transition-colors hover:bg-white/5"
+            class="flex w-full items-center gap-3 border-t border-border px-3 py-3 transition-colors hover:bg-surface-raised/20"
             onclick={(e) => { e.stopPropagation(); profileMenuOpen = !profileMenuOpen; }}
           >
             {#if userAvatarUrl}
@@ -808,44 +998,44 @@
               </div>
             {/if}
             <div class="min-w-0 flex-1 text-left">
-              <div class="truncate text-[12px] font-medium text-white">{userName}</div>
-              <div class="truncate text-[11px] text-zinc-500">{userEmail}</div>
+              <div class="truncate text-[12px] font-medium text-text-primary">{userName}</div>
+              <div class="truncate text-[11px] text-text-muted">{userEmail}</div>
             </div>
-            <ChevronUp size={14} class="shrink-0 text-zinc-500 transition-transform {profileMenuOpen ? '' : 'rotate-180'}" />
+            <ChevronUp size={14} class="shrink-0 text-text-muted transition-transform {profileMenuOpen ? '' : 'rotate-180'}" />
           </button>
 
           {#if profileMenuOpen}
             <!-- svelte-ignore a11y_click_events_have_key_events -->
             <div
-              class="absolute bottom-full left-0 z-50 mb-1 w-full rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+              class="absolute bottom-full left-0 z-50 mb-1 w-full rounded-md border border-border bg-surface-800 py-1 shadow-lg"
               role="menu"
               tabindex="-1"
               onclick={(e) => e.stopPropagation()}
             >
               <button
-                class="flex w-full items-center px-3 py-1.5 text-left text-[12px] text-white/70 hover:bg-white/10 hover:text-white/90"
+                class="flex w-full items-center px-3 py-1.5 text-left text-[12px] text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
                 role="menuitem"
                 onclick={() => { profileMenuOpen = false; void goto('/settings/profile'); }}
               >
                 Profile Settings
               </button>
               <button
-                class="flex w-full items-center px-3 py-1.5 text-left text-[12px] text-white/70 hover:bg-white/10 hover:text-white/90"
+                class="flex w-full items-center px-3 py-1.5 text-left text-[12px] text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
                 role="menuitem"
                 onclick={() => { profileMenuOpen = false; void goto('/settings/account'); }}
               >
                 Account Settings
               </button>
               <button
-                class="flex w-full items-center px-3 py-1.5 text-left text-[12px] text-white/70 hover:bg-white/10 hover:text-white/90"
+                class="flex w-full items-center px-3 py-1.5 text-left text-[12px] text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
                 role="menuitem"
                 onclick={() => { profileMenuOpen = false; void goto('/settings/appearance'); }}
               >
                 Appearance
               </button>
-              <div class="my-1 border-t border-[#252525]"></div>
+              <div class="my-1 border-t border-border"></div>
               <button
-                class="flex w-full items-center px-3 py-1.5 text-left text-[12px] text-red-400 hover:bg-white/10 hover:text-red-300"
+                class="flex w-full items-center px-3 py-1.5 text-left text-[12px] text-red-400 hover:bg-surface-raised/40 hover:text-red-300"
                 role="menuitem"
                 onclick={() => { profileMenuOpen = false; void handleSignOut(); }}
               >
@@ -868,7 +1058,7 @@
     <!-- Main content area -->
     <div class="relative flex flex-1 flex-col overflow-hidden">
       <!-- Top toolbar zone -->
-      <header class="flex h-10 items-center border-b border-[#252525] bg-surface-800 px-2">
+      <header class="flex h-10 items-center border-b border-border bg-surface-800 px-2">
         <MenuBar
           oncreateproject={() => { showNewProjectDialog = true; }}
           oncreatefile={() => { showNewFileDialog = true; }}
@@ -876,6 +1066,18 @@
           onsnapshot={handleSnapshot}
           ongenerate={handleGenerate}
         />
+        <div class="flex-1"></div>
+        <button
+          class="flex h-7 w-7 items-center justify-center rounded text-text-secondary transition-colors hover:bg-surface-raised/20 hover:text-text-primary"
+          onclick={() => uiStore.toggleTheme()}
+          title="Toggle theme"
+        >
+          {#if uiStore.theme === 'dark'}
+            <Sun size={16} />
+          {:else}
+            <Moon size={16} />
+          {/if}
+        </button>
       </header>
 
       <!-- Primary content: DockLayout for workspace, or route children for settings -->
@@ -883,7 +1085,7 @@
         {#if isSettingsRoute}
           <div class="relative flex-1 overflow-y-auto">
             <button
-              class="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg border border-[#333] bg-surface-800 text-zinc-400 transition-colors hover:border-[#444] hover:text-white"
+              class="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-800 text-text-secondary transition-colors hover:border-surface-overlay hover:text-text-primary"
               title="Close settings"
               aria-label="Close settings"
               onclick={() => void goto('/')}
@@ -922,11 +1124,11 @@
     >
       <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
       <div
-        class="w-full max-w-md rounded-lg border border-[#252525] bg-surface-800 p-6 shadow-xl"
+        class="w-full max-w-md rounded-lg border border-border bg-surface-800 p-6 shadow-xl"
         role="presentation"
         onclick={(e) => e.stopPropagation()}
       >
-        <h2 class="mb-4 text-lg font-semibold text-white">New Project</h2>
+        <h2 class="mb-4 text-lg font-semibold text-text-primary">New Project</h2>
 
         {#if newProjectError}
           <div class="mb-3 rounded bg-red-500/10 px-3 py-2 text-xs text-red-400">
@@ -935,12 +1137,12 @@
         {/if}
 
         <div class="mb-3">
-          <label for="np-title" class="mb-1 block text-xs font-medium text-zinc-400">Project Title *</label>
+          <label for="np-title" class="mb-1 block text-xs font-medium text-text-secondary">Project Title *</label>
           <input
             id="np-title"
             type="text"
             bind:value={newProjectTitle}
-            class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none"
+            class="w-full rounded border border-border bg-surface-900 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:outline-none"
             placeholder="My Story"
             disabled={newProjectCreating}
             onkeydown={(e) => { if (e.key === 'Enter') void handleCreateProject(); }}
@@ -948,32 +1150,34 @@
         </div>
 
         <div class="mb-3">
-          <label for="np-author" class="mb-1 block text-xs font-medium text-zinc-400">Author Name</label>
+          <label for="np-author" class="mb-1 block text-xs font-medium text-text-secondary">Author Name</label>
           <input
             id="np-author"
             type="text"
             bind:value={newProjectAuthor}
-            class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none"
+            class="w-full rounded border border-border bg-surface-900 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:outline-none"
             placeholder="Author name"
             disabled={newProjectCreating}
+            onkeydown={(e) => { if (e.key === 'Enter') void handleCreateProject(); }}
           />
         </div>
 
         <div class="mb-4">
-          <label for="np-genre" class="mb-1 block text-xs font-medium text-zinc-400">Genre</label>
+          <label for="np-genre" class="mb-1 block text-xs font-medium text-text-secondary">Genre</label>
           <input
             id="np-genre"
             type="text"
             bind:value={newProjectGenre}
-            class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none"
+            class="w-full rounded border border-border bg-surface-900 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:outline-none"
             placeholder="Fantasy, Sci-Fi, etc."
             disabled={newProjectCreating}
+            onkeydown={(e) => { if (e.key === 'Enter') void handleCreateProject(); }}
           />
         </div>
 
         <div class="flex justify-end gap-2">
           <button
-            class="rounded px-4 py-2 text-sm text-zinc-400 hover:text-white"
+            class="rounded px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
             onclick={() => { showNewProjectDialog = false; newProjectError = ''; }}
             disabled={newProjectCreating}
           >
@@ -1006,11 +1210,11 @@
     >
       <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
       <div
-        class="w-full max-w-md rounded-lg border border-[#252525] bg-surface-800 p-6 shadow-xl"
+        class="w-full max-w-md rounded-lg border border-border bg-surface-800 p-6 shadow-xl"
         role="presentation"
         onclick={(e) => e.stopPropagation()}
       >
-        <h2 class="mb-4 text-lg font-semibold text-white">New File</h2>
+        <h2 class="mb-4 text-lg font-semibold text-text-primary">New File</h2>
 
         {#if newFileError}
           <div class="mb-3 rounded bg-red-500/10 px-3 py-2 text-xs text-red-400">
@@ -1019,23 +1223,23 @@
         {/if}
 
         <div class="mb-4">
-          <label for="nf-name" class="mb-1 block text-xs font-medium text-zinc-400">File Name *</label>
+          <label for="nf-name" class="mb-1 block text-xs font-medium text-text-secondary">File Name *</label>
           <input
             id="nf-name"
             type="text"
             bind:value={newFileName}
-            class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none"
+            class="w-full rounded border border-border bg-surface-900 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:outline-none"
             placeholder="chapter-2.actone"
             disabled={newFileCreating}
             autofocus
             onkeydown={(e) => { if (e.key === 'Enter') void handleCreateFile(); }}
           />
-          <p class="mt-1 text-[11px] text-zinc-500">.actone extension will be added automatically if omitted</p>
+          <p class="mt-1 text-[11px] text-text-muted">.actone extension will be added automatically if omitted</p>
         </div>
 
         <div class="flex justify-end gap-2">
           <button
-            class="rounded px-4 py-2 text-sm text-zinc-400 hover:text-white"
+            class="rounded px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
             onclick={() => { showNewFileDialog = false; newFileError = ''; newFileName = ''; }}
             disabled={newFileCreating}
           >
@@ -1069,17 +1273,17 @@
     >
       <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
       <div
-        class="w-full max-w-lg rounded-lg border border-[#252525] bg-surface-800 p-6 shadow-xl"
+        class="w-full max-w-lg rounded-lg border border-border bg-surface-800 p-6 shadow-xl"
         role="presentation"
         onclick={(e) => e.stopPropagation()}
       >
-        <h2 class="mb-4 text-lg font-semibold text-white">Open Project</h2>
+        <h2 class="mb-4 text-lg font-semibold text-text-primary">Open Project</h2>
 
         <div class="mb-3">
           <input
             type="text"
             bind:value={openProjectSearch}
-            class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none"
+            class="w-full rounded border border-border bg-surface-900 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:outline-none"
             placeholder="Search projects..."
             autofocus
             onkeydown={handleOpenProjectKeydown}
@@ -1088,7 +1292,7 @@
 
         <div class="max-h-80 overflow-y-auto">
           {#if filteredProjects.length === 0}
-            <div class="py-8 text-center text-sm text-zinc-500">
+            <div class="py-8 text-center text-sm text-text-muted">
               {#if openProjectSearch.trim()}
                 No projects match "{openProjectSearch.trim()}"
               {:else}
@@ -1104,7 +1308,7 @@
                 : (p.lifecycle_stage as import('@repo/shared').LifecycleStage | null)}
               <button
                 class="flex w-full items-center gap-3 rounded px-3 py-2.5 text-left transition-colors
-                  {isActive ? 'bg-amber-500/10 text-amber-300' : isHighlighted ? 'bg-white/10 text-white/90' : 'text-white/70 hover:bg-white/10 hover:text-white/90'}"
+                  {isActive ? 'bg-amber-500/10 text-amber-300' : isHighlighted ? 'bg-surface-raised/40 text-text-primary' : 'text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary'}"
                 data-project-highlight={isHighlighted ? 'true' : undefined}
                 onclick={() => void handleOpenProjectFromDialog(p.id)}
                 onmouseenter={() => { openProjectHighlight = i; }}
@@ -1114,7 +1318,7 @@
                 </span>
                 <div class="min-w-0 flex-1">
                   <div class="truncate text-sm font-medium">{p.title}</div>
-                  <div class="truncate text-[11px] text-zinc-500">
+                  <div class="truncate text-[11px] text-text-muted">
                     {[p.author_name, p.genre].filter(Boolean).join(' · ')}
                     {#if p.modified_at}
                       {#if p.author_name || p.genre} · {/if}
@@ -1123,7 +1327,7 @@
                   </div>
                 </div>
                 {#if displayStage}
-                  <span class="shrink-0 rounded bg-white/5 px-2 py-0.5 text-[10px] text-zinc-400">
+                  <span class="shrink-0 rounded bg-surface-raised/20 px-2 py-0.5 text-[10px] text-text-secondary">
                     {getStageLabel(displayStage)}
                   </span>
                 {/if}
@@ -1134,7 +1338,7 @@
 
         <div class="mt-4 flex justify-end">
           <button
-            class="rounded px-4 py-2 text-sm text-zinc-400 hover:text-white"
+            class="rounded px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
             onclick={() => { showOpenProjectDialog = false; openProjectSearch = ''; }}
           >
             Cancel
@@ -1149,14 +1353,14 @@
     <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
     <div class="fixed inset-0 z-[100]" role="presentation"
          onclick={closeProjectContextMenu}>
-      <div class="fixed z-[101] min-w-[160px] rounded-md border border-[#252525] bg-[#171717] py-1 shadow-lg"
+      <div class="fixed z-[101] min-w-[160px] rounded-md border border-border bg-surface-800 py-1 shadow-lg"
            role="menu" style="left: {projectContextMenu.x}px; top: {projectContextMenu.y}px;">
-        <button class="flex w-full items-center px-3 py-1.5 text-left text-[13px] text-white/70 hover:bg-white/10"
+        <button class="flex w-full items-center px-3 py-1.5 text-left text-[13px] text-text-secondary hover:bg-surface-raised/40"
                 role="menuitem" onclick={() => { closeProjectContextMenu(); showNewFileDialog = true; }}>
           New File...
         </button>
-        <div class="my-1 border-t border-[#252525]"></div>
-        <button class="flex w-full items-center px-3 py-1.5 text-left text-[13px] text-white/70 hover:bg-white/10"
+        <div class="my-1 border-t border-border"></div>
+        <button class="flex w-full items-center px-3 py-1.5 text-left text-[13px] text-text-secondary hover:bg-surface-raised/40"
                 role="menuitem" onclick={() => void handleCloseProject()}>
           Close Project
         </button>
@@ -1169,11 +1373,11 @@
     <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
     <div class="fixed inset-0 z-[100]" role="presentation"
          onclick={closeFileContextMenu}>
-      <div class="fixed z-[101] min-w-[160px] rounded-md border border-[#252525] bg-[#171717] py-1 shadow-lg"
+      <div class="fixed z-[101] min-w-[160px] rounded-md border border-border bg-surface-800 py-1 shadow-lg"
            role="menu" style="left: {fileContextMenu.x}px; top: {fileContextMenu.y}px;">
         <button
           class="flex w-full items-center px-3 py-1.5 text-left text-[13px]
-            {fileContextMenu.file.isEntry ? 'text-white/30 cursor-not-allowed' : 'text-white/70 hover:bg-white/10'}"
+            {fileContextMenu.file.isEntry ? 'text-text-muted cursor-not-allowed' : 'text-text-secondary hover:bg-surface-raised/40'}"
           role="menuitem"
           disabled={fileContextMenu.file.isEntry}
           onclick={() => {
@@ -1188,7 +1392,7 @@
           Rename...
         </button>
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-[13px] text-white/70 hover:bg-white/10"
+          class="flex w-full items-center px-3 py-1.5 text-left text-[13px] text-text-secondary hover:bg-surface-raised/40"
           role="menuitem"
           onclick={() => {
             const file = fileContextMenu!.file;
@@ -1201,10 +1405,10 @@
         >
           Duplicate...
         </button>
-        <div class="my-1 border-t border-[#252525]"></div>
+        <div class="my-1 border-t border-border"></div>
         <button
           class="flex w-full items-center px-3 py-1.5 text-left text-[13px]
-            {fileContextMenu.file.isEntry ? 'text-red-400/30 cursor-not-allowed' : 'text-red-400 hover:bg-white/10'}"
+            {fileContextMenu.file.isEntry ? 'text-red-400/30 cursor-not-allowed' : 'text-red-400 hover:bg-surface-raised/40'}"
           role="menuitem"
           disabled={fileContextMenu.file.isEntry}
           onclick={() => { const file = fileContextMenu!.file; closeFileContextMenu(); void handleDeleteFile(file); }}
@@ -1227,11 +1431,11 @@
     >
       <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
       <div
-        class="w-full max-w-md rounded-lg border border-[#252525] bg-surface-800 p-6 shadow-xl"
+        class="w-full max-w-md rounded-lg border border-border bg-surface-800 p-6 shadow-xl"
         role="presentation"
         onclick={(e) => e.stopPropagation()}
       >
-        <h2 class="mb-4 text-lg font-semibold text-white">Rename File</h2>
+        <h2 class="mb-4 text-lg font-semibold text-text-primary">Rename File</h2>
 
         {#if renameError}
           <div class="mb-3 rounded bg-red-500/10 px-3 py-2 text-xs text-red-400">
@@ -1240,23 +1444,23 @@
         {/if}
 
         <div class="mb-4">
-          <label for="rf-name" class="mb-1 block text-xs font-medium text-zinc-400">New File Name *</label>
+          <label for="rf-name" class="mb-1 block text-xs font-medium text-text-secondary">New File Name *</label>
           <input
             id="rf-name"
             type="text"
             bind:value={renameNewName}
-            class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none"
+            class="w-full rounded border border-border bg-surface-900 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:outline-none"
             placeholder="new-name.actone"
             disabled={renameInProgress}
             autofocus
             onkeydown={(e) => { if (e.key === 'Enter') void handleRenameFile(); }}
           />
-          <p class="mt-1 text-[11px] text-zinc-500">.actone extension will be added automatically if omitted</p>
+          <p class="mt-1 text-[11px] text-text-muted">.actone extension will be added automatically if omitted</p>
         </div>
 
         <div class="flex justify-end gap-2">
           <button
-            class="rounded px-4 py-2 text-sm text-zinc-400 hover:text-white"
+            class="rounded px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
             onclick={() => { showRenameDialog = false; renameError = ''; }}
             disabled={renameInProgress}
           >
@@ -1289,11 +1493,11 @@
     >
       <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
       <div
-        class="w-full max-w-md rounded-lg border border-[#252525] bg-surface-800 p-6 shadow-xl"
+        class="w-full max-w-md rounded-lg border border-border bg-surface-800 p-6 shadow-xl"
         role="presentation"
         onclick={(e) => e.stopPropagation()}
       >
-        <h2 class="mb-4 text-lg font-semibold text-white">Duplicate File</h2>
+        <h2 class="mb-4 text-lg font-semibold text-text-primary">Duplicate File</h2>
 
         {#if duplicateError}
           <div class="mb-3 rounded bg-red-500/10 px-3 py-2 text-xs text-red-400">
@@ -1302,23 +1506,23 @@
         {/if}
 
         <div class="mb-4">
-          <label for="df-name" class="mb-1 block text-xs font-medium text-zinc-400">New File Name *</label>
+          <label for="df-name" class="mb-1 block text-xs font-medium text-text-secondary">New File Name *</label>
           <input
             id="df-name"
             type="text"
             bind:value={duplicateNewName}
-            class="w-full rounded border border-[#333] bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none"
+            class="w-full rounded border border-border bg-surface-900 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:outline-none"
             placeholder="copy-of-file.actone"
             disabled={duplicateInProgress}
             autofocus
             onkeydown={(e) => { if (e.key === 'Enter') void handleDuplicateFile(); }}
           />
-          <p class="mt-1 text-[11px] text-zinc-500">.actone extension will be added automatically if omitted</p>
+          <p class="mt-1 text-[11px] text-text-muted">.actone extension will be added automatically if omitted</p>
         </div>
 
         <div class="flex justify-end gap-2">
           <button
-            class="rounded px-4 py-2 text-sm text-zinc-400 hover:text-white"
+            class="rounded px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
             onclick={() => { showDuplicateDialog = false; duplicateError = ''; }}
             disabled={duplicateInProgress}
           >
@@ -1341,7 +1545,7 @@
 
   <!-- Toast notification -->
   {#if toastVisible}
-    <div class="fixed bottom-4 right-4 z-50 rounded-lg border border-[#252525] bg-surface-800 px-4 py-2 text-xs text-zinc-300 shadow-lg">
+    <div class="fixed bottom-4 right-4 z-50 rounded-lg border border-border bg-surface-800 px-4 py-2 text-xs text-text-secondary shadow-lg">
       {toastMessage}
     </div>
   {/if}

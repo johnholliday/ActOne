@@ -401,6 +401,10 @@ export class LangiumClient {
     }) as Promise<AllFilesAstResponse>;
   }
 
+  async getMergedAst(): Promise<SerializedAstResponse> {
+    return this.sendRequest('actone/getMergedAst', {}) as Promise<SerializedAstResponse>;
+  }
+
   async openProject(params: {
     projectId: string;
     supabaseUrl: string;
@@ -417,6 +421,10 @@ export class LangiumClient {
 
   updateFile(filePath: string, content: string): void {
     this.sendNotification('actone/updateFile', { filePath, content });
+  }
+
+  removeFile(filePath: string): void {
+    this.sendNotification('actone/removeFile', { filePath });
   }
 
   async formatDocument(uri: string): Promise<FormatDocumentResponse> {
