@@ -6,9 +6,9 @@ import {
 import { startLanguageServer } from 'langium/lsp';
 import { EmptyFileSystem, URI } from 'langium';
 import { createActOneServices } from '../services/actone-module.js';
-import { isStory } from '../generated/ast.js';
+import { isDocument } from '../generated/ast.js';
 import { ActOneScopeProvider, type CompositionMode } from '../services/actone-scope.js';
-import { serializeStory } from '../serializer/ast-serializer.js';
+import { serializeDocument } from '../serializer/ast-serializer.js';
 
 // Cast self for the web worker context — this file is only loaded as a Worker
 const workerSelf = self as unknown as {
@@ -101,10 +101,15 @@ connection.onRequest(
       }
     }
 
-    // Build workspace (parse all documents, compute scopes)
-    const allDocs = Array.from(shared.workspace.LangiumDocuments.all);
-    console.log('[Worker] openProject: building', allDocs.length, 'documents:', allDocs.map(d => d.uri.toString()));
-    await shared.workspace.DocumentBuilder.build(allDocs);
+    // Trigger a full workspace rebuild using update(), which properly:
+    //   1. Resets all document states (including the entry file already
+    //      validated by the didOpen-triggered build)
+    //   2. Relinks cross-file dependencies
+    //   3. Publishes diagnostics via the standard onDocumentPhase listener
+    // build() does NOT handle mutex/dependency tracking, so update() is required.
+    const allUris = Array.from(shared.workspace.LangiumDocuments.all).map(d => d.uri);
+    console.log('[Worker] openProject: rebuilding', allUris.length, 'documents via update()');
+    await shared.workspace.DocumentBuilder.update(allUris, []);
 
     // Log document states after build
     for (const doc of shared.workspace.LangiumDocuments.all) {
@@ -133,22 +138,34 @@ connection.onNotification(
     const existingDoc = shared.workspace.LangiumDocuments.getDocument(docUri);
 
     if (existingDoc) {
-      // Update existing document
-      shared.workspace.LangiumDocuments.invalidateDocument(docUri);
+      // Update existing document: delete then recreate (invalidateDocument is deprecated
+      // and only resets state without removing from the document trie)
+      shared.workspace.LangiumDocuments.deleteDocument(docUri);
       shared.workspace.LangiumDocuments.createDocument(docUri, params.content);
-
-      // Rebuild just this document
-      const newDoc = shared.workspace.LangiumDocuments.getDocument(docUri);
-      if (newDoc) {
-        await shared.workspace.DocumentBuilder.build([newDoc]);
-      }
     } else {
       // New file — add to workspace
       shared.workspace.LangiumDocuments.createDocument(docUri, params.content);
-      const newDoc = shared.workspace.LangiumDocuments.getDocument(docUri);
-      if (newDoc) {
-        await shared.workspace.DocumentBuilder.build([newDoc]);
-      }
+    }
+
+    // Use update() to rebuild the changed file AND relink dependent documents.
+    // update() handles mutex, dependency tracking, and diagnostic publishing.
+    const allUris = Array.from(shared.workspace.LangiumDocuments.all).map(d => d.uri);
+    await shared.workspace.DocumentBuilder.update(allUris, []);
+  },
+);
+
+/* actone/removeFile — Remove a file from the workspace */
+connection.onNotification(
+  'actone/removeFile',
+  async (params: { filePath: string }) => {
+    const docUri = URI.parse(params.filePath);
+    const existingDoc = shared.workspace.LangiumDocuments.getDocument(docUri);
+    if (existingDoc) {
+      // Use update() with the deleted URI — it handles:
+      //   1. Deleting the document and clearing its diagnostics
+      //   2. Relinking dependent documents
+      //   3. Rebuilding and publishing diagnostics for remaining files
+      await shared.workspace.DocumentBuilder.update([], [docUri]);
     }
   },
 );
@@ -166,7 +183,7 @@ connection.onRequest('actone/getSerializedAst', async (params: { uri: string }) 
   const errors = diagnostics.filter((d) => d.severity === 1).length;
 
   const root = document.parseResult.value;
-  const ast = isStory(root) ? serializeStory(root) : null;
+  const ast = isDocument(root) ? serializeDocument(root) : null;
   return { ast, valid: errors === 0, errors };
 });
 
@@ -174,13 +191,13 @@ connection.onRequest('actone/getSerializedAst', async (params: { uri: string }) 
 connection.onRequest(
   'actone/getAstForAllFiles',
   async (_params: { projectId: string }) => {
-    const stories: Array<{ uri: string; ast: ReturnType<typeof serializeStory> | null; valid: boolean }> = [];
+    const stories: Array<{ uri: string; ast: ReturnType<typeof serializeDocument> | null; valid: boolean }> = [];
 
     for (const doc of shared.workspace.LangiumDocuments.all) {
       const diagnostics = doc.diagnostics ?? [];
       const errors = diagnostics.filter((d) => d.severity === 1).length;
       const root = doc.parseResult.value;
-      const ast = isStory(root) ? serializeStory(root) : null;
+      const ast = isDocument(root) ? serializeDocument(root) : null;
       stories.push({
         uri: doc.uri.toString(),
         ast,
@@ -191,6 +208,43 @@ connection.onRequest(
     return { stories };
   },
 );
+
+/* actone/getMergedAst — Get a single consolidated AST across all workspace files */
+connection.onRequest('actone/getMergedAst', async () => {
+  let storyName = '';
+  let totalErrors = 0;
+  let allValid = true;
+  const mergedElements: import('@repo/shared').SerializedStoryElement[] = [];
+
+  for (const doc of shared.workspace.LangiumDocuments.all) {
+    const diagnostics = doc.diagnostics ?? [];
+    const errors = diagnostics.filter((d) => d.severity === 1).length;
+    if (errors > 0) {
+      allValid = false;
+      totalErrors += errors;
+    }
+
+    const root = doc.parseResult.value;
+    if (!isDocument(root)) continue;
+
+    // Serialize this document and collect its elements
+    const serialized = serializeDocument(root);
+    mergedElements.push(...serialized.elements);
+
+    // Extract story name from the single story block (first one found)
+    if (serialized.name && !storyName) {
+      storyName = serialized.name;
+    }
+  }
+
+  return {
+    ast: mergedElements.length > 0 || storyName
+      ? { name: storyName, elements: mergedElements }
+      : null,
+    valid: allValid,
+    errors: totalErrors,
+  };
+});
 
 /* actone/formatDocument — Format a document and return full text */
 connection.onRequest(
