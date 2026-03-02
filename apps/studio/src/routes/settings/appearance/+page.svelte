@@ -6,12 +6,25 @@
    */
   import { onMount } from 'svelte';
   import { parseAppearancePrefs, serializeAppearancePrefs } from '$lib/settings/appearance.js';
+  import {
+    parseDiagramPrefs,
+    serializeDiagramPrefs,
+    DIAGRAM_STYLE_CONFIGS,
+    type DiagramStyle,
+    type BackgroundPattern,
+  } from '$lib/settings/diagram.js';
 
   let theme = $state<'dark' | 'light' | 'system'>('dark');
   let fontSize = $state(14);
   let fontFamily = $state<string>('JetBrains Mono');
   let wordWrap = $state(false);
   let saved = $state(false);
+
+  /* ── Diagram prefs ──────────────────────────────────────── */
+  let diagramStyle = $state<DiagramStyle>('dark');
+  let backgroundVariant = $state<BackgroundPattern>('dots');
+  let snapToGrid = $state(false);
+  let gridSize = $state(20);
 
   const fontOptions = [
     'JetBrains Mono',
@@ -30,10 +43,27 @@
     fontSize = prefs.fontSize;
     fontFamily = prefs.fontFamily;
     wordWrap = prefs.wordWrap;
+
+    const diagramStored = localStorage.getItem('actone:diagram');
+    const dPrefs = parseDiagramPrefs(diagramStored);
+    diagramStyle = dPrefs.style;
+    backgroundVariant = dPrefs.backgroundVariant;
+    snapToGrid = dPrefs.snapToGrid;
+    gridSize = dPrefs.gridSize;
   });
 
   function save() {
     localStorage.setItem('actone:appearance', serializeAppearancePrefs({ theme, fontSize, fontFamily, wordWrap }));
+    localStorage.setItem(
+      'actone:diagram',
+      serializeDiagramPrefs({
+        style: diagramStyle,
+        backgroundVariant,
+        snapToGrid,
+        gridSize,
+      }),
+    );
+    window.dispatchEvent(new CustomEvent('actone:diagram-prefs-changed'));
     saved = true;
     setTimeout(() => { saved = false; }, 2000);
   }
@@ -52,22 +82,14 @@
   <div class="mb-6">
     <span class="mb-2 block text-xs font-medium text-zinc-400">Theme</span>
     <div class="flex gap-2">
-      {#each [{ value: 'dark', label: 'Dark' }, { value: 'light', label: 'Light' }, { value: 'system', label: 'System' }] as opt}
-        <label
-          class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2 text-sm transition-colors
-            {theme === opt.value ? 'border-amber-500/50 bg-amber-500/5 text-white' : 'border-[#333] text-zinc-400 hover:border-[#444]'}"
-        >
-          <input
-            type="radio"
-            name="theme"
-            value={opt.value}
-            bind:group={theme}
-            class="sr-only"
-          />
-          {opt.label}
-        </label>
-      {/each}
+      <label
+        class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2 text-sm transition-colors border-amber-500/50 bg-amber-500/5 text-white"
+      >
+        <input type="radio" name="theme" value="dark" checked class="sr-only" />
+        Dark
+      </label>
     </div>
+    <p class="mt-1 text-[11px] text-zinc-500">Light and System themes coming soon</p>
   </div>
 
   <!-- Font Size -->
@@ -120,6 +142,97 @@
       <span class="text-sm text-zinc-300">Word Wrap</span>
     </label>
     <p class="mt-1 text-[11px] text-zinc-500">Wrap long lines instead of scrolling horizontally</p>
+  </div>
+
+  <!-- ── Diagram Canvas ──────────────────────────────────── -->
+  <h2 class="mb-4 mt-8 border-t border-[#333] pt-6 text-lg font-semibold">Diagram Canvas</h2>
+
+  <!-- Canvas Style -->
+  <div class="mb-6">
+    <span class="mb-2 block text-xs font-medium text-zinc-400">Canvas Style</span>
+    <div class="flex gap-2">
+      {#each [
+        { value: 'dark', label: 'Dark', bg: '#0D0D0D', dot: '#252525' },
+        { value: 'blueprint', label: 'Blueprint', bg: '#0a1628', dot: '#1e3a5f' },
+      ] as opt}
+        <label
+          class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2 text-sm transition-colors
+            {diagramStyle === opt.value ? 'border-amber-500/50 bg-amber-500/5 text-white' : 'border-[#333] text-zinc-400 hover:border-[#444]'}"
+        >
+          <input
+            type="radio"
+            name="diagramStyle"
+            value={opt.value}
+            bind:group={diagramStyle}
+            class="sr-only"
+          />
+          <span
+            class="inline-block h-4 w-4 rounded border border-[#555]"
+            style="background: {opt.bg}; box-shadow: inset 0 0 0 1px {opt.dot};"
+          ></span>
+          {opt.label}
+        </label>
+      {/each}
+    </div>
+  </div>
+
+  <!-- Background Pattern -->
+  <div class="mb-6">
+    <span class="mb-2 block text-xs font-medium text-zinc-400">Background Pattern</span>
+    <div class="flex gap-2">
+      {#each [
+        { value: 'dots', label: 'Dots' },
+        { value: 'lines', label: 'Lines' },
+        { value: 'cross', label: 'Cross' },
+      ] as opt}
+        <label
+          class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2 text-sm transition-colors
+            {backgroundVariant === opt.value ? 'border-amber-500/50 bg-amber-500/5 text-white' : 'border-[#333] text-zinc-400 hover:border-[#444]'}"
+        >
+          <input
+            type="radio"
+            name="bgVariant"
+            value={opt.value}
+            bind:group={backgroundVariant}
+            class="sr-only"
+          />
+          {opt.label}
+        </label>
+      {/each}
+    </div>
+  </div>
+
+  <!-- Snap to Grid -->
+  <div class="mb-6">
+    <label class="flex cursor-pointer items-center gap-3">
+      <input
+        type="checkbox"
+        bind:checked={snapToGrid}
+        class="h-4 w-4 rounded border-[#333] bg-surface-900 accent-amber-500"
+      />
+      <span class="text-sm text-zinc-300">Snap to Grid</span>
+    </label>
+    <p class="mt-1 text-[11px] text-zinc-500">Snap nodes to the grid when dragging</p>
+  </div>
+
+  <!-- Grid Size -->
+  <div class="mb-6">
+    <label for="ap-gridsize" class="mb-2 block text-xs font-medium text-zinc-400">
+      Grid Size: {gridSize}px
+    </label>
+    <input
+      id="ap-gridsize"
+      type="range"
+      min="5"
+      max="100"
+      step="5"
+      bind:value={gridSize}
+      class="w-full accent-amber-500"
+    />
+    <div class="mt-1 flex justify-between text-[10px] text-zinc-600">
+      <span>5px</span>
+      <span>100px</span>
+    </div>
   </div>
 
   <button

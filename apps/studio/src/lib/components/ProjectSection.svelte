@@ -13,9 +13,10 @@
     files: SourceFileEntry[];
     onopenfile: (file: { id: string; filePath: string }) => void;
     oncontextmenu: (event: MouseEvent) => void;
+    onfilecontextmenu: (event: MouseEvent, file: SourceFileEntry) => void;
   }
 
-  let { project, files, onopenfile, oncontextmenu }: Props = $props();
+  let { project, files, onopenfile, oncontextmenu, onfilecontextmenu }: Props = $props();
 
   let expanded = $state(true);
 </script>
@@ -47,6 +48,7 @@
           class="flex h-7 items-center gap-2 rounded px-2.5 text-[12px] transition-colors
             {isActive ? 'text-white' : 'text-zinc-400 hover:text-zinc-300'}"
           onclick={() => onopenfile({ id: file.id, filePath: file.filePath })}
+          oncontextmenu={(e) => onfilecontextmenu(e, file)}
         >
           {#if file.isEntry}
             <FileCode size={14} class="shrink-0 text-amber-500/70" />

@@ -1,5 +1,5 @@
 /**
- * Gallery asset mapping logic extracted from gallery/+page.server.ts.
+ * Asset Gallery mapping logic extracted from gallery/+page.server.ts.
  */
 
 export interface GalleryAsset {

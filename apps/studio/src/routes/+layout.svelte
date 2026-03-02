@@ -32,6 +32,7 @@
   import Activity from 'lucide-svelte/icons/activity';
   import ChevronUp from 'lucide-svelte/icons/chevron-up';
   import ChevronDown from 'lucide-svelte/icons/chevron-down';
+  import X from 'lucide-svelte/icons/x';
   import ProjectSection from '$lib/components/ProjectSection.svelte';
 
   import type { LifecycleStage } from '@repo/shared';
@@ -283,7 +284,7 @@
     { icon: FileText, label: 'Editor', panelId: 'editor' },
     { icon: BookOpen, label: 'Story Bible', panelId: 'story-bible' },
     { icon: GitBranch, label: 'Diagrams', panelId: 'diagram-story-structure' },
-    { icon: ImageIcon, label: 'Gallery', panelId: 'gallery' },
+    { icon: ImageIcon, label: 'Asset Gallery', panelId: 'gallery' },
     { icon: Book, label: 'Reading Mode', panelId: 'reading-mode' },
     { icon: Activity, label: 'Statistics', panelId: 'statistics' },
   ] as const;
@@ -880,7 +881,17 @@
       <!-- Primary content: DockLayout for workspace, or route children for settings -->
       <main class="flex flex-1 overflow-hidden">
         {#if isSettingsRoute}
-          {@render children()}
+          <div class="relative flex-1 overflow-y-auto">
+            <button
+              class="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg border border-[#333] bg-surface-800 text-zinc-400 transition-colors hover:border-[#444] hover:text-white"
+              title="Close settings"
+              aria-label="Close settings"
+              onclick={() => void goto('/')}
+            >
+              <X size={16} />
+            </button>
+            {@render children()}
+          </div>
         {:else}
           <DockLayout onReady={handleDockReady} class="flex-1" />
         {/if}

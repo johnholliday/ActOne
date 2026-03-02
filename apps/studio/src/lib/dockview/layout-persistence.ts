@@ -9,7 +9,7 @@ import { applyDefaultLayout } from './default-layout.js';
 
 const STORAGE_KEY = 'actone:dockview-layout';
 const OLD_STORAGE_KEY = 'actone:layout';
-const LAYOUT_VERSION = 5;
+const LAYOUT_VERSION = 7;
 
 interface VersionedLayout {
   version: number;
@@ -117,7 +117,7 @@ export function migrateOldLayout(): void {
  * group header hidden. Handles both fresh and restored layouts.
  */
 function hideManagedGroupHeaders(api: DockviewApi): void {
-  for (const panelId of ['editor', 'diagnostics']) {
+  for (const panelId of ['editor']) {
     const panel = api.getPanel(panelId);
     if (panel) {
       panel.group.model.header.hidden = true;

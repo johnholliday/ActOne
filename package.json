@@ -5,6 +5,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "start": "pnpm dev --filter=studio",
+    "start:fresh": "pnpm clean:all && pnpm install && pnpm build && pnpm start",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "test": "turbo run test",

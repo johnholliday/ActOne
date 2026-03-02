@@ -2,50 +2,75 @@
   /**
    * T059: Menu bar with File, Edit, View, Run, Help menus.
    */
+  import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import { projectStore } from '$lib/stores/project.svelte.js';
-  import { uiStore, type DiagramView } from '$lib/stores/ui.svelte.js';
-  import { getValidTargets, getStageLabel } from '$lib/project/lifecycle.js';
+  import { uiStore } from '$lib/stores/ui.svelte.js';
+  import type { DiagramView } from '$lib/stores/ui.svelte.js';
   import { parseAppearancePrefs } from '$lib/settings/appearance.js';
   import { openPanel, togglePanel, getDockApi } from '$lib/dockview/panel-actions.js';
   import { clearLayout } from '$lib/dockview/layout-persistence.js';
   import { applyDefaultLayout } from '$lib/dockview/default-layout.js';
+  import { getValidTargets, getStageLabel } from '$lib/project/lifecycle.js';
   import type { LifecycleStage } from '@repo/shared';
 
   interface Props {
     oncreateproject?: () => void;
+    oncreatefile?: () => void;
     onadvancestage?: (target: LifecycleStage) => void;
     onsnapshot?: () => void;
     ongenerate?: () => void;
   }
 
-  let { oncreateproject, onadvancestage, onsnapshot, ongenerate }: Props = $props();
+  let { oncreateproject, oncreatefile, onadvancestage, onsnapshot, ongenerate }: Props = $props();
 
   let openMenu = $state<string | null>(null);
+  let openSubmenu = $state<string | null>(null);
   let wordWrapEnabled = $state(false);
+  let autoSaveEnabled = $state(true);
 
   onMount(() => {
     // Read initial word wrap state
     const prefs = parseAppearancePrefs(localStorage.getItem('actone:appearance'));
     wordWrapEnabled = prefs.wordWrap;
 
+    // Read initial auto-save state
+    const savedAutoSave = localStorage.getItem('actone:auto-save');
+    autoSaveEnabled = savedAutoSave !== 'false';
+
     function handleWordWrapChanged(e: Event) {
       const detail = (e as CustomEvent<{ wordWrap: boolean }>).detail;
       wordWrapEnabled = detail.wordWrap;
     }
+
+    function handleAutoSaveChanged(e: Event) {
+      const detail = (e as CustomEvent<{ autoSave: boolean }>).detail;
+      autoSaveEnabled = detail.autoSave;
+    }
+
     window.addEventListener('actone:word-wrap-changed', handleWordWrapChanged);
+    window.addEventListener('actone:auto-save-changed', handleAutoSaveChanged);
 
     return () => {
       window.removeEventListener('actone:word-wrap-changed', handleWordWrapChanged);
+      window.removeEventListener('actone:auto-save-changed', handleAutoSaveChanged);
     };
   });
 
   function toggleMenu(name: string) {
     openMenu = openMenu === name ? null : name;
+    openSubmenu = null;
   }
 
   function closeMenus() {
     openMenu = null;
+    openSubmenu = null;
+  }
+
+  function toggleAutoSave() {
+    autoSaveEnabled = !autoSaveEnabled;
+    localStorage.setItem('actone:auto-save', String(autoSaveEnabled));
+    window.dispatchEvent(new CustomEvent('actone:auto-save-changed', { detail: { autoSave: autoSaveEnabled } }));
   }
 
   const validTargets = $derived(
@@ -101,32 +126,89 @@
 
     {#if openMenu === 'file'}
       <div
-        class="absolute left-0 top-full z-50 mt-0.5 min-w-44 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+        class="absolute left-0 top-full z-50 mt-0.5 min-w-52 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
         role="menu"
         tabindex="-1"
         onkeydown={(e) => { if (e.key === 'Escape') closeMenus(); }}
         onclick={(e) => e.stopPropagation()}
       >
+        <!-- New File / New Project -->
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { oncreateproject?.(); closeMenus(); }}
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          onclick={() => { oncreatefile?.(); closeMenus(); }}
+          onmouseenter={() => { openSubmenu = null; }}
+          disabled={!projectStore.isLoaded}
           role="menuitem"
         >
-          New Project
+          <span>New File...</span>
+          <span class="text-[10px] text-white/30">Ctrl+N</span>
         </button>
 
         <button
           class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { oncreateproject?.(); closeMenus(); }}
+          onmouseenter={() => { openSubmenu = null; }}
+          role="menuitem"
+        >
+          <span>New Project...</span>
+          <span class="text-[10px] text-white/30">Ctrl+Shift+N</span>
+        </button>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        <!-- Open Project / Open Recent -->
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:open-project')); closeMenus(); }}
+          onmouseenter={() => { openSubmenu = null; }}
           role="menuitem"
         >
           <span>Open Project...</span>
           <span class="text-[10px] text-white/30">Ctrl+O</span>
         </button>
 
+        <!-- Open Recent submenu -->
+        <div
+          class="relative"
+          onmouseenter={() => { openSubmenu = 'recent'; }}
+          onmouseleave={() => { openSubmenu = openSubmenu === 'recent' ? null : openSubmenu; }}
+          role="none"
+        >
+          <button
+            class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+            role="menuitem"
+          >
+            <span>Open Recent</span>
+            <span class="text-[10px] text-white/40">&#9656;</span>
+          </button>
+
+          {#if openSubmenu === 'recent'}
+            <div
+              class="absolute left-full top-0 z-50 ml-0.5 min-w-44 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+              role="menu"
+            >
+              <p class="px-3 py-1.5 text-white/30 italic">No recent projects</p>
+
+              <div class="my-1 border-t border-[#252525]"></div>
+
+              <button
+                class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+                onclick={() => { window.dispatchEvent(new CustomEvent('actone:clear-recent')); closeMenus(); }}
+                role="menuitem"
+              >
+                Clear Recently Opened...
+              </button>
+            </div>
+          {/if}
+        </div>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        <!-- Save / Save As / Save All -->
         <button
           class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:save-file')); closeMenus(); }}
+          onmouseenter={() => { openSubmenu = null; }}
           disabled={!projectStore.isLoaded}
           role="menuitem"
         >
@@ -134,41 +216,94 @@
           <span class="text-[10px] text-white/30">Ctrl+S</span>
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
-
-        {#if projectStore.isLoaded && validTargets.length > 0}
-          <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-white/30">
-            Advance Stage
-          </div>
-          {#each validTargets as target}
-            <button
-              class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-              onclick={() => { onadvancestage?.(target); closeMenus(); }}
-              role="menuitem"
-            >
-              &rarr; {getStageLabel(target)}
-            </button>
-          {/each}
-        {/if}
-
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
-          onclick={() => { onsnapshot?.(); closeMenus(); }}
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:save-file-as')); closeMenus(); }}
+          onmouseenter={() => { openSubmenu = null; }}
           disabled={!projectStore.isLoaded}
           role="menuitem"
         >
-          Take Snapshot
+          <span>Save As...</span>
+          <span class="text-[10px] text-white/30">Ctrl+Shift+S</span>
+        </button>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:save-all')); closeMenus(); }}
+          onmouseenter={() => { openSubmenu = null; }}
+          disabled={!projectStore.isLoaded}
+          role="menuitem"
+        >
+          <span>Save All</span>
+          <span class="text-[10px] text-white/30">Ctrl+K S</span>
         </button>
 
         <div class="my-1 border-t border-[#252525]"></div>
 
+        <!-- Auto Save -->
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
-          onclick={() => { openPanel('export'); closeMenus(); }}
-          disabled={!projectStore.isLoaded}
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { toggleAutoSave(); closeMenus(); }}
+          onmouseenter={() => { openSubmenu = null; }}
           role="menuitem"
         >
-          Export Manuscript
+          <span>Auto Save</span>
+          {#if autoSaveEnabled}
+            <span class="text-[10px] text-amber-400">&check;</span>
+          {/if}
+        </button>
+
+        <!-- Preferences submenu -->
+        <div
+          class="relative"
+          onmouseenter={() => { openSubmenu = 'preferences'; }}
+          onmouseleave={() => { openSubmenu = openSubmenu === 'preferences' ? null : openSubmenu; }}
+          role="none"
+        >
+          <button
+            class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+            role="menuitem"
+          >
+            <span>Preferences</span>
+            <span class="text-[10px] text-white/40">&#9656;</span>
+          </button>
+
+          {#if openSubmenu === 'preferences'}
+            <div
+              class="absolute left-full top-0 z-50 ml-0.5 min-w-48 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+              role="menu"
+            >
+              <button
+                class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+                onclick={() => { void goto('/settings/appearance'); closeMenus(); }}
+                role="menuitem"
+              >
+                <span>Settings</span>
+                <span class="text-[10px] text-white/30">Ctrl+,</span>
+              </button>
+
+              <button
+                class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+                onclick={() => { window.dispatchEvent(new CustomEvent('actone:open-keybindings')); closeMenus(); }}
+                role="menuitem"
+              >
+                <span>Keyboard Shortcuts</span>
+                <span class="text-[10px] text-white/30">Ctrl+K Ctrl+S</span>
+              </button>
+            </div>
+          {/if}
+        </div>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        <!-- Exit -->
+        <button
+          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.close(); closeMenus(); }}
+          onmouseenter={() => { openSubmenu = null; }}
+          role="menuitem"
+        >
+          Exit
         </button>
       </div>
     {/if}
@@ -185,7 +320,7 @@
 
     {#if openMenu === 'edit'}
       <div
-        class="absolute left-0 top-full z-50 mt-0.5 min-w-44 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+        class="absolute left-0 top-full z-50 mt-0.5 min-w-48 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
         role="menu"
         tabindex="-1"
         onkeydown={(e) => { if (e.key === 'Escape') closeMenus(); }}
@@ -193,11 +328,100 @@
       >
         <button
           class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { document.execCommand('undo'); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Undo</span>
+          <span class="text-[10px] text-white/30">Ctrl+Z</span>
+        </button>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { document.execCommand('redo'); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Redo</span>
+          <span class="text-[10px] text-white/30">Ctrl+Y</span>
+        </button>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { document.execCommand('cut'); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Cut</span>
+          <span class="text-[10px] text-white/30">Ctrl+X</span>
+        </button>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { document.execCommand('copy'); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Copy</span>
+          <span class="text-[10px] text-white/30">Ctrl+C</span>
+        </button>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { document.execCommand('paste'); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Paste</span>
+          <span class="text-[10px] text-white/30">Ctrl+V</span>
+        </button>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
           onclick={() => { window.dispatchEvent(new CustomEvent('actone:format-document')); closeMenus(); }}
           role="menuitem"
         >
           <span>Format Document</span>
           <span class="text-[10px] text-white/30">Ctrl+Shift+F</span>
+        </button>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:find')); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Find</span>
+          <span class="text-[10px] text-white/30">Ctrl+F</span>
+        </button>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:replace')); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Replace</span>
+          <span class="text-[10px] text-white/30">Ctrl+H</span>
+        </button>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:find-in-files')); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Find in Files</span>
+          <span class="text-[10px] text-white/30">Ctrl+Shift+F</span>
+        </button>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:replace-in-files')); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Replace in Files</span>
+          <span class="text-[10px] text-white/30">Ctrl+Shift+H</span>
         </button>
       </div>
     {/if}
@@ -222,13 +446,16 @@
       >
         <button
           class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { uiStore.toggleOutline(); closeMenus(); }}
+          onclick={() => { uiStore.toggleSidebar(); closeMenus(); }}
           role="menuitem"
         >
-          <span>Outline</span>
-          {#if uiStore.outlineVisible}
-            <span class="text-[10px] text-amber-400">&check;</span>
-          {/if}
+          <span>Sidebar</span>
+          <span class="flex items-center gap-2">
+            <span class="text-[10px] text-white/30">Ctrl+B</span>
+            {#if uiStore.sidebarVisible}
+              <span class="text-[10px] text-amber-400">&check;</span>
+            {/if}
+          </span>
         </button>
 
         <button
@@ -246,40 +473,35 @@
 
         <button
           class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { uiStore.toggleSidebar(); closeMenus(); }}
+          onclick={() => { uiStore.toggleOutline(); closeMenus(); }}
           role="menuitem"
         >
-          <span>Sidebar</span>
-          <span class="flex items-center gap-2">
-            <span class="text-[10px] text-white/30">Ctrl+B</span>
-            {#if uiStore.sidebarVisible}
-              <span class="text-[10px] text-amber-400">&check;</span>
-            {/if}
-          </span>
+          <span>Outline</span>
+          {#if uiStore.outlineVisible}
+            <span class="text-[10px] text-amber-400">&check;</span>
+          {/if}
         </button>
 
         <button
           class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { window.dispatchEvent(new CustomEvent('actone:toggle-word-wrap')); closeMenus(); }}
+          onclick={() => { togglePanel('problems'); closeMenus(); }}
           role="menuitem"
         >
-          <span>Word Wrap</span>
-          <span class="flex items-center gap-2">
-            <span class="text-[10px] text-white/30">Alt+Z</span>
-            {#if wordWrapEnabled}
-              <span class="text-[10px] text-amber-400">&check;</span>
-            {/if}
-          </span>
+          <span>Problems</span>
+          {#if isPanelOpen('problems')}
+            <span class="text-[10px] text-amber-400">&check;</span>
+          {/if}
         </button>
 
-        <div class="my-1 border-t border-[#252525]"></div>
-
         <button
-          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { handleResetLayout(); closeMenus(); }}
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { togglePanel('output'); closeMenus(); }}
           role="menuitem"
         >
-          Reset Layout
+          <span>Output</span>
+          {#if isPanelOpen('output')}
+            <span class="text-[10px] text-amber-400">&check;</span>
+          {/if}
         </button>
 
         <div class="my-1 border-t border-[#252525]"></div>
@@ -337,11 +559,11 @@
 
         <button
           class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
-          onclick={() => { togglePanel('reading-mode'); closeMenus(); }}
+          onclick={() => { uiStore.toggleReadingMode(); closeMenus(); }}
           role="menuitem"
         >
           <span>Reading Mode</span>
-          {#if isPanelOpen('reading-mode')}
+          {#if uiStore.readingModeVisible}
             <span class="text-[10px] text-amber-400">&check;</span>
           {/if}
         </button>
@@ -355,6 +577,30 @@
           {#if isPanelOpen('spread-preview')}
             <span class="text-[10px] text-amber-400">&check;</span>
           {/if}
+        </button>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:toggle-word-wrap')); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Word Wrap</span>
+          <span class="flex items-center gap-2">
+            <span class="text-[10px] text-white/30">Alt+Z</span>
+            {#if wordWrapEnabled}
+              <span class="text-[10px] text-amber-400">&check;</span>
+            {/if}
+          </span>
+        </button>
+
+        <button
+          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { handleResetLayout(); closeMenus(); }}
+          role="menuitem"
+        >
+          Reset Layout
         </button>
       </div>
     {/if}
@@ -371,7 +617,7 @@
 
     {#if openMenu === 'run'}
       <div
-        class="absolute left-0 top-full z-50 mt-0.5 min-w-44 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+        class="absolute left-0 top-full z-50 mt-0.5 min-w-48 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
         role="menu"
         tabindex="-1"
         onkeydown={(e) => { if (e.key === 'Escape') closeMenus(); }}
@@ -395,6 +641,43 @@
         >
           Visual Assets
         </button>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        {#if projectStore.isLoaded && validTargets.length > 0}
+          <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-white/30">
+            Advance Stage
+          </div>
+          {#each validTargets as target}
+            <button
+              class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+              onclick={() => { onadvancestage?.(target); closeMenus(); }}
+              role="menuitem"
+            >
+              &rarr; {getStageLabel(target)}
+            </button>
+          {/each}
+        {/if}
+
+        <button
+          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          onclick={() => { onsnapshot?.(); closeMenus(); }}
+          disabled={!projectStore.isLoaded}
+          role="menuitem"
+        >
+          Take Snapshot
+        </button>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        <button
+          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90 {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          onclick={() => { openPanel('export'); closeMenus(); }}
+          disabled={!projectStore.isLoaded}
+          role="menuitem"
+        >
+          Export Manuscript
+        </button>
       </div>
     {/if}
   </div>
@@ -410,36 +693,92 @@
 
     {#if openMenu === 'help'}
       <div
-        class="absolute left-0 top-full z-50 mt-0.5 min-w-44 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
+        class="absolute left-0 top-full z-50 mt-0.5 min-w-56 rounded-md border border-[#252525] bg-surface-800 py-1 shadow-lg"
         role="menu"
         tabindex="-1"
         onkeydown={(e) => { if (e.key === 'Escape') closeMenus(); }}
         onclick={(e) => e.stopPropagation()}
       >
         <button
-          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/30 cursor-not-allowed opacity-50"
-          disabled
+          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:welcome')); closeMenus(); }}
           role="menuitem"
         >
-          <span>User's Guide</span>
-          <span class="text-[9px] rounded bg-white/10 px-1.5 py-0.5 text-white/40">Coming Soon</span>
+          Welcome
+        </button>
+
+        <button
+          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:users-guide')); closeMenus(); }}
+          role="menuitem"
+        >
+          User's Guide
         </button>
 
         <div class="my-1 border-t border-[#252525]"></div>
 
-        <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-white/30">
-          Keyboard Shortcuts
-        </div>
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:keyboard-shortcuts-ref')); closeMenus(); }}
+          role="menuitem"
+        >
+          <span>Keyboard Shortcuts Reference</span>
+          <span class="text-[10px] text-white/30">Ctrl+K Ctrl+R</span>
+        </button>
 
-        <div class="px-3 py-1.5 text-[11px] text-white/40">
-          <div class="flex justify-between"><span>Save</span><span>Ctrl+S</span></div>
-          <div class="flex justify-between"><span>Open Project</span><span>Ctrl+O</span></div>
-          <div class="flex justify-between"><span>Generate Prose</span><span>Ctrl+G</span></div>
-          <div class="flex justify-between"><span>Toggle Sidebar</span><span>Ctrl+B</span></div>
-          <div class="flex justify-between"><span>Word Wrap</span><span>Alt+Z</span></div>
-          <div class="flex justify-between"><span>Format Document</span><span>Ctrl+Shift+F</span></div>
-          <div class="flex justify-between"><span>Diagram 1–5</span><span>Ctrl+1–5</span></div>
-        </div>
+        <button
+          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:video-tutorials')); closeMenus(); }}
+          role="menuitem"
+        >
+          Video Tutorials
+        </button>
+
+        <button
+          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:tips-and-tricks')); closeMenus(); }}
+          role="menuitem"
+        >
+          Tips and Tricks
+        </button>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        <button
+          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:report-issue')); closeMenus(); }}
+          role="menuitem"
+        >
+          Report Issue
+        </button>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        <button
+          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:view-license')); closeMenus(); }}
+          role="menuitem"
+        >
+          View License
+        </button>
+
+        <button
+          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:privacy-statement')); closeMenus(); }}
+          role="menuitem"
+        >
+          Privacy Statement
+        </button>
+
+        <div class="my-1 border-t border-[#252525]"></div>
+
+        <button
+          class="flex w-full items-center px-3 py-1.5 text-left text-white/70 hover:bg-white/10 hover:text-white/90"
+          onclick={() => { window.dispatchEvent(new CustomEvent('actone:about')); closeMenus(); }}
+          role="menuitem"
+        >
+          About
+        </button>
       </div>
     {/if}
   </div>

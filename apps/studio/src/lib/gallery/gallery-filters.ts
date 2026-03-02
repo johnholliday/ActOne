@@ -1,5 +1,5 @@
 /**
- * Gallery filtering and sorting logic extracted from gallery/+page.svelte.
+ * Asset Gallery filtering and sorting logic extracted from gallery/+page.svelte.
  */
 
 import type { GalleryAsset } from './asset-mapping.js';

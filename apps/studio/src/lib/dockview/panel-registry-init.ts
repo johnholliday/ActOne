@@ -8,7 +8,8 @@
 import { registerPanel } from './panel-registry.js';
 
 import EditorPanel from '$lib/panels/EditorPanel.svelte';
-import DiagnosticsPanel from '$lib/panels/DiagnosticsPanel.svelte';
+import ProblemsPanel from '$lib/panels/ProblemsPanel.svelte';
+import OutputPanel from '$lib/panels/OutputPanel.svelte';
 
 import DiagramPanel from '$lib/panels/DiagramPanel.svelte';
 import StoryBiblePanel from '$lib/panels/StoryBiblePanel.svelte';
@@ -28,12 +29,23 @@ registerPanel({
 });
 
 registerPanel({
-  id: 'diagnostics',
+  id: 'problems',
   title: 'Problems',
-  component: DiagnosticsPanel,
+  component: ProblemsPanel,
   renderer: 'onlyWhenVisible',
   singleton: true,
   defaultPosition: { direction: 'below', referencePanel: 'editor' },
+  panelGroup: 'bottom',
+});
+
+registerPanel({
+  id: 'output',
+  title: 'Output',
+  component: OutputPanel,
+  renderer: 'onlyWhenVisible',
+  singleton: true,
+  defaultPosition: { direction: 'below', referencePanel: 'editor' },
+  panelGroup: 'bottom',
 });
 
 /* ── Diagram panels (all use DiagramPanel with diagramType param) ── */
@@ -106,7 +118,7 @@ registerPanel({
 
 registerPanel({
   id: 'gallery',
-  title: 'Gallery',
+  title: 'Asset Gallery',
   component: GalleryPanel,
   renderer: 'onlyWhenVisible',
   singleton: true,

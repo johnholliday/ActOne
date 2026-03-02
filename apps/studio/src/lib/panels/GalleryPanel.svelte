@@ -1,6 +1,6 @@
 <script lang="ts">
   /**
-   * Gallery panel: Search, filter, sort, compare, and approval workflow.
+   * Asset Gallery panel: Search, filter, sort, compare, and approval workflow.
    * Extracted from gallery route for dockview.
    * Loads assets directly via supabase since server-side route data
    * is not available when rendered as a dockview panel.
@@ -122,7 +122,7 @@
 {:else}
 <div class="gallery">
   <div class="gallery-header">
-    <h1>Gallery</h1>
+    <h1>Asset Gallery</h1>
     <div class="controls">
       <input
         type="search"

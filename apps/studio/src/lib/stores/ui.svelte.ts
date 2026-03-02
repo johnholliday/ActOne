@@ -27,6 +27,9 @@ class UiStore {
   /** Whether the status bar at the bottom is visible */
   statusBarVisible = $state(true);
 
+  /** Whether the reading mode overlay is visible */
+  readingModeVisible = $state(false);
+
   /** Whether the editor or diagram canvas has focus */
   activePane = $state<'editor' | 'diagram'>('editor');
 
@@ -40,6 +43,10 @@ class UiStore {
 
   toggleStatusBar() {
     this.statusBarVisible = !this.statusBarVisible;
+  }
+
+  toggleReadingMode() {
+    this.readingModeVisible = !this.readingModeVisible;
   }
 
   setDiagramView(view: DiagramView | null) {

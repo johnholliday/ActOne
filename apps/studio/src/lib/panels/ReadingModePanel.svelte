@@ -11,10 +11,10 @@
   import EmptyState from '$lib/components/EmptyState.svelte';
 
   interface Props {
-    api: DockviewPanelApi;
-    containerApi: DockviewApi;
-    title: string;
-    panelParams: Writable<Record<string, unknown>>;
+    api?: DockviewPanelApi;
+    containerApi?: DockviewApi;
+    title?: string;
+    panelParams?: Writable<Record<string, unknown>>;
   }
 
   let { api, containerApi, title, panelParams }: Props = $props();
@@ -64,7 +64,12 @@
       </div>
     </div>
   {:else if previewHtml}
-    {@html previewHtml}
+    <iframe
+      class="preview-frame"
+      srcdoc={previewHtml}
+      sandbox="allow-same-origin"
+      title="Manuscript preview"
+    ></iframe>
   {:else}
     <div class="empty">
       No accepted drafts available for reading mode.
@@ -78,6 +83,13 @@
     background: #faf9f6;
     height: 100%;
     overflow-y: auto;
+  }
+
+  .preview-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #faf9f6;
   }
 
   .loading, .empty {

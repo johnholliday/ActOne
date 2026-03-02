@@ -6,6 +6,7 @@
   import { projectStore } from '$lib/stores/project.svelte.js';
   import { editorStore } from '$lib/stores/editor.svelte.js';
   import { getStageLabel, getValidTargets } from '$lib/project/lifecycle.js';
+  import { openPanel } from '$lib/dockview/panel-actions.js';
   import type { LifecycleStage } from '@repo/shared';
 
   interface Props {
@@ -128,8 +129,11 @@
   <div class="flex items-center gap-2 text-zinc-500">
     <span>Ln {editorStore.cursor.line}, Col {editorStore.cursor.column}</span>
     <span class="text-white/20">|</span>
-    <span class={editorStore.diagnosticCount > 0 ? 'text-red-400' : ''}>
+    <button
+      class="cursor-pointer hover:underline {editorStore.diagnosticCount > 0 ? 'text-red-400' : ''}"
+      onclick={() => openPanel('problems')}
+    >
       {editorStore.diagnosticCount} {editorStore.diagnosticCount === 1 ? 'issue' : 'issues'}
-    </span>
+    </button>
   </div>
 </footer>

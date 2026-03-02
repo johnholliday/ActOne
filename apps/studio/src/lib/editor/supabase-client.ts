@@ -107,6 +107,22 @@ export async function createFile(
 }
 
 /**
+ * Rename a source file in Supabase (update file_path).
+ */
+export async function renameFile(
+  supabase: SupabaseClient,
+  fileId: string,
+  newFilePath: string,
+): Promise<boolean> {
+  const { error } = await supabase
+    .from('source_files')
+    .update({ file_path: newFilePath, modified_at: new Date().toISOString() })
+    .eq('id', fileId);
+
+  return !error;
+}
+
+/**
  * Delete a source file from Supabase.
  */
 export async function deleteFile(

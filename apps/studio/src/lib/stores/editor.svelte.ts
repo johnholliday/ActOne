@@ -44,13 +44,18 @@ class EditorStore {
   hasUnsavedChanges = $derived(this.openFiles.some((f) => f.isDirty));
 
   open(file: { id: string; filePath: string }) {
+    this.ensure(file);
+    this.activeFileId = file.id;
+  }
+
+  /** Add file to open tabs without changing the active file */
+  ensure(file: { id: string; filePath: string }) {
     if (!this.openFiles.some((f) => f.id === file.id)) {
       this.openFiles = [
         ...this.openFiles,
         { id: file.id, filePath: file.filePath, isDirty: false },
       ];
     }
-    this.activeFileId = file.id;
   }
 
   close(fileId: string) {
@@ -60,6 +65,22 @@ class EditorStore {
     if (this.activeFileId === fileId) {
       this.activeFileId = this.openFiles[0]?.id ?? null;
     }
+  }
+
+  /** Close a tab without the "last tab" guard (used for delete) */
+  forceClose(fileId: string) {
+    this.removeBuffer(fileId);
+    this.openFiles = this.openFiles.filter((f) => f.id !== fileId);
+    if (this.activeFileId === fileId) {
+      this.activeFileId = this.openFiles[0]?.id ?? null;
+    }
+  }
+
+  /** Update filePath for an open file tab (used for rename) */
+  renameFile(fileId: string, newFilePath: string) {
+    this.openFiles = this.openFiles.map((f) =>
+      f.id === fileId ? { ...f, filePath: newFilePath } : f,
+    );
   }
 
   markDirty(fileId: string) {

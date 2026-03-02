@@ -117,6 +117,12 @@ class ProjectStore {
     this.files = [...this.files, file];
   }
 
+  renameFile(fileId: string, newFilePath: string) {
+    this.files = this.files.map((f) =>
+      f.id === fileId ? { ...f, filePath: newFilePath } : f,
+    );
+  }
+
   removeFile(fileId: string) {
     this.files = this.files.filter((f) => f.id !== fileId);
   }

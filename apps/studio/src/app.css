@@ -123,6 +123,11 @@
   --dv-icon-hover-background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Indent panel tab headers */
+.dv-dockview .dv-tab .dv-default-tab {
+  padding-left: 8px;
+}
+
 /* ── SvelteFlow theme overrides ──────────────────────────── */
 
 .svelte-flow {
@@ -167,27 +172,19 @@
 }
 
 .svelte-flow .svelte-flow__minimap {
-  background: #141414;
+  background: var(--actone-minimap-bg, #141414);
   border: 1px solid #252525;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .svelte-flow .svelte-flow__minimap-mask {
-  fill: rgba(13, 13, 13, 0.7);
+  fill: var(--actone-minimap-mask, rgba(13, 13, 13, 0.7));
 }
 
 .svelte-flow .svelte-flow__minimap-node {
   fill: #252525;
   stroke: #3f3f46;
-}
-
-.svelte-flow .svelte-flow__background pattern line {
-  stroke: #1a1a1a;
-}
-
-.svelte-flow .svelte-flow__background pattern circle {
-  fill: #252525;
 }
 
 .svelte-flow .svelte-flow__handle {

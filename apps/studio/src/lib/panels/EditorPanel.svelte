@@ -34,6 +34,7 @@
   /* ── State ─────────────────────────────────────────────────────── */
 
   let editorPane = $state<EditorPane | undefined>(undefined);
+  let switchingTab = false;
 
   /* ── Outline resize ──────────────────────────────────────── */
 
@@ -59,9 +60,12 @@
 
   /* ── Register entry file with editor store ────────────────── */
 
+  let entryFileOpened = false; // plain variable, NOT $state — no reactive tracking
+
   $effect(() => {
     const entry = projectStore.entryFile;
-    if (entry) {
+    if (entry && !entryFileOpened) {
+      entryFileOpened = true;
       untrack(() => editorStore.open({ id: entry.id, filePath: entry.filePath }));
     }
   });
@@ -166,6 +170,8 @@
   let symbols = $state<DocumentSymbol[]>([]);
 
   function handleChange(_content: string) {
+    if (switchingTab) return;
+
     if (editorStore.activeFileId) {
       editorStore.markDirty(editorStore.activeFileId);
     }
@@ -235,9 +241,11 @@
       editorStore.setBuffer(fileId, newContent);
     }
 
-    // Switch document in CodeMirror
+    // Switch document in CodeMirror (suppress handleChange during setDocument)
     const filePath = editorStore.openFiles.find((f) => f.id === fileId)?.filePath ?? 'unknown.actone';
+    switchingTab = true;
     editorPane?.setDocument?.(`file:///${filePath}`, newContent);
+    switchingTab = false;
 
     // Refresh symbols
     refreshSymbols();
@@ -251,11 +259,20 @@
     }
 
     const wasActive = fileId === editorStore.activeFileId;
-    editorStore.close(fileId);
 
-    if (wasActive && editorStore.activeFileId) {
-      await handleSwitchTab(editorStore.activeFileId);
+    if (wasActive) {
+      // Switch to next file BEFORE closing, so handleSwitchTab
+      // properly buffers current content and loads the target
+      const remaining = editorStore.openFiles.filter((f) => f.id !== fileId);
+      const nextFileId = remaining[0]?.id;
+      if (nextFileId) {
+        await handleSwitchTab(nextFileId);
+      }
     }
+
+    // Now close — activeFileId already points elsewhere, so close()
+    // won't interfere with the switch
+    editorStore.close(fileId);
   }
 
   /* ── Save & open-file event listeners ────────────────────── */
