@@ -24,10 +24,14 @@
 
 <style>
   .world-container {
+    width: 100%;
+    height: 100%;
     background: #0D0D0D;
     border: 1px dashed #252525;
     border-radius: 12px;
     padding: 12px;
+    box-sizing: border-box;
+    overflow: visible;
     min-width: 300px;
     min-height: 200px;
   }

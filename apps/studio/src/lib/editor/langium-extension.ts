@@ -710,14 +710,11 @@ async function fetchSemanticTokens(
   view: EditorView,
 ): Promise<void> {
   if (!client.isReady) {
-    console.log('[SemanticTokens] client not ready, skipping');
     return;
   }
 
   try {
-    console.log('[SemanticTokens] requesting tokens for', uri);
     const tokens = await client.semanticTokensFull(uri);
-    console.log('[SemanticTokens] response:', tokens ? `${tokens.data?.length ?? 0} data entries` : 'null');
     if (!tokens || !tokens.data || tokens.data.length === 0) {
       view.dispatch({ effects: setSemanticDecorations.of(Decoration.none) });
       return;
@@ -752,10 +749,9 @@ async function fetchSemanticTokens(
       builder.map((b) => Decoration.mark({ class: b.class }).range(b.from, b.to)),
     );
 
-    console.log('[SemanticTokens] applied', builder.length, 'decorations');
     view.dispatch({ effects: setSemanticDecorations.of(decorations) });
-  } catch (err) {
-    console.error('[SemanticTokens] error:', err);
+  } catch {
+    // Semantic token fetch failed — silently ignore
   }
 }
 

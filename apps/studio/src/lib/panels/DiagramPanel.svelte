@@ -4,11 +4,12 @@
    * Accepts diagramType via panelParams to select the appropriate
    * node types, edge types, transformer, and context menu config.
    */
-  import { SvelteFlow, Controls, Background, MiniMap } from '@xyflow/svelte';
+  import { SvelteFlow, Background, MiniMap, BackgroundVariant } from '@xyflow/svelte';
   import '@xyflow/svelte/dist/style.css';
   import type { DockviewPanelApi, DockviewApi } from 'dockview-core';
   import type { Writable } from 'svelte/store';
   import { get } from 'svelte/store';
+  import { onMount } from 'svelte';
 
   /* ── Node components ──────────────────────────────────────── */
   import SceneNode from '$lib/diagrams/nodes/SceneNode.svelte';
@@ -37,14 +38,22 @@
     saveSidecar,
     setOverride,
     applyOverrides,
+    clearSidecar,
   } from '$lib/diagrams/layout/sidecar.js';
   import { diagramStore } from '$lib/stores/diagrams.svelte.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { projectStore } from '$lib/stores/project.svelte.js';
   import { parseStableId } from '$lib/diagrams/operations/stable-refs.js';
   import type { DiagramOperation } from '$lib/diagrams/operations/text-edit-generator.js';
+  import DiagramControls from '$lib/diagrams/DiagramControls.svelte';
+  import NodeAutoExpansion from '$lib/diagrams/NodeAutoExpansion.svelte';
   import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
+  import {
+    parseDiagramPrefs,
+    DIAGRAM_STYLE_CONFIGS,
+    type BackgroundPattern,
+  } from '$lib/settings/diagram.js';
 
   /* ── Diagram type configuration ───────────────────────────── */
 
@@ -99,7 +108,7 @@
       edgeTypes: undefined,
       transformer: transformWorldMap,
       defaultNodeSize: (n) => ({
-        width: n.width ?? (n.type === 'world-container' ? 400 : 140),
+        width: n.width ?? (n.type === 'world-container' ? 400 : 246),
         height: n.height ?? (n.type === 'world-container' ? 300 : 100),
       }),
       emptyDescription: 'Create or open a project to see the world map.',
@@ -176,6 +185,36 @@
 
   const projectId = $derived(projectStore.project?.id ?? '');
 
+  /* ── Diagram preferences ────────────────────────────────── */
+
+  const VARIANT_MAP: Record<BackgroundPattern, BackgroundVariant> = {
+    dots: BackgroundVariant.Dots,
+    lines: BackgroundVariant.Lines,
+    cross: BackgroundVariant.Cross,
+  };
+
+  let diagramPrefs = $state(parseDiagramPrefs(null));
+  const styleConfig = $derived(DIAGRAM_STYLE_CONFIGS[diagramPrefs.style]);
+  const bgVariant = $derived(VARIANT_MAP[diagramPrefs.backgroundVariant]);
+  const snapGrid = $derived<[number, number] | undefined>(
+    diagramPrefs.snapToGrid ? [diagramPrefs.gridSize, diagramPrefs.gridSize] : undefined,
+  );
+
+  onMount(() => {
+    const stored = localStorage.getItem('actone:diagram');
+    diagramPrefs = parseDiagramPrefs(stored);
+
+    function handlePrefsChanged() {
+      const raw = localStorage.getItem('actone:diagram');
+      diagramPrefs = parseDiagramPrefs(raw);
+    }
+
+    window.addEventListener('actone:diagram-prefs-changed', handlePrefsChanged);
+    return () => {
+      window.removeEventListener('actone:diagram-prefs-changed', handlePrefsChanged);
+    };
+  });
+
   /* ── Refresh: transform AST → layout → sidecar → render ─── */
 
   async function refresh() {
@@ -209,7 +248,13 @@
 
       nodes = result.nodes.map((n: any) => {
         const pos = positions.get(n.id);
-        return { ...n, position: pos ?? n.position };
+        const layoutEntry = layout.nodes.get(n.id);
+        return {
+          ...n,
+          position: pos ?? n.position,
+          ...(layoutEntry?.width != null ? { width: layoutEntry.width } : {}),
+          ...(layoutEntry?.height != null ? { height: layoutEntry.height } : {}),
+        };
       });
       edges = result.edges;
       diagramStore.setView(config.viewId, nodes, edges);
@@ -224,23 +269,32 @@
 
   /* ── Node event handlers ──────────────────────────────────── */
 
-  function handleNodeDragStop(event: CustomEvent<{ node: any }>) {
-    const node = event.detail.node;
+  let nodeAutoExpansion = $state<NodeAutoExpansion>();
+
+  function handleNodeDrag(d: { event: MouseEvent | TouchEvent; targetNode: any; nodes: any[] }) {
+    nodeAutoExpansion?.onNodeInteraction(d);
+  }
+
+  function handleNodeDragStop(d: { event: MouseEvent | TouchEvent; targetNode: any; nodes: any[] }) {
+    const node = d.targetNode;
+    if (!node) return;
     const sidecar = loadSidecar(projectId, config.viewId);
     const updated = setOverride(sidecar, node.id, node.position);
     saveSidecar(projectId, config.viewId, updated);
     diagramStore.updateNodes(config.viewId, nodes);
   }
 
-  function handleNodeDoubleClick(event: CustomEvent<{ node: any }>) {
-    const node = event.detail.node;
-    const parsed = parseStableId(node.id);
-    if (parsed) {
-      window.dispatchEvent(
-        new CustomEvent('actone:navigate-to-source', {
-          detail: { type: parsed.type, name: parsed.name },
-        }),
-      );
+  function handleNodeClick(d: { node: any; event: MouseEvent | TouchEvent }) {
+    // Detect double-click via detail count (works for MouseEvent)
+    if ('detail' in d.event && (d.event as MouseEvent).detail === 2) {
+      const parsed = parseStableId(d.node.id);
+      if (parsed) {
+        window.dispatchEvent(
+          new CustomEvent('actone:navigate-to-source', {
+            detail: { type: parsed.type, name: parsed.name },
+          }),
+        );
+      }
     }
   }
 
@@ -252,15 +306,13 @@
     contextMenu = { x: event.clientX, y: event.clientY };
   }
 
-  function handleNodeContextMenu(
-    event: CustomEvent<{ node: any; event: MouseEvent }>,
-  ) {
+  function handleNodeContextMenu(d: { node: any; event: MouseEvent }) {
     if (!config.contextMenu) return;
-    event.detail.event.preventDefault();
+    d.event.preventDefault();
     contextMenu = {
-      x: event.detail.event.clientX,
-      y: event.detail.event.clientY,
-      nodeId: event.detail.node.id,
+      x: d.event.clientX,
+      y: d.event.clientY,
+      nodeId: d.node.id,
     };
   }
 
@@ -298,6 +350,12 @@
     });
   }
 
+  async function handleAutoLayout() {
+    if (!projectId) return;
+    clearSidecar(projectId, config.viewId);
+    await refresh();
+  }
+
   function handleDelete() {
     if (!config.contextMenu || !contextMenu?.nodeId) return;
     const parsed = parseStableId(contextMenu.nodeId);
@@ -324,22 +382,31 @@
 {:else}
   <div
     class="diagram-container"
+    style="background: {styleConfig.canvasBgColor};"
     role="presentation"
     oncontextmenu={handleContextMenu}
   >
     <SvelteFlow
-      {nodes}
-      {edges}
+      bind:nodes
+      bind:edges
       nodeTypes={config.nodeTypes}
       edgeTypes={config.edgeTypes}
       fitView
+      {snapGrid}
       proOptions={{ hideAttribution: true }}
-      on:nodedragstop={handleNodeDragStop}
-      on:nodedoubleclick={handleNodeDoubleClick}
-      on:nodecontextmenu={handleNodeContextMenu}
+      style="--xy-background-color: {styleConfig.canvasBgColor}; --actone-minimap-bg: {styleConfig.minimapBg}; --actone-minimap-mask: {styleConfig.minimapMask};"
+      onnodedrag={handleNodeDrag}
+      onnodedragstop={handleNodeDragStop}
+      onnodeclick={handleNodeClick}
+      onnodecontextmenu={handleNodeContextMenu}
     >
-      <Controls />
-      <Background />
+      <NodeAutoExpansion bind:this={nodeAutoExpansion} />
+      <DiagramControls onautolayout={handleAutoLayout} />
+      <Background
+        variant={bgVariant}
+        patternColor={styleConfig.patternColor}
+        gap={diagramPrefs.gridSize}
+      />
       <MiniMap />
     </SvelteFlow>
 
@@ -378,7 +445,6 @@
   .diagram-container {
     width: 100%;
     height: 100%;
-    background: #0D0D0D;
   }
 
   .context-overlay {

@@ -46,7 +46,7 @@
     border: 1px solid #252525;
     border-radius: 8px;
     padding: 8px 12px;
-    min-width: 120px;
+    width: 220px;
     font-size: 12px;
     color: #f8fafc;
   }
@@ -60,6 +60,9 @@
     font-size: 10px;
     color: #a1a1aa;
     margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .location-atmosphere {

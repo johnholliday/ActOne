@@ -190,16 +190,13 @@ export class LangiumClient {
       throw new Error('LangiumClient already started');
     }
 
-    console.log('[LSP] start: attaching worker');
     this.worker = worker;
     this.worker.onmessage = (ev: MessageEvent) => this.handleMessage(ev.data);
     this.worker.onerror = (ev: ErrorEvent) => {
-      console.error('[LSP] worker onerror:', ev.message, ev);
       this.callbacks.onError?.(new Error(`Worker error: ${ev.message}`));
     };
 
     // LSP initialize handshake
-    console.log('[LSP] start: sending initialize request');
     await this.sendRequest('initialize', {
       capabilities: {
         textDocument: {
@@ -244,10 +241,8 @@ export class LangiumClient {
     });
 
     // Notify initialized
-    console.log('[LSP] start: initialize response received, sending initialized');
     this.sendNotification('initialized', {});
     this.initialized = true;
-    console.log('[LSP] start: calling onReady');
     this.callbacks.onReady?.();
   }
 
@@ -445,7 +440,6 @@ export class LangiumClient {
       params: params ?? undefined,
     };
 
-    console.log(`[LSP] >>> request #${id} ${method}`);
     return new Promise((resolve, reject) => {
       this.pending.set(id, { resolve, reject });
       this.worker!.postMessage(message);
@@ -461,13 +455,11 @@ export class LangiumClient {
       params: params ?? undefined,
     };
 
-    console.log(`[LSP] >>> notification ${method}`);
     this.worker.postMessage(message);
   }
 
   private handleMessage(data: unknown): void {
     const message = data as JsonRpcMessage;
-    console.log('[LSP] <<< message:', JSON.stringify(data).slice(0, 200));
 
     // Response to a pending request
     if ('id' in message && message.id !== undefined) {
@@ -493,19 +485,16 @@ export class LangiumClient {
   }
 
   private handleNotification(notification: JsonRpcNotification): void {
-    console.log('[LSP] <<< notification:', notification.method);
     switch (notification.method) {
       case 'textDocument/publishDiagnostics': {
         const params = notification.params as {
           uri: string;
           diagnostics: Diagnostic[];
         };
-        console.log('[LSP] diagnostics for', params.uri, ':', params.diagnostics.length, 'items');
         this.callbacks.onDiagnostics?.(params.uri, params.diagnostics);
         break;
       }
       default:
-        console.log('[LSP] unhandled notification:', notification.method);
         break;
     }
   }
