@@ -65,6 +65,8 @@ Uses ESLint 9 flat config format (`.mjs` files). Base config includes `typescrip
 - Layout state in localStorage (client-side only); no database changes (005-dockview-layout)
 - TypeScript 5.9 (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + Langium 4.2.x (grammar, parser, scope provider, validator, code generator), SvelteKit 2.53.x, Svelte 5.53.x (006-multi-file-grammar)
 - Supabase PostgreSQL via Drizzle ORM (project files stored in Supabase storage) (006-multi-file-grammar)
+- TypeScript 5.9 (strict mode, ES2022 target, Bundler module resolution) + JavaScript ESM for Eleventy config/data files + Eleventy 3.1.x, @11ty/eleventy-navigation, SvelteKit 2.53.x, Svelte 5.53.x (runes), Vite 7.0.0, Tailwind CSS 4.2.x, lucide-svelte, dockview-core 5.0.0 (007-eleventy-doc-panel)
+- localStorage (panel state persistence), static files (guide content) (007-eleventy-doc-panel)
 
 ## Recent Changes
 - 001-string-utils: Added TypeScript 5.9 (strict mode, ES2022 target) + None at runtime; Vitest for testing (dev only)

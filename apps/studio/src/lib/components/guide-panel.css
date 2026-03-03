@@ -1,0 +1,470 @@
+/* ============================================
+   Guide Panel — Scoped CSS
+   All styles under .guide-content to isolate
+   guide typography from host app Tailwind.
+   ============================================ */
+
+/* --- Custom Properties (namespaced --gc-*) --- */
+
+.guide-content {
+  --gc-color-text: #1e293b;
+  --gc-color-text-secondary: #64748b;
+  --gc-color-text-muted: #94a3b8;
+  --gc-color-link: #16a34a;
+  --gc-color-link-hover: #15803d;
+  --gc-color-primary: #16a34a;
+  --gc-color-bg-code: #f1f5f9;
+  --gc-color-bg-code-block: #1e293b;
+  --gc-color-code-text: #334155;
+  --gc-color-code-block-text: #e2e8f0;
+  --gc-color-border: #e2e8f0;
+  --gc-color-bg-secondary: #f8fafc;
+  --gc-color-table-header-bg: #f8fafc;
+  --gc-color-table-row-alt: #f8fafc;
+  --gc-color-table-border: #e2e8f0;
+  --gc-color-callout-tip-bg: #f0fdf4;
+  --gc-color-callout-tip-border: #86efac;
+  --gc-color-callout-tip-title: #16a34a;
+  --gc-color-callout-info-bg: #eff6ff;
+  --gc-color-callout-info-border: #93c5fd;
+  --gc-color-callout-info-title: #2563eb;
+  --gc-color-callout-warning-bg: #fffbeb;
+  --gc-color-callout-warning-border: #fcd34d;
+  --gc-color-callout-warning-title: #d97706;
+  --gc-color-callout-danger-bg: #fef2f2;
+  --gc-color-callout-danger-border: #fca5a5;
+  --gc-color-callout-danger-title: #dc2626;
+  --gc-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --gc-font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  --gc-font-size-base: 0.875rem;
+  --gc-font-size-xs: 0.6875rem;
+  --gc-font-size-sm: 0.8125rem;
+  --gc-font-size-lg: 1rem;
+  --gc-font-size-xl: 1.125rem;
+  --gc-font-size-2xl: 1.25rem;
+  --gc-font-size-3xl: 1.5rem;
+  --gc-space-1: 0.25rem;
+  --gc-space-2: 0.5rem;
+  --gc-space-3: 0.75rem;
+  --gc-space-4: 1rem;
+  --gc-space-6: 1.5rem;
+  --gc-space-8: 2rem;
+  --gc-space-12: 3rem;
+  --gc-border-radius: 6px;
+
+  font-family: var(--gc-font-sans);
+  font-size: var(--gc-font-size-base);
+  line-height: 1.6;
+  color: var(--gc-color-text);
+}
+
+/* --- Dark Mode Overrides --- */
+
+:root[data-theme='dark'] .guide-content {
+  --gc-color-text: #e2e8f0;
+  --gc-color-text-secondary: #94a3b8;
+  --gc-color-text-muted: #64748b;
+  --gc-color-link: #4ade80;
+  --gc-color-link-hover: #86efac;
+  --gc-color-primary: #4ade80;
+  --gc-color-bg-code: #1e293b;
+  --gc-color-bg-code-block: #020617;
+  --gc-color-code-text: #e2e8f0;
+  --gc-color-code-block-text: #e2e8f0;
+  --gc-color-border: #334155;
+  --gc-color-bg-secondary: #1e293b;
+  --gc-color-table-header-bg: #1e293b;
+  --gc-color-table-row-alt: #1e293b;
+  --gc-color-table-border: #334155;
+  --gc-color-callout-tip-bg: #052e16;
+  --gc-color-callout-tip-border: #166534;
+  --gc-color-callout-tip-title: #4ade80;
+  --gc-color-callout-info-bg: #172554;
+  --gc-color-callout-info-border: #1e40af;
+  --gc-color-callout-info-title: #60a5fa;
+  --gc-color-callout-warning-bg: #451a03;
+  --gc-color-callout-warning-border: #92400e;
+  --gc-color-callout-warning-title: #fbbf24;
+  --gc-color-callout-danger-bg: #450a0a;
+  --gc-color-callout-danger-border: #991b1b;
+  --gc-color-callout-danger-title: #f87171;
+}
+
+/* --- Headings --- */
+
+.guide-content h1 {
+  font-size: var(--gc-font-size-3xl);
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: var(--gc-space-4);
+  color: var(--gc-color-text);
+  letter-spacing: -0.025em;
+}
+
+.guide-content h2 {
+  font-size: var(--gc-font-size-2xl);
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: var(--gc-space-8);
+  margin-bottom: var(--gc-space-3);
+  padding-bottom: var(--gc-space-2);
+  border-bottom: 1px solid var(--gc-color-border);
+  color: var(--gc-color-text);
+}
+
+.guide-content h3 {
+  font-size: var(--gc-font-size-xl);
+  font-weight: 600;
+  margin-top: var(--gc-space-6);
+  margin-bottom: var(--gc-space-2);
+  color: var(--gc-color-text);
+}
+
+.guide-content h4 {
+  font-size: var(--gc-font-size-lg);
+  font-weight: 600;
+  margin-top: var(--gc-space-4);
+  margin-bottom: var(--gc-space-2);
+  color: var(--gc-color-text);
+}
+
+.guide-content h5,
+.guide-content h6 {
+  font-size: var(--gc-font-size-base);
+  font-weight: 600;
+  margin-top: var(--gc-space-3);
+  margin-bottom: var(--gc-space-1);
+  color: var(--gc-color-text-secondary);
+}
+
+/* --- Paragraphs --- */
+
+.guide-content p {
+  margin-bottom: var(--gc-space-3);
+}
+
+/* --- Links --- */
+
+.guide-content a {
+  color: var(--gc-color-link);
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.guide-content a:hover {
+  color: var(--gc-color-link-hover);
+  text-decoration: underline;
+}
+
+/* --- Lists --- */
+
+.guide-content ul,
+.guide-content ol {
+  margin-bottom: var(--gc-space-3);
+  padding-left: var(--gc-space-6);
+}
+
+.guide-content ul {
+  list-style-type: disc;
+}
+
+.guide-content ol {
+  list-style-type: decimal;
+}
+
+.guide-content li {
+  margin-bottom: var(--gc-space-1);
+}
+
+.guide-content li > ul,
+.guide-content li > ol {
+  margin-top: var(--gc-space-1);
+  margin-bottom: 0;
+}
+
+/* --- Inline Code --- */
+
+.guide-content code {
+  font-family: var(--gc-font-mono);
+  font-size: 0.875em;
+  background-color: var(--gc-color-bg-code);
+  color: var(--gc-color-code-text);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+
+/* --- Code Blocks --- */
+
+.guide-content pre {
+  margin-bottom: var(--gc-space-3);
+  padding: var(--gc-space-3);
+  background-color: var(--gc-color-bg-code-block);
+  color: var(--gc-color-code-block-text);
+  border-radius: var(--gc-border-radius);
+  overflow-x: auto;
+  font-size: var(--gc-font-size-sm);
+  line-height: 1.75;
+}
+
+.guide-content pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+  border-radius: 0;
+}
+
+/* --- Blockquotes --- */
+
+.guide-content blockquote {
+  margin-bottom: var(--gc-space-3);
+  padding: var(--gc-space-2) var(--gc-space-3);
+  border-left: 4px solid var(--gc-color-primary);
+  background-color: var(--gc-color-bg-secondary);
+  color: var(--gc-color-text-secondary);
+  border-radius: 0 4px 4px 0;
+}
+
+.guide-content blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* --- Tables --- */
+
+.guide-content table {
+  width: 100%;
+  margin-bottom: var(--gc-space-3);
+  font-size: var(--gc-font-size-sm);
+  border: 1px solid var(--gc-color-table-border);
+  border-radius: var(--gc-border-radius);
+  border-collapse: collapse;
+  overflow: hidden;
+}
+
+.guide-content thead {
+  background-color: var(--gc-color-table-header-bg);
+}
+
+.guide-content th {
+  text-align: left;
+  padding: var(--gc-space-2) var(--gc-space-3);
+  font-weight: 600;
+  border-bottom: 2px solid var(--gc-color-table-border);
+}
+
+.guide-content td {
+  padding: var(--gc-space-2) var(--gc-space-3);
+  border-bottom: 1px solid var(--gc-color-table-border);
+}
+
+.guide-content tbody tr:nth-child(even) {
+  background-color: var(--gc-color-table-row-alt);
+}
+
+.guide-content tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* --- Callout Blocks --- */
+
+.guide-content .callout {
+  margin-bottom: var(--gc-space-3);
+  padding: var(--gc-space-3);
+  border-left: 4px solid;
+  border-radius: 0 var(--gc-border-radius) var(--gc-border-radius) 0;
+}
+
+.guide-content .callout-title {
+  font-weight: 600;
+  font-size: var(--gc-font-size-xs);
+  margin-bottom: var(--gc-space-1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.guide-content .callout p:last-child {
+  margin-bottom: 0;
+}
+
+.guide-content .callout-tip {
+  background-color: var(--gc-color-callout-tip-bg);
+  border-color: var(--gc-color-callout-tip-border);
+}
+
+.guide-content .callout-tip .callout-title {
+  color: var(--gc-color-callout-tip-title);
+}
+
+.guide-content .callout-info {
+  background-color: var(--gc-color-callout-info-bg);
+  border-color: var(--gc-color-callout-info-border);
+}
+
+.guide-content .callout-info .callout-title {
+  color: var(--gc-color-callout-info-title);
+}
+
+.guide-content .callout-warning {
+  background-color: var(--gc-color-callout-warning-bg);
+  border-color: var(--gc-color-callout-warning-border);
+}
+
+.guide-content .callout-warning .callout-title {
+  color: var(--gc-color-callout-warning-title);
+}
+
+.guide-content .callout-danger {
+  background-color: var(--gc-color-callout-danger-bg);
+  border-color: var(--gc-color-callout-danger-border);
+}
+
+.guide-content .callout-danger .callout-title {
+  color: var(--gc-color-callout-danger-title);
+}
+
+/* --- Prev/Next Navigation --- */
+
+.guide-content .prev-next {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gc-space-3);
+  margin-top: var(--gc-space-8);
+  padding-top: var(--gc-space-6);
+  border-top: 1px solid var(--gc-color-border);
+}
+
+.guide-content .prev-next-link {
+  display: flex;
+  flex-direction: column;
+  padding: var(--gc-space-3);
+  border: 1px solid var(--gc-color-border);
+  border-radius: var(--gc-border-radius);
+  text-decoration: none;
+  transition: border-color 150ms ease;
+}
+
+.guide-content .prev-next-link:hover {
+  border-color: var(--gc-color-primary);
+  text-decoration: none;
+}
+
+.guide-content .prev-next-link--next {
+  text-align: right;
+  grid-column: 2;
+}
+
+.guide-content .prev-next-label {
+  font-size: var(--gc-font-size-xs);
+  color: var(--gc-color-text-muted);
+  margin-bottom: var(--gc-space-1);
+}
+
+.guide-content .prev-next-title {
+  font-size: var(--gc-font-size-sm);
+  font-weight: 500;
+  color: var(--gc-color-primary);
+}
+
+/* --- Breadcrumb (hidden in panel) --- */
+
+.guide-content .breadcrumb {
+  display: none;
+}
+
+/* --- Formula Blocks --- */
+
+.guide-content .formula {
+  margin-bottom: var(--gc-space-3);
+  padding: var(--gc-space-3) var(--gc-space-4);
+  background-color: var(--gc-color-bg-secondary);
+  border: 1px solid var(--gc-color-border);
+  border-radius: var(--gc-border-radius);
+  font-family: var(--gc-font-mono);
+  font-size: var(--gc-font-size-sm);
+  text-align: center;
+}
+
+/* --- Definition Lists --- */
+
+.guide-content dt {
+  font-weight: 600;
+  color: var(--gc-color-text);
+  margin-top: var(--gc-space-3);
+}
+
+.guide-content dt:first-child {
+  margin-top: 0;
+}
+
+.guide-content dd {
+  margin-left: var(--gc-space-4);
+  margin-bottom: var(--gc-space-2);
+  color: var(--gc-color-text-secondary);
+}
+
+/* --- Horizontal Rules --- */
+
+.guide-content hr {
+  margin: var(--gc-space-6) 0;
+  border: none;
+  border-top: 1px solid var(--gc-color-border);
+}
+
+/* --- Images --- */
+
+.guide-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--gc-border-radius);
+  margin-bottom: var(--gc-space-3);
+}
+
+/* --- Strong --- */
+
+.guide-content strong {
+  font-weight: 600;
+}
+
+/* --- Landing sections (hidden in panel, but styled just in case) --- */
+
+.guide-content .landing-hero {
+  text-align: center;
+  padding: var(--gc-space-6) 0 var(--gc-space-4);
+}
+
+.guide-content .landing-sections {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gc-space-3);
+}
+
+.guide-content .landing-section {
+  padding: var(--gc-space-3);
+  border: 1px solid var(--gc-color-border);
+  border-radius: var(--gc-border-radius);
+}
+
+.guide-content .landing-section h3 {
+  margin-top: 0;
+  margin-bottom: var(--gc-space-1);
+  font-size: var(--gc-font-size-lg);
+}
+
+.guide-content .landing-section p {
+  font-size: var(--gc-font-size-sm);
+  color: var(--gc-color-text-secondary);
+  margin-bottom: var(--gc-space-2);
+}
+
+/* --- Responsive prev/next at narrow widths --- */
+
+@media (max-width: 400px) {
+  .guide-content .prev-next {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-content .prev-next-link--next {
+    grid-column: 1;
+    text-align: left;
+  }
+}

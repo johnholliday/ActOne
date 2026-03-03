@@ -1,0 +1,211 @@
+/* ============================================
+   Layout — ActOne Guide
+   ============================================ */
+
+/* --- Site Header --- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-6);
+  background-color: var(--color-header-bg);
+  border-bottom: 1px solid var(--color-header-border);
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+}
+
+.header-brand {
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
+}
+
+.header-brand strong {
+  color: var(--color-primary);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.header-link {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.header-link:hover,
+.header-link--active {
+  color: var(--color-text);
+}
+
+/* --- Theme Toggle --- */
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.theme-toggle:hover {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text);
+}
+
+.theme-icon--dark {
+  display: none;
+}
+
+[data-theme='dark'] .theme-icon--light {
+  display: none;
+}
+
+[data-theme='dark'] .theme-icon--dark {
+  display: block;
+}
+
+/* --- Page Wrapper --- */
+
+.page-wrapper {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  min-height: calc(100vh - var(--header-height));
+}
+
+/* --- Sidebar --- */
+
+.sidebar {
+  position: sticky;
+  top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+  overflow-y: auto;
+  padding: var(--space-6) 0;
+  background-color: var(--color-sidebar-bg);
+  border-right: 1px solid var(--color-border);
+}
+
+.sidebar-section {
+  margin-bottom: var(--space-6);
+}
+
+.sidebar-section-title {
+  padding: var(--space-2) var(--space-6);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.sidebar-nav li a {
+  display: block;
+  padding: var(--space-2) var(--space-6);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+  border-left: 3px solid transparent;
+}
+
+.sidebar-nav li a:hover {
+  background-color: var(--color-sidebar-hover-bg);
+  color: var(--color-text);
+}
+
+.sidebar-nav li a.active {
+  color: var(--color-sidebar-active);
+  background-color: var(--color-sidebar-active-bg);
+  border-left-color: var(--color-sidebar-active);
+  font-weight: var(--font-weight-medium);
+}
+
+/* --- Main Content --- */
+
+.main-content {
+  max-width: var(--content-max-width);
+  padding: var(--content-padding-y) var(--content-padding-x);
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* --- Footer --- */
+
+.site-footer {
+  padding: var(--space-8) var(--space-6);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-footer-text);
+  background-color: var(--color-footer-bg);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ============================================
+   Responsive: Collapse sidebar at 900px
+   ============================================ */
+
+@media (max-width: 900px) {
+  .page-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+    overflow-y: visible;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-4);
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .sidebar-section {
+    margin-bottom: 0;
+  }
+
+  .sidebar-section-title {
+    padding: var(--space-1) var(--space-3);
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  .sidebar-nav li a {
+    padding: var(--space-1) var(--space-3);
+    border-left: none;
+    border-radius: var(--border-radius-sm);
+  }
+
+  .sidebar-nav li a.active {
+    border-left: none;
+  }
+
+  .main-content {
+    padding: var(--space-4) var(--space-4);
+  }
+}

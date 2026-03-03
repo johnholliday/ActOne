@@ -36,6 +36,8 @@
   import Sun from 'lucide-svelte/icons/sun';
   import Moon from 'lucide-svelte/icons/moon';
   import ProjectSection from '$lib/components/ProjectSection.svelte';
+  import DocPanel from '$lib/components/DocPanel.svelte';
+  import DocSection from '$lib/components/DocSection.svelte';
 
   import type { LifecycleStage } from '@repo/shared';
 
@@ -981,6 +983,9 @@
           {/if}
         </div>
 
+        <!-- DOCUMENTATION TOC section -->
+        <DocSection />
+
         <!-- Spacer -->
         <div class="flex-1"></div>
 
@@ -1080,8 +1085,9 @@
         </button>
       </header>
 
-      <!-- Primary content: DockLayout for workspace, or route children for settings -->
+      <!-- Primary content: DocPanel + DockLayout for workspace, or route children for settings -->
       <main class="flex flex-1 overflow-hidden">
+        <DocPanel />
         {#if isSettingsRoute}
           <div class="relative flex-1 overflow-y-auto">
             <button

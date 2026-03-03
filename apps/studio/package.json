@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "postbuild": "pnpm --filter actone-guide build && cp -r ../../guide/_site build/client/guide",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -58,6 +59,7 @@
     "svelte-check": "^4.0.0",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.2",
+    "actone-guide": "workspace:*",
     "vite": "^7.0.0",
     "vitest": "^3.0.0"
   }

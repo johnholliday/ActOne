@@ -1,0 +1,13 @@
+{% if section %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <a href="{{ '/' | url }}">Guide</a>
+  <span class="breadcrumb-separator">/</span>
+  {% for s in navigation.sections %}
+    {% if s.key === section %}
+      <span>{{ s.title }}</span>
+      <span class="breadcrumb-separator">/</span>
+      <span>{{ title }}</span>
+    {% endif %}
+  {% endfor %}
+</nav>
+{% endif %}
