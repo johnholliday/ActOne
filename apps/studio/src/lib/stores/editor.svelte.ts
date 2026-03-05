@@ -1,10 +1,16 @@
 /** Editor state using Svelte 5 runes */
 
+import { workspaceStore } from './workspace.svelte.js';
+
 /** Information about a currently open file tab */
 export interface OpenFile {
   id: string;
   filePath: string;
   isDirty: boolean;
+  /** Project this file belongs to */
+  projectId: string;
+  /** Project title for tab disambiguation */
+  projectTitle: string;
 }
 
 /** Cursor/selection position in the editor */
@@ -43,17 +49,36 @@ class EditorStore {
   /** Whether any open file has unsaved changes */
   hasUnsavedChanges = $derived(this.openFiles.some((f) => f.isDirty));
 
-  open(file: { id: string; filePath: string }) {
+  /**
+   * When the active file changes and belongs to a different project,
+   * update the workspace active project. This is called externally
+   * by the layout to drive context switching.
+   */
+  syncActiveProject(): void {
+    const activeFile = this.openFiles.find((f) => f.id === this.activeFileId);
+    if (activeFile && activeFile.projectId !== workspaceStore.activeProjectId) {
+      workspaceStore.setActiveProject(activeFile.projectId);
+    }
+  }
+
+  open(file: { id: string; filePath: string; projectId: string; projectTitle: string }) {
     this.ensure(file);
     this.activeFileId = file.id;
+    this.syncActiveProject();
   }
 
   /** Add file to open tabs without changing the active file */
-  ensure(file: { id: string; filePath: string }) {
+  ensure(file: { id: string; filePath: string; projectId: string; projectTitle: string }) {
     if (!this.openFiles.some((f) => f.id === file.id)) {
       this.openFiles = [
         ...this.openFiles,
-        { id: file.id, filePath: file.filePath, isDirty: false },
+        {
+          id: file.id,
+          filePath: file.filePath,
+          isDirty: false,
+          projectId: file.projectId,
+          projectTitle: file.projectTitle,
+        },
       ];
     }
   }
@@ -64,6 +89,7 @@ class EditorStore {
     this.openFiles = this.openFiles.filter((f) => f.id !== fileId);
     if (this.activeFileId === fileId) {
       this.activeFileId = this.openFiles[0]?.id ?? null;
+      this.syncActiveProject();
     }
   }
 
@@ -73,7 +99,34 @@ class EditorStore {
     this.openFiles = this.openFiles.filter((f) => f.id !== fileId);
     if (this.activeFileId === fileId) {
       this.activeFileId = this.openFiles[0]?.id ?? null;
+      this.syncActiveProject();
     }
+  }
+
+  /** Close all tabs for a specific project */
+  closeAllForProject(projectId: string): void {
+    const wasActive = this.openFiles.find(
+      (f) => f.id === this.activeFileId,
+    )?.projectId === projectId;
+
+    // Remove buffers for all project files
+    for (const f of this.openFiles) {
+      if (f.projectId === projectId) {
+        this.contentBuffers.delete(f.id);
+      }
+    }
+
+    this.openFiles = this.openFiles.filter((f) => f.projectId !== projectId);
+
+    if (wasActive) {
+      this.activeFileId = this.openFiles[this.openFiles.length - 1]?.id ?? null;
+      this.syncActiveProject();
+    }
+  }
+
+  /** Get all open files for a specific project */
+  getFilesForProject(projectId: string): OpenFile[] {
+    return this.openFiles.filter((f) => f.projectId === projectId);
   }
 
   /** Update filePath for an open file tab (used for rename) */
@@ -128,6 +181,7 @@ class EditorStore {
   /** Switch active tab without re-opening */
   setActiveFile(fileId: string) {
     this.activeFileId = fileId;
+    this.syncActiveProject();
   }
 
   closeAll() {

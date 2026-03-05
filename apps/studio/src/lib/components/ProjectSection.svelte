@@ -11,12 +11,13 @@
   interface Props {
     project: ProjectMeta;
     files: SourceFileEntry[];
+    active?: boolean;
     onopenfile: (file: { id: string; filePath: string }) => void;
     oncontextmenu: (event: MouseEvent) => void;
     onfilecontextmenu: (event: MouseEvent, file: SourceFileEntry) => void;
   }
 
-  let { project, files, onopenfile, oncontextmenu, onfilecontextmenu }: Props = $props();
+  let { project, files, active = true, onopenfile, oncontextmenu, onfilecontextmenu }: Props = $props();
 
   let expanded = $state(true);
 </script>
@@ -25,7 +26,8 @@
   <!-- Project header row -->
   <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
   <div
-    class="flex h-7 cursor-pointer items-center gap-1.5 rounded px-2.5 text-[12px] font-medium text-text-secondary hover:bg-surface-raised/20"
+    class="flex h-7 cursor-pointer items-center gap-1.5 rounded px-2.5 text-[12px] font-medium transition-colors hover:bg-surface-raised/20
+      {active ? 'text-text-primary border-l-2 border-amber-500' : 'text-text-secondary'}"
     onclick={() => { expanded = !expanded; }}
     oncontextmenu={oncontextmenu}
   >

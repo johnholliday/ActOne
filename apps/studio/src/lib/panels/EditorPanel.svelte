@@ -13,6 +13,8 @@
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { uiStore } from '$lib/stores/ui.svelte.js';
   import { projectStore } from '$lib/stores/project.svelte.js';
+  import { workspaceStore } from '$lib/stores/workspace.svelte.js';
+  import { diagramStore } from '$lib/stores/diagrams.svelte.js';
   import { saveFileContent, loadFileContent } from '$lib/editor/supabase-client.js';
   import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
@@ -64,9 +66,15 @@
 
   $effect(() => {
     const entry = projectStore.entryFile;
-    if (entry && !entryFileOpened) {
+    const project = projectStore.project;
+    if (entry && project && !entryFileOpened) {
       entryFileOpened = true;
-      untrack(() => editorStore.open({ id: entry.id, filePath: entry.filePath }));
+      untrack(() => editorStore.open({
+        id: entry.id,
+        filePath: entry.filePath,
+        projectId: project.id,
+        projectTitle: project.title,
+      }));
     }
   });
 
@@ -211,22 +219,68 @@
 
   /* ── Tab switching ───────────────────────────────────────── */
 
+  /** Monotonic counter to detect stale switch calls after an async gap */
+  let switchGeneration = 0;
+
   async function handleSwitchTab(fileId: string) {
     if (fileId === editorStore.activeFileId) return;
 
-    // Save current content to buffer
+    const thisGeneration = ++switchGeneration;
+
+    // 1. Buffer current editor content
     const content = editorPane?.getText?.();
     if (editorStore.activeFileId && content != null) {
       editorStore.setBuffer(editorStore.activeFileId, content);
     }
 
-    // Switch active file in store
+    // 2. Detect cross-project BEFORE changing state
+    const targetFile = editorStore.openFiles.find((f) => f.id === fileId);
+    const isCrossProject = targetFile != null
+      && targetFile.projectId !== workspaceStore.activeProjectId;
+
+    // 3. Switch active file (calls syncActiveProject → setActiveProject)
     editorStore.setActiveFile(fileId);
 
-    // Load content from buffer, project store, or Supabase
+    // 4. Cross-project: clear stale data, then AWAIT worker reinitialization
+    if (isCrossProject && targetFile) {
+      astStore.clear();
+      diagramStore.clear();
+      symbols = [];
+
+      // Build context explicitly from the target project cache — the
+      // $derived `projectContext` may not have recomputed yet because
+      // we just changed workspaceStore.activeProjectId above.
+      const targetProject = projectStore.getProject(targetFile.projectId);
+      if (targetProject) {
+        const session = page.data?.session;
+        const ctx = {
+          projectId: targetProject.meta.id,
+          supabaseUrl: PUBLIC_SUPABASE_URL,
+          supabaseAnonKey: PUBLIC_SUPABASE_ANON_KEY,
+          authToken: session?.access_token ?? '',
+          compositionMode: targetProject.meta.compositionMode,
+          fileOrder: targetProject.files
+            .filter((f) => !f.isEntry)
+            .map((f, i) => ({
+              uri: `file:///${f.filePath}`,
+              priority: i + 1,
+            })),
+        };
+        await editorPane?.reinitializeProject?.(ctx);
+      }
+
+      // If the user clicked another file while we were awaiting, abort —
+      // the newer call will handle setDocument.
+      if (thisGeneration !== switchGeneration) return;
+    }
+
+    // 5. Load content from buffer, project store, or Supabase
     let newContent = editorStore.getBuffer(fileId);
     if (newContent == null) {
-      const fileEntry = projectStore.files.find((f) => f.id === fileId);
+      // Search across all loaded projects for the file content
+      const openFile = editorStore.openFiles.find((f) => f.id === fileId);
+      const projFiles = openFile ? projectStore.getFilesForProject(openFile.projectId) : [];
+      const fileEntry = projFiles.find((f) => f.id === fileId) ?? projectStore.files.find((f) => f.id === fileId);
       if (fileEntry?.content != null) {
         newContent = fileEntry.content;
       } else {
@@ -241,13 +295,34 @@
       editorStore.setBuffer(fileId, newContent);
     }
 
-    // Switch document in CodeMirror (suppress handleChange during setDocument)
+    // 6. Switch CodeMirror document — worker now has correct project context
     const filePath = editorStore.openFiles.find((f) => f.id === fileId)?.filePath ?? 'unknown.actone';
+    const newUri = `file:///${filePath}`;
     switchingTab = true;
-    editorPane?.setDocument?.(`file:///${filePath}`, newContent);
+    editorPane?.setDocument?.(newUri, newContent);
     switchingTab = false;
 
-    // Refresh symbols
+    // 7. After a cross-project switch, explicitly request the AST data.
+    //    setDocument sends didClose+didOpen via postMessage before these
+    //    requests, so the worker processes them in order: the new file is
+    //    added to the workspace first, then these AST requests run against
+    //    the correct state. Without this, views stay blank because the
+    //    handleDiagnostics → getMergedAst chain is queued behind other
+    //    worker requests and may not resolve in time.
+    if (isCrossProject) {
+      const client = editorPane?.getClient?.();
+      if (client?.isReady) {
+        client.getSerializedAst(newUri).then((response) => {
+          astStore.updateAst(newUri, response.ast, response.valid, response.errors);
+        }).catch(() => { /* ignore — handleDiagnostics will retry */ });
+
+        client.getMergedAst().then((response) => {
+          astStore.updateMergedAst(response.ast, response.valid);
+        }).catch(() => { /* ignore — handleDiagnostics will retry */ });
+      }
+    }
+
+    // 8. Refresh symbols
     refreshSymbols();
   }
 
@@ -283,8 +358,13 @@
     }
 
     function handleOpenFile(e: Event) {
-      const { id, filePath } = (e as CustomEvent).detail;
-      editorStore.ensure({ id, filePath });
+      const { id, filePath, projectId, projectTitle } = (e as CustomEvent).detail;
+      editorStore.ensure({
+        id,
+        filePath,
+        projectId: projectId ?? projectStore.project?.id ?? '',
+        projectTitle: projectTitle ?? projectStore.project?.title ?? '',
+      });
       void handleSwitchTab(id);
     }
 

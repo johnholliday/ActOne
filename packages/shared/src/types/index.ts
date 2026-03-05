@@ -40,6 +40,8 @@ export type {
 
 export { VALID_TRANSITIONS, isValidTransition } from './project.js';
 
+export type { WorkspaceState } from './workspace.js';
+
 export type {
   SerializedStory,
   SerializedStoryElement,
