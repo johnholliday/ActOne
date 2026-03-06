@@ -599,6 +599,19 @@
     }
   }
 
+  /** Reinitialize the Langium workspace for a new project context.
+   *  Returns a promise so callers can await worker readiness before
+   *  calling setDocument. */
+  export async function reinitializeProject(ctx: ProjectContext): Promise<void> {
+    if (!client?.isReady || !view) return;
+    try {
+      const result = await client.openProject(ctx);
+      console.log('[EditorPane] reinitializeProject succeeded:', result);
+    } catch (err) {
+      console.error('[EditorPane] reinitializeProject failed:', err);
+    }
+  }
+
   /** Get the LangiumClient instance for advanced operations */
   export function getClient(): LangiumClient | null {
     return client;

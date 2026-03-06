@@ -1,0 +1,263 @@
+/* ============================================
+   Components — ActOne Guide
+   ============================================ */
+
+/* --- Breadcrumb --- */
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.breadcrumb a {
+  color: var(--color-text-secondary);
+}
+
+.breadcrumb a:hover {
+  color: var(--color-link);
+}
+
+.breadcrumb-separator {
+  color: var(--color-text-muted);
+}
+
+/* --- Callout Blocks --- */
+
+.callout {
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  border-left: 4px solid;
+  border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+}
+
+.callout-title {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.callout p:last-child {
+  margin-bottom: 0;
+}
+
+.callout-tip {
+  background-color: var(--color-callout-tip-bg);
+  border-color: var(--color-callout-tip-border);
+}
+
+.callout-tip .callout-title {
+  color: var(--color-callout-tip-title);
+}
+
+.callout-info {
+  background-color: var(--color-callout-info-bg);
+  border-color: var(--color-callout-info-border);
+}
+
+.callout-info .callout-title {
+  color: var(--color-callout-info-title);
+}
+
+.callout-warning {
+  background-color: var(--color-callout-warning-bg);
+  border-color: var(--color-callout-warning-border);
+}
+
+.callout-warning .callout-title {
+  color: var(--color-callout-warning-title);
+}
+
+.callout-danger {
+  background-color: var(--color-callout-danger-bg);
+  border-color: var(--color-callout-danger-border);
+}
+
+.callout-danger .callout-title {
+  color: var(--color-callout-danger-title);
+}
+
+/* --- Tables --- */
+
+table {
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--color-table-border);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+thead {
+  background-color: var(--color-table-header-bg);
+}
+
+th {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  font-weight: var(--font-weight-semibold);
+  border-bottom: 2px solid var(--color-table-border);
+}
+
+td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-table-border);
+}
+
+tbody tr:nth-child(even) {
+  background-color: var(--color-table-row-alt);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* --- Prev/Next Navigation --- */
+
+.prev-next {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-top: var(--space-12);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--color-border);
+}
+
+.prev-next-link {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.prev-next-link:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-bg-secondary);
+}
+
+.prev-next-link--next {
+  text-align: right;
+  grid-column: 2;
+}
+
+.prev-next-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.prev-next-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+}
+
+/* --- Landing Page --- */
+
+.landing-hero {
+  text-align: center;
+  padding: var(--space-12) 0 var(--space-8);
+}
+
+.landing-hero h1 {
+  font-size: var(--font-size-4xl);
+  margin-bottom: var(--space-4);
+}
+
+.landing-hero p {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  max-width: 600px;
+  margin: 0 auto var(--space-6);
+}
+
+.landing-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+}
+
+.landing-section {
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.landing-section:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.landing-section h3 {
+  margin-top: 0;
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-lg);
+}
+
+.landing-section p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+.landing-section a {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+}
+
+/* --- Formula Blocks --- */
+
+.formula {
+  margin-bottom: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+/* --- Definition Lists --- */
+
+dt {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin-top: var(--space-4);
+}
+
+dt:first-child {
+  margin-top: 0;
+}
+
+dd {
+  margin-left: var(--space-4);
+  margin-bottom: var(--space-3);
+  color: var(--color-text-secondary);
+}
+
+/* --- Responsive Prev/Next --- */
+
+@media (max-width: 600px) {
+  .prev-next {
+    grid-template-columns: 1fr;
+  }
+
+  .prev-next-link--next {
+    grid-column: 1;
+    text-align: left;
+  }
+}

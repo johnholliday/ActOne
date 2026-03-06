@@ -3,8 +3,9 @@
   let mode: 'login' | 'signup' = $state('login');
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-surface-900">
-  <div class="w-full max-w-sm rounded-lg border border-border bg-surface-800 p-8">
+<div class="relative flex min-h-screen items-center justify-center bg-surface-900">
+  <div class="absolute inset-0 bg-cover bg-center opacity-50" style="background-image: url('/images/act-one.jpg');"></div>
+  <div class="relative z-10 w-full max-w-sm rounded-lg border border-border bg-surface-800 p-8">
     <div class="mb-6 flex flex-col items-center gap-1">
       <img src="/images/masks.png" alt="ActOne Studio" class="h-20 w-20" />
       <span class="text-[24px] font-semibold text-text-primary" style="font-family: 'Cormorant Garamond', serif; letter-spacing: 4px;">ACTONE</span>

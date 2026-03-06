@@ -11,6 +11,7 @@
   import { openPanel, togglePanel, getDockApi } from '$lib/dockview/panel-actions.js';
   import { clearLayout } from '$lib/dockview/layout-persistence.js';
   import { applyDefaultLayout } from '$lib/dockview/default-layout.js';
+  import { getDocPanelState } from '$lib/stores/doc-panel.svelte.js';
   import { getValidTargets, getStageLabel } from '$lib/project/lifecycle.js';
   import type { LifecycleStage } from '@repo/shared';
 
@@ -709,7 +710,7 @@
 
         <button
           class="flex w-full items-center px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary"
-          onclick={() => { window.dispatchEvent(new CustomEvent('actone:users-guide')); closeMenus(); }}
+          onclick={() => { getDocPanelState().openDoc('getting-started/01-introduction'); closeMenus(); }}
           role="menuitem"
         >
           User's Guide

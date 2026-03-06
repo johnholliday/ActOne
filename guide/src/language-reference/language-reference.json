@@ -1,0 +1,5 @@
+{
+  "layout": "layouts/base.njk",
+  "tags": "language-reference",
+  "section": "language-reference"
+}

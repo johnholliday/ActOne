@@ -222,6 +222,8 @@
     // Falls back to the active file's AST if no merged AST is available yet.
     const ast = astStore.mergedAst ?? astStore.activeAst?.ast ?? null;
     if (!ast || !projectId) {
+      nodes = [];
+      edges = [];
       diagramLoading = false;
       return;
     }

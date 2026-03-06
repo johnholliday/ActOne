@@ -65,6 +65,10 @@ Uses ESLint 9 flat config format (`.mjs` files). Base config includes `typescrip
 - Layout state in localStorage (client-side only); no database changes (005-dockview-layout)
 - TypeScript 5.9 (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + Langium 4.2.x (grammar, parser, scope provider, validator, code generator), SvelteKit 2.53.x, Svelte 5.53.x (006-multi-file-grammar)
 - Supabase PostgreSQL via Drizzle ORM (project files stored in Supabase storage) (006-multi-file-grammar)
+- TypeScript 5.9 (strict mode, ES2022 target, Bundler module resolution) + JavaScript ESM for Eleventy config/data files + Eleventy 3.1.x, @11ty/eleventy-navigation, SvelteKit 2.53.x, Svelte 5.53.x (runes), Vite 7.0.0, Tailwind CSS 4.2.x, lucide-svelte, dockview-core 5.0.0 (007-eleventy-doc-panel)
+- localStorage (panel state persistence), static files (guide content) (007-eleventy-doc-panel)
+- TypeScript 5.9 (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + SvelteKit 2.53.x, Svelte 5.53.x (runes), Langium 4.2.x, @xyflow/svelte 1.5.x, CodeMirror 6, dockview-core 5.0.0, Drizzle ORM 0.45.x, @supabase/supabase-js 2.97.x, @supabase/ssr 0.8.x, Tailwind CSS 4.2.x, Zod, lucide-svelte (008-multi-project-workspace)
+- Supabase PostgreSQL (Drizzle ORM) for projects and files; localStorage for workspace state and layout persistence (008-multi-project-workspace)
 
 ## Recent Changes
 - 001-string-utils: Added TypeScript 5.9 (strict mode, ES2022 target) + None at runtime; Vitest for testing (dev only)

@@ -13,6 +13,7 @@
   import { projectStore } from '$lib/stores/project.svelte.js';
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { editorStore } from '$lib/stores/editor.svelte.js';
+  import { workspaceStore } from '$lib/stores/workspace.svelte.js';
   import { createFile, deleteFile, renameFile, loadFileContent, saveFileContent } from '$lib/editor/supabase-client.js';
   import { extractAnalytics } from '$lib/project/analytics.js';
   import { getStageLabel, requestTransition } from '$lib/project/lifecycle.js';
@@ -36,6 +37,8 @@
   import Sun from 'lucide-svelte/icons/sun';
   import Moon from 'lucide-svelte/icons/moon';
   import ProjectSection from '$lib/components/ProjectSection.svelte';
+  import DocPanel from '$lib/components/DocPanel.svelte';
+  import DocSection from '$lib/components/DocSection.svelte';
 
   import type { LifecycleStage } from '@repo/shared';
 
@@ -359,11 +362,12 @@
 
       const result = await res.json() as { id: string; title: string; entryFilePath: string };
 
-      // Clear old editor state before loading the new project
-      editorStore.closeAll();
+      // Load the newly created project into the cache
+      await projectStore.loadById(data.supabase, result.id);
 
-      // Load the newly created project into the store
-      await projectStore.loadFromServer(data.supabase);
+      // Add to workspace and make active
+      workspaceStore.openProject(result.id);
+      workspaceStore.setActiveProject(result.id);
 
       // Refresh server-side data so data.projects includes the new project
       await invalidate('supabase:auth');
@@ -374,11 +378,17 @@
       newProjectGenre = '';
 
       // Open the new project's entry file in the editor
-      const entryFile = projectStore.files.find((f) => f.filePath === result.entryFilePath);
-      if (entryFile) {
+      const cached = projectStore.getProject(result.id);
+      const entryFile = cached?.files.find((f) => f.filePath === result.entryFilePath);
+      if (entryFile && cached) {
         window.dispatchEvent(
           new CustomEvent('actone:open-file', {
-            detail: { id: entryFile.id, filePath: entryFile.filePath },
+            detail: {
+              id: entryFile.id,
+              filePath: entryFile.filePath,
+              projectId: cached.meta.id,
+              projectTitle: cached.meta.title,
+            },
           }),
         );
       }
@@ -437,16 +447,39 @@
     }
   }
 
-  /* ── Project switch handler ────────────────────────────────── */
+  /* ── Project switch handler (multi-project: adds to workspace) ─ */
   async function handleSwitchProject(projectId: string) {
     projectSelectorOpen = false;
-    if (projectId === projectStore.project?.id) return;
-    editorStore.closeAll();
-    await projectStore.loadById(data.supabase, projectId);
-    // Refresh server-side data to keep data.projects up to date
+
+    // Load if not yet in workspace
+    if (!workspaceStore.isOpen(projectId)) {
+      const loaded = await projectStore.loadById(data.supabase, projectId);
+      if (!loaded) return;
+      workspaceStore.openProject(projectId);
+    }
+
+    // Determine target file (existing tab or entry file)
+    const cached = projectStore.getProject(projectId);
+    if (!cached) return;
+    const projectTabs = editorStore.getFilesForProject(projectId);
+    const targetFile = projectTabs.length > 0
+      ? projectTabs[0]!
+      : cached.files.find((f) => f.isEntry);
+    if (!targetFile) return;
+
+    // Always route through actone:open-file → handleSwitchTab
+    window.dispatchEvent(
+      new CustomEvent('actone:open-file', {
+        detail: {
+          id: targetFile.id,
+          filePath: targetFile.filePath,
+          projectId: cached.meta.id,
+          projectTitle: cached.meta.title,
+        },
+      }),
+    );
+
     await invalidate('supabase:auth');
-    // Navigate to editor with fresh project
-    await goto('/');
   }
 
   /* ── Project context menu ──────────────────────────────────── */
@@ -464,12 +497,22 @@
 
   async function handleCloseProject() {
     closeProjectContextMenu();
-    if (editorStore.hasUnsavedChanges) {
+    const activeId = workspaceStore.activeProjectId;
+    if (!activeId) return;
+
+    // Check for unsaved changes in this project's tabs
+    const projectFiles = editorStore.getFilesForProject(activeId);
+    const hasDirty = projectFiles.some((f) => f.isDirty);
+    if (hasDirty) {
       const confirmed = confirm('You have unsaved changes. Discard changes and close project?');
       if (!confirmed) return;
     }
-    editorStore.closeAll();
-    projectStore.clear();
+
+    // Close all tabs for this project
+    editorStore.closeAllForProject(activeId);
+    // Remove from cache and workspace
+    projectStore.unloadProject(activeId);
+    workspaceStore.closeProject(activeId);
   }
 
   /* ── T021: Advance lifecycle stage handler ─────────────────── */
@@ -550,7 +593,9 @@
       if (!confirmed) return;
     }
     await data.supabase.auth.signOut();
+    editorStore.closeAll();
     projectStore.clear();
+    workspaceStore.clear();
     await goto('/auth');
   }
 
@@ -601,25 +646,54 @@
       }
     });
 
-    // T005: Load the most recent project on mount if server data provides projects
-    if (data.session) {
+    // Restore workspace state and load all previously open projects
+    if (data.session && data.user) {
       void (async () => {
-        await projectStore.loadFromServer(data.supabase);
+        workspaceStore.restore(data.user!.id);
 
-        // Auto-create a default project for new users with no projects
-        if (!projectStore.isLoaded) {
-          try {
-            const res = await fetch('/api/project/create', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ title: 'My Story' }),
-            });
-            if (res.ok) {
-              await projectStore.loadFromServer(data.supabase);
+        if (workspaceStore.openProjectIds.length > 0) {
+          // Batch-load all previously open projects
+          const loadPromises = workspaceStore.openProjectIds.map((id) =>
+            projectStore.loadById(data.supabase, id),
+          );
+          const results = await Promise.all(loadPromises);
+
+          // Remove any projects that failed to load (deleted or inaccessible)
+          workspaceStore.openProjectIds.forEach((id, i) => {
+            if (!results[i]) {
+              workspaceStore.closeProject(id);
             }
-          } catch {
-            // Silent — user can create manually via New Project dialog
+          });
+
+          // If active project was removed, workspace will auto-pick last remaining
+          projectStore.loading = false;
+        } else {
+          // No saved workspace — load the most recent project as default
+          const mostRecent = data.projects?.[0];
+          if (mostRecent) {
+            await projectStore.loadById(data.supabase, mostRecent.id);
+            workspaceStore.openProject(mostRecent.id);
+            workspaceStore.setActiveProject(mostRecent.id);
+          } else {
+            // New user with no projects — auto-create a default project
+            try {
+              const res = await fetch('/api/project/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: 'My Story' }),
+              });
+              if (res.ok) {
+                const result = await res.json() as { id: string };
+                await projectStore.loadById(data.supabase, result.id);
+                workspaceStore.openProject(result.id);
+                workspaceStore.setActiveProject(result.id);
+                await invalidate('supabase:auth');
+              }
+            } catch {
+              // Silent — user can create manually via New Project dialog
+            }
           }
+          projectStore.loading = false;
         }
       })();
     } else {
@@ -941,7 +1015,7 @@
                   role="menuitem"
                   onclick={() => void handleSwitchProject(p.id)}
                 >
-                  {#if p.id === projectStore.project?.id}
+                  {#if workspaceStore.isOpen(p.id)}
                     <span class="w-4 text-amber-400">&#10003;</span>
                   {:else}
                     <span class="w-4"></span>
@@ -966,20 +1040,32 @@
           {/if}
           </div>
 
-          {#if projectStore.isLoaded && projectStore.project}
-            <ProjectSection
-              project={projectStore.project}
-              files={projectStore.files}
-              onopenfile={(file) => {
-                window.dispatchEvent(new CustomEvent('actone:open-file', {
-                  detail: { id: file.id, filePath: file.filePath },
-                }));
-              }}
-              oncontextmenu={handleProjectContextMenu}
-              onfilecontextmenu={handleFileContextMenu}
-            />
-          {/if}
+          {#each workspaceStore.openProjectIds as openProjectId (openProjectId)}
+            {@const cached = projectStore.getProject(openProjectId)}
+            {#if cached}
+              <ProjectSection
+                project={cached.meta}
+                files={cached.files}
+                active={openProjectId === workspaceStore.activeProjectId}
+                onopenfile={(file) => {
+                  window.dispatchEvent(new CustomEvent('actone:open-file', {
+                    detail: {
+                      id: file.id,
+                      filePath: file.filePath,
+                      projectId: cached.meta.id,
+                      projectTitle: cached.meta.title,
+                    },
+                  }));
+                }}
+                oncontextmenu={handleProjectContextMenu}
+                onfilecontextmenu={handleFileContextMenu}
+              />
+            {/if}
+          {/each}
         </div>
+
+        <!-- DOCUMENTATION TOC section -->
+        <DocSection />
 
         <!-- Spacer -->
         <div class="flex-1"></div>
@@ -1080,8 +1166,9 @@
         </button>
       </header>
 
-      <!-- Primary content: DockLayout for workspace, or route children for settings -->
+      <!-- Primary content: DocPanel + DockLayout for workspace, or route children for settings -->
       <main class="flex flex-1 overflow-hidden">
+        <DocPanel />
         {#if isSettingsRoute}
           <div class="relative flex-1 overflow-y-auto">
             <button
@@ -1301,10 +1388,10 @@
             </div>
           {:else}
             {#each filteredProjects as p, i}
-              {@const isActive = p.id === projectStore.project?.id}
+              {@const isActive = workspaceStore.isOpen(p.id)}
               {@const isHighlighted = i === openProjectHighlight}
-              {@const displayStage = isActive && projectStore.project
-                ? projectStore.project.lifecycleStage
+              {@const displayStage = isActive
+                ? (projectStore.getProject(p.id)?.meta.lifecycleStage ?? (p.lifecycle_stage as import('@repo/shared').LifecycleStage | null))
                 : (p.lifecycle_stage as import('@repo/shared').LifecycleStage | null)}
               <button
                 class="flex w-full items-center gap-3 rounded px-3 py-2.5 text-left transition-colors

@@ -1,0 +1,43 @@
+{
+  "sections": [
+    {
+      "key": "getting-started",
+      "title": "Getting Started",
+      "pages": [
+        { "title": "Introduction", "url": "/getting-started/01-introduction/" },
+        { "title": "Core Concepts", "url": "/getting-started/02-core-concepts/" },
+        { "title": "Quick Tour", "url": "/getting-started/03-quick-tour/" },
+        { "title": "Your First Story", "url": "/getting-started/04-first-story/" }
+      ]
+    },
+    {
+      "key": "user-guide",
+      "title": "User Guide",
+      "pages": [
+        { "title": "Projects", "url": "/user-guide/01-projects/" },
+        { "title": "Editor", "url": "/user-guide/02-editor/" },
+        { "title": "Multi-File Projects", "url": "/user-guide/03-multi-file/" },
+        { "title": "Diagrams & Export", "url": "/user-guide/04-diagrams-export/" }
+      ]
+    },
+    {
+      "key": "language-reference",
+      "title": "Language Reference",
+      "pages": [
+        { "title": "Language Overview", "url": "/language-reference/01-language-overview/" },
+        { "title": "Syntax Reference", "url": "/language-reference/02-syntax-reference/" },
+        { "title": "Element Reference", "url": "/language-reference/03-element-reference/" },
+        { "title": "Use Cases & Examples", "url": "/language-reference/04-use-cases/" },
+        { "title": "Best Practices", "url": "/language-reference/05-best-practices/" }
+      ]
+    },
+    {
+      "key": "reference",
+      "title": "Reference",
+      "pages": [
+        { "title": "Glossary", "url": "/reference/glossary/" },
+        { "title": "Troubleshooting", "url": "/reference/troubleshooting/" }
+      ]
+    }
+  ]
+}

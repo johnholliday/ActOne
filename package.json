@@ -23,7 +23,9 @@
     "typecheck": "turbo run check-types",
     "format:check": "prettier --check \"**/*.{ts,tsx,md}\"",
     "preview": "turbo run preview --filter=studio",
-    "studio": "turbo run dev --filter=studio"
+    "studio": "turbo run dev --filter=studio",
+    "guide:dev": "pnpm --filter actone-guide dev",
+    "guide:build": "pnpm --filter actone-guide build"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",

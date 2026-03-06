@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }} — {{ site.title }}</title>
+  <meta name="description" content="{{ description | default(site.description) }}">
+  <link rel="stylesheet" href="{{ '/css/main.css' | url }}">
+  <script>
+    // Apply saved theme before paint to prevent FOUC
+    (function() {
+      var theme = localStorage.getItem('actone-guide-theme');
+      if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+</head>
+<body>
+  {% include "partials/nav.njk" %}
+
+  <div class="page-wrapper">
+    {% include "partials/sidebar.njk" %}
+
+    <main class="main-content">
+      {% include "partials/breadcrumb.njk" %}
+
+      <article>
+        <h1>{{ title }}</h1>
+        {{ content | safe }}
+      </article>
+
+      {# Prev / Next navigation within the same section #}
+      {% if section and order %}
+        {% set prev = collections.all | prevInSection(section, order) %}
+        {% set next = collections.all | nextInSection(section, order) %}
+        {% if prev or next %}
+        <nav class="prev-next" aria-label="Page navigation">
+          {% if prev %}
+          <a href="{{ prev.url | url }}" class="prev-next-link prev-next-link--prev">
+            <span class="prev-next-label">&larr; Previous</span>
+            <span class="prev-next-title">{{ prev.data.title }}</span>
+          </a>
+          {% endif %}
+          {% if next %}
+          <a href="{{ next.url | url }}" class="prev-next-link prev-next-link--next">
+            <span class="prev-next-label">Next &rarr;</span>
+            <span class="prev-next-title">{{ next.data.title }}</span>
+          </a>
+          {% endif %}
+        </nav>
+        {% endif %}
+      {% endif %}
+    </main>
+  </div>
+
+  {% include "partials/footer.njk" %}
+
+  <script>
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        html.removeAttribute('data-theme');
+        localStorage.setItem('actone-guide-theme', 'light');
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        localStorage.setItem('actone-guide-theme', 'dark');
+      }
+    });
+  </script>
+</body>
+</html>
