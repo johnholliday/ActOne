@@ -1,80 +1,44 @@
-import { createServerClient } from '@supabase/ssr';
-import { type Handle, redirect, json } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
+import { createSanyamAuthHooks } from '@docugenix/sanyam-auth/sveltekit';
+import { createSanyamApi, type ApiRouteContribution } from '@docugenix/sanyam-app/api';
+import { createAiTextRoutes } from '@docugenix/sanyam-ai-text';
+import { createAiImageRoutes } from '@docugenix/sanyam-ai-image';
+import { createPublishingRoutes } from '@docugenix/sanyam-publishing';
+import { projectRoutes } from '$lib/api/project.js';
+import { draftRoutes } from '$lib/api/draft.js';
+import { analyticsRoutes } from '$lib/api/analytics.js';
+import { visualDnaRoute } from '$lib/api/character.js';
 
 import {
   PUBLIC_SUPABASE_URL,
   PUBLIC_SUPABASE_ANON_KEY,
 } from '$env/static/public';
 
-const supabase: Handle = async ({ event, resolve }) => {
-  event.locals.supabase = createServerClient(
-    PUBLIC_SUPABASE_URL,
-    PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        getAll: () => event.cookies.getAll(),
-        setAll: (cookiesToSet) => {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            event.cookies.set(name, value, { ...options, path: '/' });
-          });
-        },
-      },
-    },
-  );
+/* ── Auth hooks (Supabase SSR + route guard) ─────────────────────── */
 
-  /**
-   * Unlike `supabase.auth.getSession()`, which returns the session _without_
-   * validating the JWT, this validates the JWT by verifying it with the Supabase
-   * Auth server. Should be used in server-side code only.
-   */
-  event.locals.safeGetSession = async () => {
-    const {
-      data: { session },
-    } = await event.locals.supabase.auth.getSession();
+const authHandle = createSanyamAuthHooks({
+  supabaseUrl: PUBLIC_SUPABASE_URL,
+  supabaseAnonKey: PUBLIC_SUPABASE_ANON_KEY,
+  protectedRoutes: {
+    exclude: ['/auth', '/api/auth'],
+    apiUnauthorizedResponse: { message: 'Unauthorized — please sign in again' },
+  },
+});
 
-    if (!session) {
-      return { session: null, user: null };
-    }
+/* ── Hono API route contributions ────────────────────────────────── */
 
-    const {
-      data: { user },
-      error,
-    } = await event.locals.supabase.auth.getUser();
+const contributions: ApiRouteContribution[] = [
+  { prefix: '/project',    routes: projectRoutes },
+  { prefix: '/draft',      routes: draftRoutes },
+  { prefix: '/ai-text',    routes: createAiTextRoutes() },
+  { prefix: '/ai-image',   routes: createAiImageRoutes() },
+  { prefix: '/character',  routes: visualDnaRoute },
+  { prefix: '/publishing', routes: createPublishingRoutes() },
+  { prefix: '/analytics',  routes: analyticsRoutes },
+];
 
-    if (error) {
-      return { session: null, user: null };
-    }
+const apiHandle = createSanyamApi(contributions);
 
-    return { session, user };
-  };
+/* ── Combined handle: auth first, then API routing ───────────────── */
 
-  return resolve(event, {
-    filterSerializedResponseHeaders(name) {
-      return name === 'content-range' || name === 'x-supabase-api-version';
-    },
-  });
-};
-
-const authGuard: Handle = async ({ event, resolve }) => {
-  const { session, user } = await event.locals.safeGetSession();
-  event.locals.session = session;
-  event.locals.user = user;
-
-  // Protect all routes except auth and public assets
-  if (
-    !event.locals.session &&
-    !event.url.pathname.startsWith('/auth') &&
-    !event.url.pathname.startsWith('/api/auth')
-  ) {
-    // Return 401 JSON for API routes instead of redirecting to HTML
-    if (event.url.pathname.startsWith('/api/')) {
-      return json({ message: 'Unauthorized — please sign in again' }, { status: 401 });
-    }
-    redirect(303, '/auth');
-  }
-
-  return resolve(event);
-};
-
-export const handle: Handle = sequence(supabase, authGuard);
+export const handle = sequence(authHandle, apiHandle);

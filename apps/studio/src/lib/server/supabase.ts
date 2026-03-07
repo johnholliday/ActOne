@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@docugenix/sanyam-auth/server';
 
 import {
   SUPABASE_SERVICE_ROLE_KEY,
@@ -11,13 +11,7 @@ import {
  * Server-side Supabase client with service role.
  * Use this for admin operations that bypass RLS.
  */
-export const supabaseAdmin = createClient(
+export const supabaseAdmin = createAdminClient(
   PUBLIC_SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  },
 );
