@@ -5,10 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Stack
 
 - TypeScript monorepo: pnpm workspaces + Turborepo
-- Web: SvelteKit + Tailwind CSS (planned for apps)
-- Package manager: pnpm (strict, v9) — do not use npm or yarn
+- Web: SvelteKit + Tailwind CSS
+- Package manager: pnpm (strict, v10) — do not use npm or yarn
 - Node >= 18
 - No Python
+- External packages: `@docugenix/sanyam-*` (published to GitHub Packages)
 
 ## Commands
 
@@ -25,23 +26,48 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Monorepo Layout
 
-- `apps/` — deployable applications (currently `web/` and `docs/`, both scaffolded but empty)
-- `packages/` — shared libraries and configs:
-  - `@repo/ui` — React component library (button, card, code). Exports via `@repo/ui/<component>` mapped to `src/<component>.tsx`.
-  - `@repo/eslint-config` — shared ESLint flat configs. Exports `./base`, `./next-js`, `./react-internal`.
-  - `@repo/typescript-config` — shared tsconfig presets. Provides `base.json`, `react-library.json`, `nextjs.json`.
+- `apps/studio/` — ActOne Studio (SvelteKit + Svelte 5)
+- `packages/` — local shared libraries:
+  - `@actone/shared` (`packages/shared-actone`) — Domain types (`SerializedStory*`, lifecycle, composition), DB schemas (Drizzle + RLS), constants, enums, validation
+  - `@actone/lang` (`packages/lang-actone`) — Langium grammar, 10 custom services, domain serializer, web worker LSP server
+- `guide/` — Eleventy-based documentation (uses `@docugenix/sanyam-guide`)
+
+### External Dependencies (@docugenix/sanyam-*)
+
+Published to GitHub Packages (`@docugenix:registry=https://npm.pkg.github.com`):
+- `sanyam-core` — Plugin container, contribution points, loader
+- `sanyam-shared` — Generic Zod utilities, string-utils
+- `sanyam-db` — Base `projects`/`source_files` tables with RLS helpers; ActOne extends via `SchemaContribution`
+- `sanyam-langium` — Worker infrastructure (`createWorkerLanguageServer()`)
+- `sanyam-app` — Hono API adapter (`createSanyamApi()`, `ApiRouteContribution`)
+- `sanyam-auth` — Supabase SSR hooks, auth routes, admin client
+- `sanyam-ai-text` — AI text generation routes (generate, estimate, backends)
+- `sanyam-ai-image` — AI image generation routes (generate, backends)
+- `sanyam-publishing` — Publishing routes (export, preview, dependencies)
+- `sanyam-config` — ESLint configs (`eslint-base`, `eslint-svelte`) + tsconfig presets (`base.json`, `library.json`, `sveltekit.json`)
+- `sanyam-diagrams` — ELK layout + AST→graph transformer
+- `sanyam-editor-codemirror` — CodeMirror 6 integration
+- `sanyam-layout-dockview` — Dockview layout integration
+- `sanyam-guide` — Eleventy config factory + Vite dev-server plugin
+- `sanyam-test-utils` — Shared Vitest fixtures, mock factories
+
+### API Routing
+
+API routes are handled by Hono via `createSanyamApi()` in `hooks.server.ts`:
+- Local handlers in `$lib/api/`: project, draft, analytics, character/visual-dna
+- Sanyam packages: ai-text, ai-image, publishing
 
 ### TypeScript Configuration
 
-Base config (`packages/typescript-config/base.json`): strict mode, ES2022 target, NodeNext module resolution, `noUncheckedIndexedAccess` enabled. Packages extend from presets in `@repo/typescript-config`.
+Extends `@docugenix/sanyam-config/library.json` for packages. Studio uses SvelteKit's generated tsconfig. Strict mode, ES2022 target, Bundler module resolution.
 
 ### ESLint Configuration
 
-Uses ESLint 9 flat config format (`.mjs` files). Base config includes `typescript-eslint`, `eslint-config-prettier`, and `eslint-plugin-turbo`. All rules emit warnings only (`eslint-plugin-only-warn`). Packages import shared configs from `@repo/eslint-config`.
+Uses ESLint 9 flat config format (`.mjs` files). Packages import from `@docugenix/sanyam-config/eslint-base`, studio from `@docugenix/sanyam-config/eslint-svelte`.
 
 ### Turborepo Pipeline
 
-- `build` — depends on `^build` (dependencies build first), caches `.next/**`
+- `build` — depends on `^build` (dependencies build first)
 - `lint` — depends on `^lint`
 - `check-types` — depends on `^check-types`
 - `dev` — not cached, persistent
@@ -54,21 +80,9 @@ Uses ESLint 9 flat config format (`.mjs` files). Base config includes `typescrip
 - Tests required before merge
 
 ## Active Technologies
-- TypeScript 5.9 (strict mode, ES2022 target) + None at runtime; Vitest for testing (dev only) (001-string-utils)
-- TypeScript 5.9.x (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + SvelteKit 2.53.x, Svelte 5.53.x, Langium 4.2.x, @xyflow/svelte 1.5.x, CodeMirror 6, elkjs 0.11.x, Drizzle ORM 0.45.x, @supabase/supabase-js 2.97.x, @supabase/ssr 0.8.x, Zod, Tailwind CSS 4.2.x, docx 9.6.x, archiver 7.x, pdfkit 0.17.x, sharp 0.34.x, marked 17.x (002-actone-studio)
-- Supabase PostgreSQL (Drizzle ORM for schema/queries, Supabase client for auth/storage/realtime) (002-actone-studio)
-- TypeScript 5.9 (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + Vitest 3.x (already installed), Playwright (to be added), Langium 4.x `langium/test`, SvelteKit Vite plugin (003-actone-studio-tests)
-- N/A (tests use mocks for database and storage; no persistent test data) (003-actone-studio-tests)
-- TypeScript 5.9 (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + SvelteKit 2.53.x, Svelte 5.53.x (runes), Langium 4.2.x, @xyflow/svelte 1.5.x, CodeMirror 6, Drizzle ORM 0.45.x, @supabase/supabase-js 2.97.x, @supabase/ssr 0.8.x, Tailwind CSS 4.2.x, Zod (004-wire-studio-screens)
-- Supabase PostgreSQL (Drizzle ORM for schema/queries, Supabase client for auth/storage) (004-wire-studio-screens)
-- TypeScript 5.9 (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + SvelteKit 2.53.x, Svelte 5.53.x (runes), dockview-core 5.0.0 (new) (005-dockview-layout)
-- Layout state in localStorage (client-side only); no database changes (005-dockview-layout)
-- TypeScript 5.9 (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + Langium 4.2.x (grammar, parser, scope provider, validator, code generator), SvelteKit 2.53.x, Svelte 5.53.x (006-multi-file-grammar)
-- Supabase PostgreSQL via Drizzle ORM (project files stored in Supabase storage) (006-multi-file-grammar)
-- TypeScript 5.9 (strict mode, ES2022 target, Bundler module resolution) + JavaScript ESM for Eleventy config/data files + Eleventy 3.1.x, @11ty/eleventy-navigation, SvelteKit 2.53.x, Svelte 5.53.x (runes), Vite 7.0.0, Tailwind CSS 4.2.x, lucide-svelte, dockview-core 5.0.0 (007-eleventy-doc-panel)
-- localStorage (panel state persistence), static files (guide content) (007-eleventy-doc-panel)
-- TypeScript 5.9 (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + SvelteKit 2.53.x, Svelte 5.53.x (runes), Langium 4.2.x, @xyflow/svelte 1.5.x, CodeMirror 6, dockview-core 5.0.0, Drizzle ORM 0.45.x, @supabase/supabase-js 2.97.x, @supabase/ssr 0.8.x, Tailwind CSS 4.2.x, Zod, lucide-svelte (008-multi-project-workspace)
-- Supabase PostgreSQL (Drizzle ORM) for projects and files; localStorage for workspace state and layout persistence (008-multi-project-workspace)
+- TypeScript 5.9.x (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + SvelteKit 2.53.x, Svelte 5.53.x (runes), Langium 4.2.x, @xyflow/svelte 1.5.x, CodeMirror 6, dockview-core 5.0.0, Hono 4.x, Drizzle ORM 0.45.x, @supabase/supabase-js 2.97.x, Tailwind CSS 4.2.x, Zod, lucide-svelte, Eleventy 3.1.x
+- @docugenix/sanyam-* 0.8.x (core, shared, db, langium, app, auth, ai-text, ai-image, publishing, config, diagrams, editor-codemirror, layout-dockview, guide, test-utils)
+- Supabase PostgreSQL (Drizzle ORM for schema/queries, sanyam-auth for auth, sanyam-db for RLS-aware connections)
 
 ## Recent Changes
-- 001-string-utils: Added TypeScript 5.9 (strict mode, ES2022 target) + None at runtime; Vitest for testing (dev only)
+- 009-migrate-sanyam-packages: Migrated from @repo/* to @actone/* (local) + @docugenix/sanyam-* (external). Replaced SvelteKit API routes with Hono handlers. Worker uses createWorkerLanguageServer(). Auth delegated to sanyam-auth. Guide uses sanyam-guide. DB client from sanyam-db.

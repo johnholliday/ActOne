@@ -13,9 +13,17 @@ import {
   pgPolicy,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import { authenticatedRole, authUid } from 'drizzle-orm/supabase';
+import { authenticatedRole } from 'drizzle-orm/supabase';
+import { projects as baseProjects, sourceFiles as baseSourceFiles } from '@docugenix/sanyam-db/schema';
+import type { SchemaContribution } from '@docugenix/sanyam-db';
 
-// ── Enums ──────────────────────────────────────────────────────────────
+// ── Re-export base tables from sanyam-db ────────────────────────────────
+// These provide projects (userId, title, createdAt, modifiedAt) and
+// source_files (projectId, filePath, content, isEntry) with RLS policies.
+
+export { projects, sourceFiles } from '@docugenix/sanyam-db/schema';
+
+// ── ActOne-specific enums ───────────────────────────────────────────────
 
 export const compositionModeEnum = pgEnum('composition_mode', [
   'merge',
@@ -58,79 +66,6 @@ export const draftStatusEnum = pgEnum('draft_status', [
   'editing',
 ]);
 
-// ── Projects ───────────────────────────────────────────────────────────
-
-export const projects = pgTable(
-  'projects',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id').notNull(),
-    title: text('title').notNull(),
-    authorName: text('author_name'),
-    genre: text('genre'),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    modifiedAt: timestamp('modified_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    version: text('version').default('1.0.0'),
-    grammarVersion: text('grammar_version').default('2.0.0'),
-    grammarFingerprint: text('grammar_fingerprint'),
-    compositionMode: compositionModeEnum('composition_mode')
-      .default('merge')
-      .notNull(),
-    lifecycleStage: lifecycleStageEnum('lifecycle_stage')
-      .default('concept')
-      .notNull(),
-    publishingMode: publishingModeEnum('publishing_mode')
-      .default('text')
-      .notNull(),
-  },
-  (table) => [
-    index('projects_user_id_idx').on(table.userId),
-    pgPolicy('users_own_projects', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`(select auth.uid()) = ${table.userId}`,
-      withCheck: sql`(select auth.uid()) = ${table.userId}`,
-    }),
-  ],
-);
-
-// ── Source Files ────────────────────────────────────────────────────────
-
-export const sourceFiles = pgTable(
-  'source_files',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    projectId: uuid('project_id')
-      .notNull()
-      .references(() => projects.id, { onDelete: 'cascade' }),
-    filePath: text('file_path').notNull(),
-    content: text('content').notNull().default(''),
-    isEntry: boolean('is_entry').default(false),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    modifiedAt: timestamp('modified_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-  },
-  (table) => [
-    uniqueIndex('source_files_project_path_idx').on(
-      table.projectId,
-      table.filePath,
-    ),
-    pgPolicy('users_access_project_files', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`${table.projectId} in (select id from projects where user_id = (select auth.uid()))`,
-      withCheck: sql`${table.projectId} in (select id from projects where user_id = (select auth.uid()))`,
-    }),
-  ],
-);
-
 // ── Snapshots ──────────────────────────────────────────────────────────
 
 export const snapshots = pgTable(
@@ -139,7 +74,7 @@ export const snapshots = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     projectId: uuid('project_id')
       .notNull()
-      .references(() => projects.id, { onDelete: 'cascade' }),
+      .references(() => baseProjects.id, { onDelete: 'cascade' }),
     tag: text('tag').notNull(),
     stage: lifecycleStageEnum('stage').notNull(),
     wordCount: integer('word_count').default(0),
@@ -191,7 +126,7 @@ export const assets = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     projectId: uuid('project_id')
       .notNull()
-      .references(() => projects.id, { onDelete: 'cascade' }),
+      .references(() => baseProjects.id, { onDelete: 'cascade' }),
     type: assetTypeEnum('type').notNull(),
     name: text('name').notNull(),
     status: assetStatusEnum('status').default('pending').notNull(),
@@ -222,7 +157,7 @@ export const analyticsSnapshots = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     projectId: uuid('project_id')
       .notNull()
-      .references(() => projects.id, { onDelete: 'cascade' }),
+      .references(() => baseProjects.id, { onDelete: 'cascade' }),
     wordCount: integer('word_count').default(0),
     sceneCount: integer('scene_count').default(0),
     characterCount: integer('character_count').default(0),
@@ -250,7 +185,7 @@ export const draftVersions = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     projectId: uuid('project_id')
       .notNull()
-      .references(() => projects.id, { onDelete: 'cascade' }),
+      .references(() => baseProjects.id, { onDelete: 'cascade' }),
     sceneName: text('scene_name').notNull(),
     paragraphIndex: integer('paragraph_index').notNull(),
     content: text('content').notNull(),
@@ -274,3 +209,25 @@ export const draftVersions = pgTable(
     }),
   ],
 );
+
+// ── Schema Contribution ────────────────────────────────────────────────
+// Register ActOne's domain tables as extensions to sanyam-db's base schema.
+
+export const actOneSchemaContribution: SchemaContribution = {
+  id: 'actone',
+  tables: {
+    snapshots,
+    snapshotFiles,
+    assets,
+    analyticsSnapshots,
+    draftVersions,
+  },
+  enums: {
+    compositionModeEnum,
+    lifecycleStageEnum,
+    publishingModeEnum,
+    assetTypeEnum,
+    assetStatusEnum,
+    draftStatusEnum,
+  },
+};

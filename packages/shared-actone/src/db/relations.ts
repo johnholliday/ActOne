@@ -1,7 +1,6 @@
 import { relations } from 'drizzle-orm';
+import { projects, sourceFiles } from '@docugenix/sanyam-db/schema';
 import {
-  projects,
-  sourceFiles,
   snapshots,
   snapshotFiles,
   assets,
