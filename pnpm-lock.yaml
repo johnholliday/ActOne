@@ -134,7 +134,7 @@ importers:
         version: 0.8.0
       '@docugenix/sanyam-guide':
         specifier: ^0.8.0
-        version: 0.8.0(@11ty/eleventy@3.1.2)(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1))
+        version: 0.8.0(@11ty/eleventy-navigation@0.3.5)(@11ty/eleventy@3.1.2)(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1))
       '@docugenix/sanyam-test-utils':
         specifier: ^0.8.0
         version: 0.8.0(vitest@3.2.4)
@@ -201,6 +201,9 @@ importers:
       '@11ty/eleventy-navigation':
         specifier: ^0.3.5
         version: 0.3.5
+      '@docugenix/sanyam-guide':
+        specifier: ^0.8.0
+        version: 0.8.0(@11ty/eleventy-navigation@0.3.5)(@11ty/eleventy@3.1.2)(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1))
 
   packages/lang-actone:
     dependencies:
@@ -4029,13 +4032,14 @@ snapshots:
       svelte: 5.53.5
       vscode-languageserver-protocol: 3.17.5
 
-  '@docugenix/sanyam-guide@0.8.0(@11ty/eleventy@3.1.2)(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1))':
+  '@docugenix/sanyam-guide@0.8.0(@11ty/eleventy-navigation@0.3.5)(@11ty/eleventy@3.1.2)(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1))':
     dependencies:
       '@docugenix/sanyam-core': 0.8.0
       svelte: 5.53.5
       vite: 7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1)
     optionalDependencies:
       '@11ty/eleventy': 3.1.2
+      '@11ty/eleventy-navigation': 0.3.5
 
   '@docugenix/sanyam-langium@0.8.0':
     dependencies:
