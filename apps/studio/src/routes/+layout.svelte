@@ -40,7 +40,7 @@
   import DocPanel from '$lib/components/DocPanel.svelte';
   import DocSection from '$lib/components/DocSection.svelte';
 
-  import type { LifecycleStage } from '@repo/shared';
+  import type { LifecycleStage } from '@actone/shared';
 
   let { data, children } = $props();
 
@@ -1391,8 +1391,8 @@
               {@const isActive = workspaceStore.isOpen(p.id)}
               {@const isHighlighted = i === openProjectHighlight}
               {@const displayStage = isActive
-                ? (projectStore.getProject(p.id)?.meta.lifecycleStage ?? (p.lifecycle_stage as import('@repo/shared').LifecycleStage | null))
-                : (p.lifecycle_stage as import('@repo/shared').LifecycleStage | null)}
+                ? (projectStore.getProject(p.id)?.meta.lifecycleStage ?? (p.lifecycle_stage as import('@actone/shared').LifecycleStage | null))
+                : (p.lifecycle_stage as import('@actone/shared').LifecycleStage | null)}
               <button
                 class="flex w-full items-center gap-3 rounded px-3 py-2.5 text-left transition-colors
                   {isActive ? 'bg-amber-500/10 text-amber-300' : isHighlighted ? 'bg-surface-raised/40 text-text-primary' : 'text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary'}"

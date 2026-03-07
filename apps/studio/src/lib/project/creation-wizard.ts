@@ -5,7 +5,7 @@
  * payload, including the skeleton story file content.
  */
 
-import type { CompositionMode } from '@repo/shared';
+import type { CompositionMode } from '@actone/shared';
 
 export interface CreateProjectInput {
   title: string;

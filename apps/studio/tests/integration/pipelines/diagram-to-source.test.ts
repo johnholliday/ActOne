@@ -7,8 +7,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { parseHelper } from 'langium/test';
-import { createActOneServices, isCharacterDef, isSceneDef } from '@repo/langium';
-import type { Story } from '@repo/langium';
+import { createActOneServices, isCharacterDef, isSceneDef } from '@actone/lang';
+import type { Story } from '@actone/lang';
 
 const services = createActOneServices();
 const parse = parseHelper<Story>(services.ActOne);

@@ -12,7 +12,7 @@ import type {
   SerializedPlotDef,
   SerializedInteractionDef,
   SerializedGenerateBlock,
-} from '@repo/shared';
+} from '@actone/shared';
 
 export function isCharacterDef(el: SerializedStoryElement): el is SerializedCharacterDef {
   return el.$type === 'CharacterDef';

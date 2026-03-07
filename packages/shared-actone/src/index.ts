@@ -1,4 +1,4 @@
-// @repo/shared — canonical types, DB schemas, constants
+// @actone/shared — canonical types, DB schemas, constants
 
 // ── Types ────────────────────────────────────────────────────────────
 export type {

@@ -8,10 +8,10 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { z } from 'zod';
 import { db } from '$lib/server/db.js';
-import { projects, sourceFiles, snapshots, snapshotFiles } from '@repo/shared/db';
+import { projects, sourceFiles, snapshots, snapshotFiles } from '@actone/shared/db';
 import { eq } from 'drizzle-orm';
-import { isValidTransition } from '@repo/shared';
-import type { LifecycleStage } from '@repo/shared';
+import { isValidTransition } from '@actone/shared';
+import type { LifecycleStage } from '@actone/shared';
 import { generateSnapshotTag, aggregateStats } from '$lib/project/snapshots.js';
 
 const lifecycleSchema = z.object({

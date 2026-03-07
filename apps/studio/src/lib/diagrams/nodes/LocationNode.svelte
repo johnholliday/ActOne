@@ -4,7 +4,7 @@
    * Colored by atmosphere intensity, shows scene markers.
    */
   import { Handle, Position } from '@xyflow/svelte';
-  import type { LocationNodeData } from '@repo/shared';
+  import type { LocationNodeData } from '@actone/shared';
 
   interface Props {
     id: string;

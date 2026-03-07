@@ -9,7 +9,7 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { z } from 'zod';
 import { db } from '$lib/server/db.js';
-import { draftVersions, projects, sourceFiles } from '@repo/shared/db';
+import { draftVersions, projects, sourceFiles } from '@actone/shared/db';
 import { eq, and } from 'drizzle-orm';
 import { supabaseAdmin } from '$lib/server/supabase.js';
 import { assembleManuscript } from '$lib/publishing/manuscript-assembler.js';

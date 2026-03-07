@@ -12,8 +12,8 @@ import type {
   WorldContainerData,
   LocationNodeData,
   LocationLinkData,
-} from '@repo/shared';
-import { EDGE_STYLES } from '@repo/shared';
+} from '@actone/shared';
+import { EDGE_STYLES } from '@actone/shared';
 import { findWorlds, findScenes } from '$lib/ast/ast-utils.js';
 import { stableId, stableEdgeId, stableGroupId } from '../operations/stable-refs.js';
 

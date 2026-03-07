@@ -22,7 +22,7 @@ import {
   createTestTimeline,
   createTestInteraction,
 } from '../fixtures/factories.js';
-import type { SerializedStory } from '@repo/shared';
+import type { SerializedStory } from '@actone/shared';
 
 // CI environments are often slower; allow 3x tolerance
 const CI_MULTIPLIER = process.env.CI ? 3 : 1;

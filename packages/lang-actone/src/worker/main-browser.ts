@@ -214,7 +214,7 @@ connection.onRequest('actone/getMergedAst', async () => {
   let storyName = '';
   let totalErrors = 0;
   let allValid = true;
-  const mergedElements: import('@repo/shared').SerializedStoryElement[] = [];
+  const mergedElements: import('@actone/shared').SerializedStoryElement[] = [];
 
   for (const doc of shared.workspace.LangiumDocuments.all) {
     const diagnostics = doc.diagnostics ?? [];

@@ -16,7 +16,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { URI } from 'langium';
-import { createActOneServices } from '@repo/langium';
+import { createActOneServices } from '@actone/lang';
 
 function createServices() {
   return createActOneServices();

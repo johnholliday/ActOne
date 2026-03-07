@@ -5,7 +5,7 @@
  */
 
 import type { DiagramView } from '$lib/stores/ui.svelte.js';
-import type { StableId, ActOneNode, ActOneEdge } from '@repo/shared';
+import type { StableId, ActOneNode, ActOneEdge } from '@actone/shared';
 
 /** Diagram state for a single view. */
 interface ViewState {

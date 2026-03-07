@@ -7,7 +7,7 @@
  */
 
 import { z } from 'zod';
-import type { BackendInfo, CostEstimate } from '@repo/shared';
+import type { BackendInfo, CostEstimate } from '@actone/shared';
 
 /** Zod schema for validating stream chunk responses from backends. */
 export const StreamChunkSchema = z.object({

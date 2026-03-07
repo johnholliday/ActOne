@@ -3,7 +3,7 @@
    * T071: Custom SvelteFlow group node for worlds.
    * Dark container with world name and period.
    */
-  import type { WorldContainerData } from '@repo/shared';
+  import type { WorldContainerData } from '@actone/shared';
 
   interface Props {
     id: string;

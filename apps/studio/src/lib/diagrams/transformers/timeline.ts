@@ -13,8 +13,8 @@ import type {
   TimelineBlockData,
   ArcPhaseBandData,
   BeatEdgeData,
-} from '@repo/shared';
-import { SCENE_TYPE_COLORS, BEAT_TYPE_COLORS } from '@repo/shared';
+} from '@actone/shared';
+import { SCENE_TYPE_COLORS, BEAT_TYPE_COLORS } from '@actone/shared';
 import { findTimelines, findScenes, findPlots } from '$lib/ast/ast-utils.js';
 import { stableId, stableEdgeId, stableGroupId } from '../operations/stable-refs.js';
 

@@ -4,7 +4,7 @@
    * Horizontal arrows with pattern step and style mix indicators.
    */
   import { getBezierPath } from '@xyflow/svelte';
-  import type { ExchangeArrowData } from '@repo/shared';
+  import type { ExchangeArrowData } from '@actone/shared';
 
   interface Props {
     id: string;

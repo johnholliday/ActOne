@@ -5,7 +5,7 @@
  * between CodeMirror extension calls and standard/custom LSP methods.
  */
 
-import type { SerializedStory } from '@repo/shared';
+import type { SerializedStory } from '@actone/shared';
 
 /* ── JSON-RPC Types ──────────────────────────────────────────────── */
 

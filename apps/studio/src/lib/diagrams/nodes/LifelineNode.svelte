@@ -4,7 +4,7 @@
    * Vertical bar representing a character in sequence diagrams.
    */
   import { Handle, Position } from '@xyflow/svelte';
-  import type { LifelineData } from '@repo/shared';
+  import type { LifelineData } from '@actone/shared';
 
   interface Props {
     id: string;

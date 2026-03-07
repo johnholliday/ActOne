@@ -7,7 +7,7 @@
  * - sequential: per-file namespaces, cross-file refs require qualified names
  */
 
-import type { CompositionMode } from '@repo/shared';
+import type { CompositionMode } from '@actone/shared';
 
 export interface FileEntry {
   uri: string;

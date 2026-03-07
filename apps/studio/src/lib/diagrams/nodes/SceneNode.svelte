@@ -4,7 +4,7 @@
    * Color-coded by scene type, shows participants and location.
    */
   import { Handle, Position } from '@xyflow/svelte';
-  import type { SceneNodeData } from '@repo/shared';
+  import type { SceneNodeData } from '@actone/shared';
 
   interface Props {
     id: string;

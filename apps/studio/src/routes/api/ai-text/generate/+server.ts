@@ -9,7 +9,7 @@ import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { z } from 'zod';
 import { db } from '$lib/server/db.js';
-import { draftVersions } from '@repo/shared/db';
+import { draftVersions } from '@actone/shared/db';
 import { backendRegistry } from '$lib/ai/backends/backend-registry.js';
 import { assembleContext } from '$lib/ai/context-assembler.js';
 import { splitIntoParagraphs } from '$lib/ai/draft-manager.js';

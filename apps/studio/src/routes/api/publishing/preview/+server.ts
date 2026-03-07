@@ -7,7 +7,7 @@
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db.js';
-import { projects, draftVersions, sourceFiles } from '@repo/shared/db';
+import { projects, draftVersions, sourceFiles } from '@actone/shared/db';
 import { eq, and } from 'drizzle-orm';
 import { generateHtmlPreview } from '$lib/publishing/html-preview.js';
 import { assembleManuscript } from '$lib/publishing/manuscript-assembler.js';

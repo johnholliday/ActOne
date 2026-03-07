@@ -8,7 +8,7 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { z } from 'zod';
 import { db } from '$lib/server/db.js';
-import { analyticsSnapshots } from '@repo/shared/db';
+import { analyticsSnapshots } from '@actone/shared/db';
 
 const snapshotSchema = z.object({
   projectId: z.string().uuid(),

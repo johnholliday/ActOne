@@ -4,7 +4,7 @@
    * Width by weight, dashed for dynamic, colored by sentiment.
    */
   import { getBezierPath } from '@xyflow/svelte';
-  import type { RelationshipEdgeData } from '@repo/shared';
+  import type { RelationshipEdgeData } from '@actone/shared';
 
   interface Props {
     id: string;

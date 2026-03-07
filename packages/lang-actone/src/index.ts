@@ -1,4 +1,4 @@
-// @repo/langium — ActOne grammar + language services
+// @actone/lang — ActOne grammar + language services
 
 export { createActOneServices } from './services/actone-module.js';
 export type { ActOneServices, ActOneAddedServices } from './services/actone-module.js';

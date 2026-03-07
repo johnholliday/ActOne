@@ -16,7 +16,7 @@
    */
   import { onMount } from 'svelte';
   import type { DocumentSymbol } from '$lib/editor/langium-client.js';
-  import type { SerializedStoryElement } from '@repo/shared';
+  import type { SerializedStoryElement } from '@actone/shared';
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { projectStore } from '$lib/stores/project.svelte.js';
   import Globe from 'lucide-svelte/icons/globe';

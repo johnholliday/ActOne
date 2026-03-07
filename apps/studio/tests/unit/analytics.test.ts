@@ -17,7 +17,7 @@ import {
   createTestInteraction,
   createTestGenerateBlock,
 } from '../fixtures/factories.js';
-import type { SerializedStory } from '@repo/shared';
+import type { SerializedStory } from '@actone/shared';
 
 function buildStory(
   overrides: Partial<SerializedStory> = {},

@@ -14,7 +14,7 @@ import type {
   SerializedInteractionDef,
   SerializedThemeDef,
   SerializedTimelineDef,
-} from '@repo/shared';
+} from '@actone/shared';
 import {
   findCharacters,
   findScenes,

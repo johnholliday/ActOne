@@ -11,8 +11,8 @@ import type {
   ActOneEdge,
   LifelineData,
   ExchangeArrowData,
-} from '@repo/shared';
-import { CHARACTER_NATURE_COLORS, EDGE_STYLES } from '@repo/shared';
+} from '@actone/shared';
+import { CHARACTER_NATURE_COLORS, EDGE_STYLES } from '@actone/shared';
 import { findInteractions, findCharacterByName } from '$lib/ast/ast-utils.js';
 import { stableId, stableEdgeId } from '../operations/stable-refs.js';
 

@@ -13,7 +13,7 @@ import type {
   SerializedPlotDef,
   SerializedInteractionDef,
   SerializedGenerateBlock,
-} from '@repo/shared';
+} from '@actone/shared';
 
 export interface AstVisitor<T = void> {
   visitStory?(story: SerializedStory): T;

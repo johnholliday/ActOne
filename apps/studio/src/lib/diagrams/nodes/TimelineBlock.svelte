@@ -4,7 +4,7 @@
    * Colored by scene type within swim-lane layers.
    */
   import { Handle, Position } from '@xyflow/svelte';
-  import type { TimelineBlockData } from '@repo/shared';
+  import type { TimelineBlockData } from '@actone/shared';
 
   interface Props {
     id: string;

@@ -13,7 +13,7 @@
   import { applyDefaultLayout } from '$lib/dockview/default-layout.js';
   import { getDocPanelState } from '$lib/stores/doc-panel.svelte.js';
   import { getValidTargets, getStageLabel } from '$lib/project/lifecycle.js';
-  import type { LifecycleStage } from '@repo/shared';
+  import type { LifecycleStage } from '@actone/shared';
 
   interface Props {
     oncreateproject?: () => void;

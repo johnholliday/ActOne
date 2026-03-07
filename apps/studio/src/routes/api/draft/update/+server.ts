@@ -8,7 +8,7 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { z } from 'zod';
 import { db } from '$lib/server/db.js';
-import { draftVersions } from '@repo/shared/db';
+import { draftVersions } from '@actone/shared/db';
 import { eq } from 'drizzle-orm';
 
 const updateSchema = z.object({

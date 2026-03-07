@@ -4,7 +4,7 @@
  * Tracks backend list, availability, and active selection.
  */
 
-import type { BackendInfo } from '@repo/shared';
+import type { BackendInfo } from '@actone/shared';
 
 class BackendStore {
   /** Available backends. */

@@ -9,7 +9,7 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { z } from 'zod';
 import { db } from '$lib/server/db.js';
-import { assets } from '@repo/shared/db';
+import { assets } from '@actone/shared/db';
 import { imageBackendRegistry } from '$lib/server/image-backends.js';
 
 const generateImageSchema = z.object({

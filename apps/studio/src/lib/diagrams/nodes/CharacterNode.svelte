@@ -4,7 +4,7 @@
    * Circle-shaped, sized by scene count, colored by nature.
    */
   import { Handle, Position } from '@xyflow/svelte';
-  import type { CharacterNodeData } from '@repo/shared';
+  import type { CharacterNodeData } from '@actone/shared';
 
   interface Props {
     id: string;

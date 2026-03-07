@@ -4,7 +4,7 @@
    * Colored by beat type, labeled with beat name.
    */
   import { getBezierPath } from '@xyflow/svelte';
-  import type { BeatEdgeData } from '@repo/shared';
+  import type { BeatEdgeData } from '@actone/shared';
 
   interface Props {
     id: string;

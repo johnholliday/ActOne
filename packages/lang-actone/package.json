@@ -1,5 +1,5 @@
 {
-  "name": "@repo/langium",
+  "name": "@actone/lang",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -23,14 +23,14 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@repo/shared": "workspace:*",
+    "@actone/shared": "workspace:*",
+    "@docugenix/sanyam-langium": "^0.8.0",
     "langium": "~4.2.1",
     "vscode-languageserver": "~9.0.1",
     "vscode-languageserver-protocol": "~3.17.5"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@docugenix/sanyam-config": "^0.8.0",
     "langium-cli": "~4.2.0",
     "eslint": "^9.0.0",
     "typescript": "^5.9.2",

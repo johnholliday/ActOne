@@ -10,7 +10,7 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { z } from 'zod';
 import { generateVisualDNA, buildVisualPrompt } from '$lib/ai/visual-dna.js';
-import type { SerializedCharacterDef } from '@repo/shared';
+import type { SerializedCharacterDef } from '@actone/shared';
 
 const visualDnaSchema = z.object({
   projectId: z.string().uuid(),

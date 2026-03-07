@@ -15,7 +15,7 @@ import type {
   SerializedPlotDef,
   SerializedInteractionDef,
   SerializedGenerateBlock,
-} from '@repo/shared';
+} from '@actone/shared';
 
 import type { DraftVersion, DraftStatus } from '$lib/ai/draft-manager.js';
 import type {

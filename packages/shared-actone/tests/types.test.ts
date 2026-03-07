@@ -1,7 +1,7 @@
 /**
  * T022: Shared package type exports smoke test.
  *
- * Verifies that all expected type and value exports from @repo/shared
+ * Verifies that all expected type and value exports from @actone/shared
  * are accessible and correctly typed. This catches accidental removal
  * of public API surface.
  */
@@ -34,7 +34,7 @@ import {
   CHARACTER_NATURE_COLORS,
   // Validation ranges
   VALIDATION,
-} from '@repo/shared';
+} from '@actone/shared';
 
 // ── Type-only exports (compile-time verification) ───────────────────
 
@@ -87,11 +87,11 @@ import type {
   Pacing,
   GoalPriority,
   RuleCategory,
-} from '@repo/shared';
+} from '@actone/shared';
 
 // ── Tests ───────────────────────────────────────────────────────────
 
-describe('@repo/shared type exports', () => {
+describe('@actone/shared type exports', () => {
   describe('lifecycle transitions', () => {
     it('exports VALID_TRANSITIONS as a readonly array', () => {
       expect(Array.isArray(VALID_TRANSITIONS)).toBe(true);
@@ -229,7 +229,7 @@ describe('@repo/shared type exports', () => {
 
   describe('type-level compile checks', () => {
     // These tests verify that the type imports compile correctly.
-    // If any type is removed from @repo/shared, this file will fail to compile.
+    // If any type is removed from @actone/shared, this file will fail to compile.
 
     it('StableId matches expected format', () => {
       const id: StableId = 'character:Elena';

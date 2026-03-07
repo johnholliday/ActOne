@@ -8,7 +8,7 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { z } from 'zod';
 import { db } from '$lib/server/db.js';
-import { projects, sourceFiles } from '@repo/shared/db';
+import { projects, sourceFiles } from '@actone/shared/db';
 import {
   generateEntrySkeleton,
   generateEntryFilePath,

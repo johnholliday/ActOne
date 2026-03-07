@@ -8,7 +8,7 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db.js';
-import { draftVersions, sourceFiles, assets } from '@repo/shared/db';
+import { draftVersions, sourceFiles, assets } from '@actone/shared/db';
 import { eq, and } from 'drizzle-orm';
 
 export const GET: RequestHandler = async ({ url }) => {

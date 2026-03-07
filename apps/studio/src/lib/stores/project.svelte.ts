@@ -1,4 +1,4 @@
-import type { LifecycleStage, CompositionMode } from '@repo/shared';
+import type { LifecycleStage, CompositionMode } from '@actone/shared';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { loadProjectByIdFromSupabase } from './project-loader.js';
 import { workspaceStore } from './workspace.svelte.js';

@@ -25,15 +25,15 @@ vi.mock('$lib/project/snapshots', () => ({
 }));
 
 /**
- * Mock @repo/shared so we can control isValidTransition per-test.
+ * Mock @actone/shared so we can control isValidTransition per-test.
  * vi.hoisted() ensures the variable is available during vi.mock hoisting.
  */
 const { mockIsValidTransition } = vi.hoisted(() => ({
   mockIsValidTransition: vi.fn<[string, string], boolean>(),
 }));
 
-vi.mock('@repo/shared', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@repo/shared')>();
+vi.mock('@actone/shared', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@actone/shared')>();
   return {
     ...actual,
     isValidTransition: mockIsValidTransition,
@@ -61,7 +61,7 @@ describe('POST /api/project/lifecycle', () => {
     mockIsValidTransition.mockReset();
     // Re-apply default delegation after reset
     mockIsValidTransition.mockImplementation((from: string, to: string) => {
-      // Inline the valid transitions (mirrors VALID_TRANSITIONS from @repo/shared)
+      // Inline the valid transitions (mirrors VALID_TRANSITIONS from @actone/shared)
       const validTransitions = [
         { from: 'concept', to: 'draft' },
         { from: 'draft', to: 'revision' },

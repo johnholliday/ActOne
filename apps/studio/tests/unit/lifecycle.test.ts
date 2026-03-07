@@ -12,7 +12,7 @@ import {
   getStageLabel,
   getTransition,
 } from '$lib/project/lifecycle.js';
-import type { LifecycleStage } from '@repo/shared';
+import type { LifecycleStage } from '@actone/shared';
 
 describe('canTransition', () => {
   it('allows concept → draft', () => {
