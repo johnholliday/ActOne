@@ -6,7 +6,7 @@
  */
 
 import { z } from 'zod';
-import type { CostEstimate } from '@repo/shared';
+import type { CostEstimate } from '@actone/shared';
 import {
   StreamChunkSchema,
   GenerationCompleteSchema,

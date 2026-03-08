@@ -22,7 +22,7 @@ export async function loadFileContent(
   fileId: string,
 ): Promise<FileData | null> {
   const { data, error } = await supabase
-    .from('source_files')
+    .from('project_files')
     .select('id, file_path, content, is_entry')
     .eq('id', fileId)
     .single();
@@ -45,7 +45,7 @@ export async function loadProjectFiles(
   projectId: string,
 ): Promise<FileData[]> {
   const { data, error } = await supabase
-    .from('source_files')
+    .from('project_files')
     .select('id, file_path, content, is_entry')
     .eq('project_id', projectId)
     .order('created_at', { ascending: true });
@@ -68,12 +68,21 @@ export async function saveFileContent(
   fileId: string,
   content: string,
 ): Promise<boolean> {
-  const { error } = await supabase
-    .from('source_files')
-    .update({ content, modified_at: new Date().toISOString() })
-    .eq('id', fileId);
+  const { error, count } = await supabase
+    .from('project_files')
+    .update({ content, updated_at: new Date().toISOString() })
+    .eq('id', fileId)
+    .select('id', { count: 'exact', head: true });
 
-  return !error;
+  if (error) {
+    console.error('[saveFileContent] error:', error);
+    return false;
+  }
+  if (count === 0) {
+    console.error('[saveFileContent] no rows updated for fileId:', fileId);
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -86,7 +95,7 @@ export async function createFile(
   content: string,
 ): Promise<FileData | null> {
   const { data, error } = await supabase
-    .from('source_files')
+    .from('project_files')
     .insert({
       project_id: projectId,
       file_path: filePath,
@@ -115,8 +124,8 @@ export async function renameFile(
   newFilePath: string,
 ): Promise<boolean> {
   const { error } = await supabase
-    .from('source_files')
-    .update({ file_path: newFilePath, modified_at: new Date().toISOString() })
+    .from('project_files')
+    .update({ file_path: newFilePath, updated_at: new Date().toISOString() })
     .eq('id', fileId);
 
   return !error;
@@ -130,7 +139,7 @@ export async function deleteFile(
   fileId: string,
 ): Promise<boolean> {
   const { error } = await supabase
-    .from('source_files')
+    .from('project_files')
     .delete()
     .eq('id', fileId);
 

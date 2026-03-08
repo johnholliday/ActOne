@@ -15,7 +15,7 @@ import type {
   SerializedPlotDef,
   SerializedInteractionDef,
   SerializedGenerateBlock,
-} from '@repo/shared';
+} from '@actone/shared';
 
 export interface TreeNode {
   id: string;

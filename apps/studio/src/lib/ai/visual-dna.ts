@@ -5,7 +5,7 @@
  * trait mapping, mannerisms from quirks, symbol motifs, and story-point versions.
  */
 
-import type { SerializedCharacterDef } from '@repo/shared';
+import type { SerializedCharacterDef } from '@actone/shared';
 
 export interface VisualDNA {
   characterName: string;

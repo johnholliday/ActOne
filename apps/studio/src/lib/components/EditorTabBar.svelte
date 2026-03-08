@@ -34,16 +34,14 @@
         {#if file.isDirty}
           <span class="ml-0.5 inline-block h-2 w-2 shrink-0 rounded-full bg-text-secondary"></span>
         {/if}
-        {#if editorStore.openFiles.length > 1}
-          <button
-            class="ml-auto shrink-0 rounded p-0.5 text-text-muted hover:bg-surface-raised/40 hover:text-text-secondary
-              {isActive ? 'visible' : 'invisible group-hover:visible'}"
-            onclick={(e) => { e.stopPropagation(); onclosetab(file.id); }}
-            title="Close"
-          >
-            <X size={12} />
-          </button>
-        {/if}
+        <button
+          class="ml-auto shrink-0 rounded p-0.5 text-text-muted hover:bg-surface-raised/40 hover:text-text-secondary
+            {isActive ? 'visible' : 'invisible group-hover:visible'}"
+          onclick={(e) => { e.stopPropagation(); onclosetab(file.id); }}
+          title="Close"
+        >
+          <X size={12} />
+        </button>
       </div>
     {/each}
   </div>

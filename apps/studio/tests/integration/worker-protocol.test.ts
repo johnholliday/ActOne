@@ -16,7 +16,8 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { URI } from 'langium';
-import { createActOneServices } from '@repo/langium';
+import { createActOneServices } from '@actone/lang';
+import type { Document } from '@actone/lang/ast';
 
 function createServices() {
   return createActOneServices();
@@ -101,7 +102,7 @@ describe('didOpen / didChange / didClose lifecycle', () => {
     await shared.workspace.DocumentBuilder.build([newDoc]);
 
     expect(newDoc.textDocument.getText()).toBe(updatedContent);
-    expect(newDoc.parseResult.value.name).toBe('V2');
+    expect((newDoc.parseResult.value as Document).story?.name).toBe('V2');
   });
 });
 

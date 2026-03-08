@@ -5,8 +5,8 @@
  * with beat edges (colored by beat type) in chapter group containers.
  */
 
-import type { SerializedStory, ActOneNode, ActOneEdge, SceneNodeData, BeatEdgeData, ChapterGroupData } from '@repo/shared';
-import { SCENE_TYPE_COLORS, BEAT_TYPE_COLORS } from '@repo/shared';
+import type { SerializedStory, ActOneNode, ActOneEdge, SceneNodeData, BeatEdgeData, ChapterGroupData } from '@actone/shared';
+import { SCENE_TYPE_COLORS, BEAT_TYPE_COLORS } from '@actone/shared';
 import { findScenes, findPlots } from '$lib/ast/ast-utils.js';
 import { stableId, stableEdgeId, stableGroupId } from '../operations/stable-refs.js';
 

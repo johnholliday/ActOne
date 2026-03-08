@@ -23,8 +23,8 @@ describe('+layout.server.ts load', () => {
 
   it('returns session and projects for authenticated user', async () => {
     const projects = [
-      createProjectRow({ id: 'p1', modified_at: '2026-02-01T00:00:00Z' }),
-      createProjectRow({ id: 'p2', modified_at: '2026-01-01T00:00:00Z' }),
+      createProjectRow({ id: 'p1', updated_at: '2026-02-01T00:00:00Z' }),
+      createProjectRow({ id: 'p2', updated_at: '2026-01-01T00:00:00Z' }),
     ];
 
     const event = createLayoutLoadEvent({

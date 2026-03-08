@@ -2,8 +2,8 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
 import { DATABASE_URL } from '$env/static/private';
-import * as schema from '@repo/shared/db';
-import * as relations from '@repo/shared/db/relations';
+import * as schema from '@actone/shared/db';
+import * as relations from '@actone/shared/db/relations';
 
 /**
  * Raw postgres.js client with `prepare: false` for Supabase transaction pooler.

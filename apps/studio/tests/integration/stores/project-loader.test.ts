@@ -14,10 +14,10 @@ beforeEach(() => {
 
 describe('loadProjectFromSupabase', () => {
   it('returns project meta and files on happy path', async () => {
-    const projectRow = createProjectRow({ id: 'proj-1', title: 'My Novel' });
+    const projectRow = createProjectRow({ id: 'proj-1', name: 'My Novel' });
 
     configureTable('projects', { data: projectRow, error: null });
-    configureTable('source_files', {
+    configureTable('project_files', {
       data: [
         { id: 'f1', file_path: 'main.act', is_entry: true, content: 'story {}' },
         { id: 'f2', file_path: 'chars.act', is_entry: false, content: 'character {}' },
@@ -39,18 +39,18 @@ describe('loadProjectFromSupabase', () => {
     expect(result.files[0]!.isEntry).toBe(true);
   });
 
-  it('maps snake_case columns to camelCase for project', async () => {
+  it('maps columns correctly from new schema with extension data', async () => {
     const projectRow = createProjectRow({
       author_name: 'Jane Austen',
       composition_mode: 'parallel',
-      lifecycle_stage: 'revision',
+      lifecycle_phase: 'revision',
       publishing_mode: 'graphic-novel',
       grammar_version: '2.0.0',
       grammar_fingerprint: 'xyz789',
     });
 
     configureTable('projects', { data: projectRow, error: null });
-    configureTable('source_files', { data: [], error: null });
+    configureTable('project_files', { data: [], error: null });
 
     const result = await loadProjectFromSupabase(
       mockSupabaseClient as unknown as import('@supabase/supabase-js').SupabaseClient,
@@ -69,7 +69,7 @@ describe('loadProjectFromSupabase', () => {
 
   it('maps snake_case columns to camelCase for files', async () => {
     configureTable('projects', { data: createProjectRow(), error: null });
-    configureTable('source_files', {
+    configureTable('project_files', {
       data: [{ id: 'f1', file_path: 'src/main.act', is_entry: true, content: '...' }],
       error: null,
     });
@@ -107,7 +107,7 @@ describe('loadProjectFromSupabase', () => {
 
   it('returns failure when files query errors', async () => {
     configureTable('projects', { data: createProjectRow(), error: null });
-    configureTable('source_files', { data: null, error: { message: 'files error' } });
+    configureTable('project_files', { data: null, error: { message: 'files error' } });
 
     const result = await loadProjectFromSupabase(
       mockSupabaseClient as unknown as import('@supabase/supabase-js').SupabaseClient,
@@ -118,7 +118,7 @@ describe('loadProjectFromSupabase', () => {
 
   it('returns empty files when fileRows is null', async () => {
     configureTable('projects', { data: createProjectRow(), error: null });
-    configureTable('source_files', { data: null, error: null });
+    configureTable('project_files', { data: null, error: null });
 
     const result = await loadProjectFromSupabase(
       mockSupabaseClient as unknown as import('@supabase/supabase-js').SupabaseClient,

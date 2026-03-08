@@ -11,15 +11,15 @@
 
 import { describe, it, expect } from 'vitest';
 import { validationHelper } from 'langium/test';
-import { createActOneServices } from '@repo/langium';
-import type { Story } from '@repo/langium/ast';
+import { createActOneServices } from '@actone/lang';
+import type { Story } from '@actone/lang/ast';
 import fs from 'node:fs';
 
 const services = createActOneServices();
 const validate = validationHelper<Story>(services.ActOne);
 
 const langiumFixtures = new URL(
-  '../../../../packages/langium/tests/fixtures/',
+  '../../../../packages/lang-actone/tests/fixtures/',
   import.meta.url,
 );
 

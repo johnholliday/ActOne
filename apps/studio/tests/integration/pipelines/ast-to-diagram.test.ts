@@ -10,7 +10,7 @@ import { transformStoryStructure } from '$lib/diagrams/transformers/story-struct
 import { transformCharacterNetwork } from '$lib/diagrams/transformers/character-network.js';
 import { transformWorldMap } from '$lib/diagrams/transformers/world-map.js';
 import { createTestStory, createTestCharacter, createTestScene, createTestWorld } from '../../fixtures/factories.js';
-import type { SerializedStory } from '@repo/shared';
+import type { SerializedStory } from '@actone/shared';
 
 describe('AST → diagram pipeline', () => {
   describe('story-structure view', () => {

@@ -7,7 +7,7 @@
  * - Dropped-first: non-participant bios, distant scenes, unrelated themes
  */
 
-import type { SerializedStory } from '@repo/shared';
+import type { SerializedStory } from '@actone/shared';
 import {
   findSceneByName,
   findCharacterByName,

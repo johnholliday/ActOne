@@ -1,0 +1,39 @@
+{
+  "name": "@actone/lang",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./worker": {
+      "types": "./src/worker/main-browser.ts",
+      "default": "./dist/worker/main-browser.js"
+    }
+  },
+  "scripts": {
+    "build": "langium generate && tsc",
+    "build:langium": "langium generate",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@actone/shared": "workspace:*",
+    "@docugenix/sanyam-langium": "^0.9.1",
+    "langium": "~4.2.1",
+    "vscode-languageserver": "~9.0.1",
+    "vscode-languageserver-protocol": "~3.17.5"
+  },
+  "devDependencies": {
+    "@docugenix/sanyam-config": "^0.9.1",
+    "eslint": "^9.0.0",
+    "langium-cli": "~4.2.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.1"
+  }
+}

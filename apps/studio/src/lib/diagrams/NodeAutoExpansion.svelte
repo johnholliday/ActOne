@@ -9,7 +9,7 @@
   import { expandGroupNodes } from '$lib/diagrams/layout/node-expansions.js';
 
   const GROUP_PADDING = 20;
-  const GROUP_PADDING_TOP = 40;
+  const GROUP_PADDING_TOP = 120;
 
   let { getNodes, updateNode } = $derived(useSvelteFlow());
 

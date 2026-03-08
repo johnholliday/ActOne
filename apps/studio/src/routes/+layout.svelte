@@ -40,7 +40,7 @@
   import DocPanel from '$lib/components/DocPanel.svelte';
   import DocSection from '$lib/components/DocSection.svelte';
 
-  import type { LifecycleStage } from '@repo/shared';
+  import type { LifecycleStage } from '@actone/shared';
 
   let { data, children } = $props();
 
@@ -221,7 +221,7 @@
   const filteredProjects = $derived.by(() => {
     const query = openProjectSearch.trim().toLowerCase();
     if (!query) return data.projects;
-    return data.projects.filter((p) => p.title.toLowerCase().includes(query));
+    return data.projects.filter((p) => p.name.toLowerCase().includes(query));
   });
 
   // Reset highlight when search filter changes
@@ -513,6 +513,15 @@
     // Remove from cache and workspace
     projectStore.unloadProject(activeId);
     workspaceStore.closeProject(activeId);
+
+    // Switch to the remaining active project so views update
+    const nextId = workspaceStore.activeProjectId;
+    if (nextId) {
+      await handleSwitchProject(nextId);
+    } else {
+      // No projects remain — clear AST state
+      astStore.clear();
+    }
   }
 
   /* ── T021: Advance lifecycle stage handler ─────────────────── */
@@ -1020,7 +1029,7 @@
                   {:else}
                     <span class="w-4"></span>
                   {/if}
-                  <span class="truncate">{p.title}</span>
+                  <span class="truncate">{p.name}</span>
                 </button>
               {/each}
 
@@ -1390,9 +1399,10 @@
             {#each filteredProjects as p, i}
               {@const isActive = workspaceStore.isOpen(p.id)}
               {@const isHighlighted = i === openProjectHighlight}
+              {@const ext = p.actone_project_ext}
               {@const displayStage = isActive
-                ? (projectStore.getProject(p.id)?.meta.lifecycleStage ?? (p.lifecycle_stage as import('@repo/shared').LifecycleStage | null))
-                : (p.lifecycle_stage as import('@repo/shared').LifecycleStage | null)}
+                ? (projectStore.getProject(p.id)?.meta.lifecycleStage ?? (p.lifecycle_phase as import('@actone/shared').LifecycleStage | null))
+                : (p.lifecycle_phase as import('@actone/shared').LifecycleStage | null)}
               <button
                 class="flex w-full items-center gap-3 rounded px-3 py-2.5 text-left transition-colors
                   {isActive ? 'bg-amber-500/10 text-amber-300' : isHighlighted ? 'bg-surface-raised/40 text-text-primary' : 'text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary'}"
@@ -1404,12 +1414,12 @@
                   {#if isActive}&#10003;{/if}
                 </span>
                 <div class="min-w-0 flex-1">
-                  <div class="truncate text-sm font-medium">{p.title}</div>
+                  <div class="truncate text-sm font-medium">{p.name}</div>
                   <div class="truncate text-[11px] text-text-muted">
-                    {[p.author_name, p.genre].filter(Boolean).join(' · ')}
-                    {#if p.modified_at}
-                      {#if p.author_name || p.genre} · {/if}
-                      Modified {new Date(p.modified_at).toLocaleDateString()}
+                    {[ext?.author_name, ext?.genre].filter(Boolean).join(' · ')}
+                    {#if p.updated_at}
+                      {#if ext?.author_name || ext?.genre} · {/if}
+                      Modified {new Date(p.updated_at).toLocaleDateString()}
                     {/if}
                   </div>
                 </div>

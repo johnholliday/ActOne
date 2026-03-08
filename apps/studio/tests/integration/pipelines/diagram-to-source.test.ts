@@ -7,11 +7,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { parseHelper } from 'langium/test';
-import { createActOneServices, isCharacterDef, isSceneDef } from '@repo/langium';
-import type { Story } from '@repo/langium';
+import { createActOneServices, isCharacterDef, isSceneDef } from '@actone/lang';
+import type { Document } from '@actone/lang/ast';
 
 const services = createActOneServices();
-const parse = parseHelper<Story>(services.ActOne);
+const parse = parseHelper<Document>(services.ActOne);
 
 describe('diagram → source pipeline', () => {
   describe('character creation via text edit', () => {
@@ -37,7 +37,7 @@ story "Test" {
       const doc = await parse(modifiedSource);
       expect(doc.parseResult.parserErrors).toHaveLength(0);
 
-      const chars = doc.parseResult.value.elements.filter(isCharacterDef);
+      const chars = doc.parseResult.value.story!.elements.filter(isCharacterDef);
       expect(chars).toHaveLength(2);
       expect(chars.map((c) => c.name)).toContain('Alice');
       expect(chars.map((c) => c.name)).toContain('Bob');
@@ -68,7 +68,7 @@ story "Test" {
       const doc = await parse(modifiedSource);
       expect(doc.parseResult.parserErrors).toHaveLength(0);
 
-      const chars = doc.parseResult.value.elements.filter(isCharacterDef);
+      const chars = doc.parseResult.value.story!.elements.filter(isCharacterDef);
       expect(chars).toHaveLength(1);
       expect(chars[0]!.name).toBe('Alice');
     });
@@ -97,12 +97,12 @@ story "Test" {
       const doc = await parse(modifiedSource);
       expect(doc.parseResult.parserErrors).toHaveLength(0);
 
-      const chars = doc.parseResult.value.elements.filter(isCharacterDef);
+      const chars = doc.parseResult.value.story!.elements.filter(isCharacterDef);
       expect(chars).toHaveLength(1);
       expect(chars[0]!.name).toBe('Elena');
 
       // Verify scenes still reference the renamed character
-      const scenes = doc.parseResult.value.elements.filter(isSceneDef);
+      const scenes = doc.parseResult.value.story!.elements.filter(isSceneDef);
       expect(scenes).toHaveLength(2);
     });
   });

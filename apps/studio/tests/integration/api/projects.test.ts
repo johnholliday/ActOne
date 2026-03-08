@@ -1,8 +1,8 @@
 /**
  * T047: Project management API endpoint tests.
  *
- * Tests POST /api/project/create, GET /api/project/manifest,
- * and POST /api/project/[id]/files handlers.
+ * Tests POST /project/create, GET /project/manifest,
+ * and POST /project/:id/files Hono handlers.
  */
 
 // Must be first import — sets up vi.mock() for server singletons
@@ -11,10 +11,9 @@ import '../../fixtures/mocks/setup.js';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { configureMockDb, resetMockDb, mockDb } from '../../fixtures/mocks/db.js';
 import {
-  createAuthenticatedEvent,
-  createUnauthenticatedEvent,
+  createTestApp,
+  appRequest,
   getJsonBody,
-  expectHttpError,
   defaultUser,
 } from './helpers.js';
 
@@ -36,13 +35,9 @@ vi.mock('$lib/project/snapshots', () => ({
   })),
 }));
 
-import { POST as createProject } from '$routes/api/project/create/+server.js';
-import { GET as getManifest } from '$routes/api/project/manifest/+server.js';
-import { POST as manageFiles } from '$routes/api/project/[id]/files/+server.js';
+// ── POST /project/create ──────────────────────────────────────────────
 
-// ── POST /api/project/create ────────────────────────────────────────
-
-describe('POST /api/project/create', () => {
+describe('POST /project/create', () => {
   beforeEach(() => {
     resetMockDb();
     vi.clearAllMocks();
@@ -50,82 +45,83 @@ describe('POST /api/project/create', () => {
 
   it('creates a project with valid input', async () => {
     configureMockDb({
-      insert: [{ id: 'p1', title: 'Test' }],
+      insert: [{ id: 'p1', name: 'Test' }],
     });
 
-    const event = createAuthenticatedEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/project/create', {
       method: 'POST',
       body: { title: 'Test' },
     });
 
-    const response = await createProject(event);
     expect(response.status).toBe(201);
 
     const body = await getJsonBody<{ id: string; title: string; entryFilePath: string }>(response);
     expect(body.id).toBe('p1');
-    expect(body.title).toBe('Test');
+    expect(body.title).toBe('Test');  // API returns `title` (mapped from `name`)
     expect(body.entryFilePath).toBe('test.actone');
   });
 
   it('returns 401 for unauthenticated request', async () => {
-    const event = createUnauthenticatedEvent({
+    const app = createTestApp(null);
+    const response = await appRequest(app, '/project/create', {
       method: 'POST',
       body: { title: 'Test' },
     });
 
-    await expectHttpError(() => createProject(event), 401);
+    expect(response.status).toBe(401);
   });
 
   it('returns 400 for missing title', async () => {
-    const event = createAuthenticatedEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/project/create', {
       method: 'POST',
       body: {},
     });
 
-    await expectHttpError(() => createProject(event), 400);
+    expect(response.status).toBe(400);
   });
 
   it('returns 400 for empty title', async () => {
-    const event = createAuthenticatedEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/project/create', {
       method: 'POST',
       body: { title: '' },
     });
 
-    await expectHttpError(() => createProject(event), 400);
+    expect(response.status).toBe(400);
   });
 
   it('uses default composition mode', async () => {
     configureMockDb({
-      insert: [{ id: 'p2', title: 'My Novel' }],
+      insert: [{ id: 'p2', name: 'My Novel' }],
     });
 
-    const event = createAuthenticatedEvent({
+    const app = createTestApp(defaultUser);
+    await appRequest(app, '/project/create', {
       method: 'POST',
       body: { title: 'My Novel' },
     });
 
-    await createProject(event);
-
-    // Verify db.insert was called — first call creates the project
+    // Verify db.insert was called — first call creates the project, second the extension
     expect(mockDb.insert).toHaveBeenCalled();
 
-    // The first insert call creates the project row.
-    // The chainable .values() receives the project data including compositionMode.
+    // The first insert creates the base project row (name, lifecyclePhase).
     const firstInsertChain = mockDb.insert.mock.results[0]?.value;
     expect(firstInsertChain).toBeDefined();
     expect(firstInsertChain.values).toHaveBeenCalledWith(
       expect.objectContaining({
-        compositionMode: 'merge',
         userId: defaultUser.id,
-        title: 'My Novel',
+        name: 'My Novel',
+        lifecyclePhase: 'concept',
       }),
     );
   });
 });
 
-// ── GET /api/project/manifest ───────────────────────────────────────
+// ── GET /project/manifest ─────────────────────────────────────────────
 
-describe('GET /api/project/manifest', () => {
+describe('GET /project/manifest', () => {
   beforeEach(() => {
     resetMockDb();
     vi.clearAllMocks();
@@ -136,29 +132,32 @@ describe('GET /api/project/manifest', () => {
     configureMockDb({
       select: [
         {
-          id: 'p1',
-          title: 'Test Project',
-          authorName: 'Author',
-          genre: 'Fiction',
-          grammarVersion: '1.0.0',
-          grammarFingerprint: 'abc123',
-          compositionMode: 'merge',
-          lifecycleStage: 'concept',
-          publishingMode: 'text',
-          userId: defaultUser.id,
-          createdAt: now,
-          modifiedAt: now,
+          projects: {
+            id: 'p1',
+            name: 'Test Project',
+            grammarVersion: '1.0.0',
+            grammarFingerprint: 'abc123',
+            lifecyclePhase: 'concept',
+            userId: defaultUser.id,
+            createdAt: now,
+            updatedAt: now,
+          },
+          actone_project_ext: {
+            authorName: 'Author',
+            genre: 'Fiction',
+            compositionMode: 'merge',
+            publishingMode: 'text',
+          },
           count: 3,
         },
       ],
     });
 
-    const event = createAuthenticatedEvent({
-      method: 'GET',
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/project/manifest', {
       searchParams: { projectId: 'p1' },
     });
 
-    const response = await getManifest(event);
     expect(response.status).toBe(200);
 
     const body = await getJsonBody<{
@@ -168,19 +167,14 @@ describe('GET /api/project/manifest', () => {
     }>(response);
     expect(body.id).toBe('p1');
     expect(body.title).toBe('Test Project');
-    // fileCount comes from the second select query which also resolves
-    // to the same _config.select array. The handler destructures [fileCountResult]
-    // and reads fileCountResult.count.
     expect(body.fileCount).toBe(3);
   });
 
   it('returns 400 for missing projectId', async () => {
-    const event = createAuthenticatedEvent({
-      method: 'GET',
-      searchParams: {},
-    });
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/project/manifest');
 
-    await expectHttpError(() => getManifest(event), 400);
+    expect(response.status).toBe(400);
   });
 
   it('returns 404 for non-existent project', async () => {
@@ -188,12 +182,12 @@ describe('GET /api/project/manifest', () => {
       select: [],
     });
 
-    const event = createAuthenticatedEvent({
-      method: 'GET',
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/project/manifest', {
       searchParams: { projectId: 'nonexistent' },
     });
 
-    await expectHttpError(() => getManifest(event), 404);
+    expect(response.status).toBe(404);
   });
 
   it('returns 403 if user does not own project', async () => {
@@ -201,58 +195,36 @@ describe('GET /api/project/manifest', () => {
     configureMockDb({
       select: [
         {
-          id: 'p1',
-          title: 'Other Project',
-          userId: 'other-user-999',
-          createdAt: now,
-          modifiedAt: now,
+          projects: {
+            id: 'p1',
+            name: 'Other Project',
+            userId: 'other-user-999',
+            createdAt: now,
+            updatedAt: now,
+          },
+          actone_project_ext: null,
         },
       ],
     });
 
-    const event = createAuthenticatedEvent({
-      method: 'GET',
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/project/manifest', {
       searchParams: { projectId: 'p1' },
     });
 
-    await expectHttpError(() => getManifest(event), 403);
+    expect(response.status).toBe(403);
   });
 });
 
-// ── POST /api/project/[id]/files ────────────────────────────────────
+// ── POST /project/:id/files ──────────────────────────────────────────
 
-describe('POST /api/project/[id]/files', () => {
+describe('POST /project/:id/files', () => {
   beforeEach(() => {
     resetMockDb();
     vi.clearAllMocks();
   });
 
   it('creates a new file', async () => {
-    // The select mock returns the project (for ownership check).
-    // The second select (duplicate check) also returns this same array,
-    // but since the handler checks for an existing file with the same path
-    // and destructures [existing], the first element will be treated as
-    // the "existing" file. To avoid a false 409, we need the select to
-    // return the project for the first call and empty for the second.
-    //
-    // Since the mock always returns the same array, we configure it with
-    // the project data. The handler's duplicate-check select will see the
-    // project object (which has id/userId but not filePath-specific fields),
-    // which means [existing] will be truthy and trigger a 409.
-    //
-    // To work around this, we use the fact that the mock's select always
-    // returns the same value. We need to set up the select to return the
-    // project for the ownership check. For the duplicate check, the handler
-    // also gets [existing] from the same select result. Since we can't
-    // differentiate calls, we set select to return a project-like object
-    // with `id` and `userId` that satisfies ownership but the handler
-    // treats the existence of [existing] as a duplicate.
-    //
-    // The practical approach: configure select to return the project for
-    // ownership. The files handler first checks project ownership, then
-    // checks for duplicate. Both selects return the same array. To avoid
-    // the 409, we override mockDb.select to return different values on
-    // successive calls.
     let selectCallCount = 0;
     const projectRow = { id: 'p1', userId: defaultUser.id };
     mockDb.select.mockImplementation(() => {
@@ -269,9 +241,9 @@ describe('POST /api/project/[id]/files', () => {
       insert: { id: 'f1' },
     });
 
-    const event = createAuthenticatedEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/project/p1/files', {
       method: 'POST',
-      params: { id: 'p1' },
       body: {
         action: 'create',
         filePath: 'chapter-1.actone',
@@ -279,7 +251,6 @@ describe('POST /api/project/[id]/files', () => {
       },
     });
 
-    const response = await manageFiles(event);
     expect(response.status).toBe(200);
 
     const body = await getJsonBody<{ filePath: string; action: string }>(response);
@@ -288,8 +259,6 @@ describe('POST /api/project/[id]/files', () => {
   });
 
   it('deletes an existing file', async () => {
-    // First select: project ownership check
-    // Second select: file lookup (needs id and isEntry)
     let selectCallCount = 0;
     const projectRow = { id: 'p1', userId: defaultUser.id };
     const fileRow = { id: 'f1', isEntry: false };
@@ -298,20 +267,18 @@ describe('POST /api/project/[id]/files', () => {
       if (selectCallCount === 1) {
         return createSelectChain([projectRow]);
       }
-      // Second select: the file to delete
       return createSelectChain([fileRow]);
     });
 
-    const event = createAuthenticatedEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/project/p1/files', {
       method: 'POST',
-      params: { id: 'p1' },
       body: {
         action: 'delete',
         filePath: 'chapter-2.actone',
       },
     });
 
-    const response = await manageFiles(event);
     expect(response.status).toBe(200);
 
     const body = await getJsonBody<{ filePath: string; action: string }>(response);
@@ -320,21 +287,19 @@ describe('POST /api/project/[id]/files', () => {
   });
 
   it('returns 400 for invalid action', async () => {
-    // Ownership check must pass before body validation (Zod) runs.
-    // Use mockImplementation to ensure the select mock is fresh.
     const projectRow = { id: 'p1', userId: defaultUser.id };
     mockDb.select.mockImplementation(() => createSelectChain([projectRow]));
 
-    const event = createAuthenticatedEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/project/p1/files', {
       method: 'POST',
-      params: { id: 'p1' },
       body: {
         action: 'rename',
         filePath: 'chapter-1.actone',
       },
     });
 
-    await expectHttpError(() => manageFiles(event), 400);
+    expect(response.status).toBe(400);
   });
 });
 

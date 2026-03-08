@@ -4,7 +4,7 @@
  * Calculates estimated USD cost and token count before generation.
  */
 
-import type { CostEstimate } from '@repo/shared';
+import type { CostEstimate } from '@actone/shared';
 import { backendRegistry } from './backends/backend-registry.js';
 import type { GenerationContext } from './backends/backend-registry.js';
 

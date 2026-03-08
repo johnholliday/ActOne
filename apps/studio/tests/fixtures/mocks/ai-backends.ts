@@ -6,7 +6,7 @@
  */
 
 import { vi } from 'vitest';
-import type { CostEstimate } from '@repo/shared';
+import type { CostEstimate } from '@actone/shared';
 
 // ── Types matching backend-registry.ts ────────────────────────────────
 

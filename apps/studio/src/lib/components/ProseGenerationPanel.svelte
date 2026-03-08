@@ -10,7 +10,7 @@
   import { astStore } from '$lib/stores/ast.svelte.js';
   import { findScenes } from '$lib/ast/ast-utils.js';
   import { formatCostEstimate, estimateWords } from '$lib/ai/cost-estimator.js';
-  import type { CostEstimate } from '@repo/shared';
+  import type { CostEstimate } from '@actone/shared';
 
   let costEstimate = $state<CostEstimate | null>(null);
   let estimateLoading = $state(false);

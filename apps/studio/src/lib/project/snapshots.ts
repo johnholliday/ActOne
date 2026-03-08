@@ -5,7 +5,7 @@
  * allowing authors to restore previous versions.
  */
 
-import type { LifecycleStage } from '@repo/shared';
+import type { LifecycleStage } from '@actone/shared';
 
 export interface SnapshotInput {
   projectId: string;

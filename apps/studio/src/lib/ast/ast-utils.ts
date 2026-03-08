@@ -12,7 +12,7 @@ import type {
   SerializedInteractionDef,
   SerializedTimelineDef,
   SerializedThemeDef,
-} from '@repo/shared';
+} from '@actone/shared';
 import {
   isCharacterDef,
   isWorldDef,

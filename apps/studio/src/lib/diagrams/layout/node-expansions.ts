@@ -107,6 +107,14 @@ export function expandGroupNodes(
       { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
     );
 
+    // For single-child containers, anchor to the origin so the lane
+    // can't collapse past its top-left corner. Multi-child containers
+    // naturally anchor via the spread of children.
+    if (childNodes.length === 1) {
+      childBounds.x1 = Math.min(childBounds.x1, 0);
+      childBounds.y1 = Math.min(childBounds.y1, 0);
+    }
+
     const expansion = resolveExpansion(parent, childBounds);
     if (expansion.changed) {
       parentExpansions.set(parentId, expansion);
@@ -122,6 +130,7 @@ export function expandGroupNodes(
       return {
         ...node,
         ...expansion.dimension,
+        style: `width: ${expansion.dimension.width}px; height: ${expansion.dimension.height}px;`,
         position: {
           x: expansion.position.x - parentExpansion.offset.x,
           y: expansion.position.y - parentExpansion.offset.y,
@@ -134,6 +143,7 @@ export function expandGroupNodes(
       return {
         ...node,
         ...expansion.dimension,
+        style: `width: ${expansion.dimension.width}px; height: ${expansion.dimension.height}px;`,
         position: expansion.position,
       };
     }

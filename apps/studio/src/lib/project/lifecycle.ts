@@ -1,7 +1,7 @@
 /**
  * T050: Lifecycle transition logic.
  *
- * Enforces valid lifecycle transitions using VALID_TRANSITIONS from @repo/shared.
+ * Enforces valid lifecycle transitions using VALID_TRANSITIONS from @actone/shared.
  */
 
 import {
@@ -9,7 +9,7 @@ import {
   type LifecycleStage,
   type LifecycleTransition,
   VALID_TRANSITIONS,
-} from '@repo/shared';
+} from '@actone/shared';
 
 export interface TransitionResult {
   success: boolean;

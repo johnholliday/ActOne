@@ -5,7 +5,7 @@
  * maintains its own workspace independently.
  */
 
-import type { WorkspaceState } from '@repo/shared';
+import type { WorkspaceState } from '@actone/shared';
 
 const STORAGE_KEY_PREFIX = 'actone:workspace:';
 

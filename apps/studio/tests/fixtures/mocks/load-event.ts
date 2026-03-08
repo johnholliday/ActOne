@@ -54,7 +54,8 @@ export function createLayoutLoadEvent(overrides: LayoutLoadEventOverrides = {}) 
 
   return {
     locals: {
-      safeGetSession: async () => ({ session }),
+      session,
+      user: session?.user ?? null,
       supabase: mockSupabaseClient,
     },
     cookies: {

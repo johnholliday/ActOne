@@ -1,6 +1,6 @@
 /** AST store using Svelte 5 runes — holds the parsed serialized AST from the Langium worker */
 
-import type { SerializedStory, SerializedStoryElement } from '@repo/shared';
+import type { SerializedStory, SerializedStoryElement } from '@actone/shared';
 import type { Diagnostic } from '$lib/editor/langium-client.js';
 
 /** Per-file AST state */

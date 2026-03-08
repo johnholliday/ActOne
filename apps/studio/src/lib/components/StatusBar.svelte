@@ -7,7 +7,7 @@
   import { editorStore } from '$lib/stores/editor.svelte.js';
   import { getStageLabel, getValidTargets } from '$lib/project/lifecycle.js';
   import { openPanel } from '$lib/dockview/panel-actions.js';
-  import type { LifecycleStage } from '@repo/shared';
+  import type { LifecycleStage } from '@actone/shared';
 
   interface Props {
     onadvancestage?: (target: LifecycleStage) => void;
