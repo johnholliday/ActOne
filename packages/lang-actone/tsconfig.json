@@ -1,5 +1,5 @@
 {
-  "extends": "@docugenix/sanyam-config/library.json",
+  "extends": "@docugenix/sanyam-config/base.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src"

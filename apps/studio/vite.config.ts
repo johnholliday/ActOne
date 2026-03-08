@@ -3,14 +3,15 @@ import { fileURLToPath } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import { sanyamGuidePlugin } from '@docugenix/sanyam-guide/vite-plugin';
+import { serveGuide } from '@docugenix/sanyam-guide/vite-plugin';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig({
   plugins: [
-    sanyamGuidePlugin({
-      guideDir: resolve(__dirname, '../../guide/_site'),
+    serveGuide({
+      inputDir: resolve(__dirname, '../../guide'),
+      outputDir: resolve(__dirname, '../../guide/_site'),
       pathPrefix: '/guide',
     }),
     tailwindcss(),
@@ -18,6 +19,9 @@ export default defineConfig({
   ],
   server: {
     port: 54530,
+  },
+  worker: {
+    format: 'es',
   },
   build: {
     // CodeMirror + Langium bundle exceeds 500 kB; raise limit to avoid noise
