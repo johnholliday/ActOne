@@ -68,12 +68,21 @@ export async function saveFileContent(
   fileId: string,
   content: string,
 ): Promise<boolean> {
-  const { error } = await supabase
+  const { error, count } = await supabase
     .from('project_files')
     .update({ content, updated_at: new Date().toISOString() })
-    .eq('id', fileId);
+    .eq('id', fileId)
+    .select('id', { count: 'exact', head: true });
 
-  return !error;
+  if (error) {
+    console.error('[saveFileContent] error:', error);
+    return false;
+  }
+  if (count === 0) {
+    console.error('[saveFileContent] no rows updated for fileId:', fileId);
+    return false;
+  }
+  return true;
 }
 
 /**

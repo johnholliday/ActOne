@@ -84,7 +84,6 @@ class EditorStore {
   }
 
   close(fileId: string) {
-    if (this.openFiles.length <= 1) return;
     this.removeBuffer(fileId);
     this.openFiles = this.openFiles.filter((f) => f.id !== fileId);
     if (this.activeFileId === fileId) {

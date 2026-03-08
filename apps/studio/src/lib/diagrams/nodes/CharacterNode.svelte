@@ -35,8 +35,14 @@
       {data.topTraits.map((t) => t.name).join(', ')}
     </div>
   {/if}
-  <Handle type="target" position={Position.Left} />
-  <Handle type="source" position={Position.Right} />
+  <Handle id="top-src" type="source" position={Position.Top} />
+  <Handle id="top-tgt" type="target" position={Position.Top} />
+  <Handle id="bottom-src" type="source" position={Position.Bottom} />
+  <Handle id="bottom-tgt" type="target" position={Position.Bottom} />
+  <Handle id="left-src" type="source" position={Position.Left} />
+  <Handle id="left-tgt" type="target" position={Position.Left} />
+  <Handle id="right-src" type="source" position={Position.Right} />
+  <Handle id="right-tgt" type="target" position={Position.Right} />
 </div>
 
 <style>
@@ -81,5 +87,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
+  }
+
+  .character-node :global(.svelte-flow__handle) {
+    opacity: 0;
+    width: 1px;
+    height: 1px;
   }
 </style>

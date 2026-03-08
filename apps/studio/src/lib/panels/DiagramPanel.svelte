@@ -33,6 +33,7 @@
 
   /* ── Shared diagram infrastructure ────────────────────────── */
   import { computeLayout } from '$lib/diagrams/layout/elk-layout.js';
+  import { assignHandles } from '$lib/diagrams/edges/handle-routing.js';
   import {
     loadSidecar,
     saveSidecar,
@@ -262,7 +263,14 @@
           ...(layoutEntry?.height != null ? { height: layoutEntry.height } : {}),
         };
       });
-      edges = result.edges;
+      const routedEdges = result.edges.map((e: any) => {
+        const route = layout.edges.get(e.id);
+        if (route && route.points.length > 0) {
+          return { ...e, data: { ...e.data, routePoints: route.points } };
+        }
+        return e;
+      });
+      edges = assignHandles(nodes, routedEdges, { width: 160, height: 80 });
       diagramStore.setView(config.viewId, nodes, edges);
     } finally {
       diagramLoading = false;
@@ -279,6 +287,7 @@
 
   function handleNodeDrag(d: { event: MouseEvent | TouchEvent; targetNode: any; nodes: any[] }) {
     nodeAutoExpansion?.onNodeInteraction(d);
+    edges = assignHandles(nodes, edges, { width: 160, height: 80 });
   }
 
   function handleNodeDragStop(d: { event: MouseEvent | TouchEvent; targetNode: any; nodes: any[] }) {
@@ -287,6 +296,7 @@
     const sidecar = loadSidecar(projectId, config.viewId);
     const updated = setOverride(sidecar, node.id, node.position);
     saveSidecar(projectId, config.viewId, updated);
+    edges = assignHandles(nodes, edges, { width: 160, height: 80 });
     diagramStore.updateNodes(config.viewId, nodes);
   }
 

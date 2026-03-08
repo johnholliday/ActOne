@@ -321,7 +321,6 @@
   }
 
   async function handleCloseTab(fileId: string) {
-    if (editorStore.openFiles.length <= 1) return;
     const file = editorStore.openFiles.find((f) => f.id === fileId);
     if (file?.isDirty) {
       if (!confirm(`Discard changes to ${file.filePath}?`)) return;

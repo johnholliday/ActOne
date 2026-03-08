@@ -36,8 +36,14 @@
       {data.sceneMarkers.length} scene{data.sceneMarkers.length !== 1 ? 's' : ''}
     </div>
   {/if}
-  <Handle type="target" position={Position.Top} />
-  <Handle type="source" position={Position.Bottom} />
+  <Handle id="top-src" type="source" position={Position.Top} />
+  <Handle id="top-tgt" type="target" position={Position.Top} />
+  <Handle id="bottom-src" type="source" position={Position.Bottom} />
+  <Handle id="bottom-tgt" type="target" position={Position.Bottom} />
+  <Handle id="left-src" type="source" position={Position.Left} />
+  <Handle id="left-tgt" type="target" position={Position.Left} />
+  <Handle id="right-src" type="source" position={Position.Right} />
+  <Handle id="right-tgt" type="target" position={Position.Right} />
 </div>
 
 <style>
@@ -83,5 +89,11 @@
   .scene-markers {
     font-size: 10px;
     color: #71717a;
+  }
+
+  .location-node :global(.svelte-flow__handle) {
+    opacity: 0;
+    width: 1px;
+    height: 1px;
   }
 </style>

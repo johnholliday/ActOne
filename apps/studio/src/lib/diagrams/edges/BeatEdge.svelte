@@ -5,6 +5,7 @@
    */
   import { getBezierPath } from '@xyflow/svelte';
   import type { BeatEdgeData } from '@actone/shared';
+  import { buildRoutePath } from './route-path.js';
 
   interface Props {
     id: string;
@@ -14,7 +15,7 @@
     targetY: number;
     sourcePosition: string;
     targetPosition: string;
-    data: BeatEdgeData & { label: string; color: string };
+    data: BeatEdgeData & { label: string; color: string; routePoints?: { x: number; y: number }[] };
     markerEnd?: string;
   }
 
@@ -30,7 +31,7 @@
     markerEnd,
   }: Props = $props();
 
-  const path = $derived(
+  const bezierPath = $derived(
     getBezierPath({
       sourceX,
       sourceY,
@@ -40,13 +41,22 @@
       targetPosition: targetPosition as any,
     }),
   );
+
+  const pathD = $derived.by(() => {
+    if (data.routePoints && data.routePoints.length > 2) {
+      // Use SvelteFlow handles as start/end, ELK bend points for routing
+      const bendPoints = data.routePoints.slice(1, -1);
+      return buildRoutePath([{ x: sourceX, y: sourceY }, ...bendPoints, { x: targetX, y: targetY }]);
+    }
+    return bezierPath[0];
+  });
 </script>
 
 <g>
   <path
     {id}
     class="beat-edge"
-    d={path[0]}
+    d={pathD}
     stroke={data.color}
     stroke-width={2}
     fill="none"

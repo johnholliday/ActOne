@@ -5,6 +5,7 @@
    */
   import { getBezierPath } from '@xyflow/svelte';
   import type { RelationshipEdgeData } from '@actone/shared';
+  import { buildRoutePath } from './route-path.js';
 
   interface Props {
     id: string;
@@ -14,7 +15,7 @@
     targetY: number;
     sourcePosition: string;
     targetPosition: string;
-    data: RelationshipEdgeData & { label: string; color: string };
+    data: RelationshipEdgeData & { label: string; color: string; routePoints?: { x: number; y: number }[] };
     markerEnd?: string;
   }
 
@@ -30,7 +31,7 @@
     markerEnd,
   }: Props = $props();
 
-  const path = $derived(
+  const bezierPath = $derived(
     getBezierPath({
       sourceX,
       sourceY,
@@ -41,6 +42,14 @@
     }),
   );
 
+  const pathD = $derived.by(() => {
+    if (data.routePoints && data.routePoints.length > 2) {
+      const bendPoints = data.routePoints.slice(1, -1);
+      return buildRoutePath([{ x: sourceX, y: sourceY }, ...bendPoints, { x: targetX, y: targetY }]);
+    }
+    return bezierPath[0];
+  });
+
   const strokeWidth = $derived(Math.max(1, Math.min(5, data.weight / 2)));
   const dashArray = $derived(data.dynamic ? '6 4' : 'none');
 </script>
@@ -49,7 +58,7 @@
   <path
     {id}
     class="relationship-edge"
-    d={path[0]}
+    d={pathD}
     stroke={data.color}
     stroke-width={strokeWidth}
     stroke-dasharray={dashArray}
