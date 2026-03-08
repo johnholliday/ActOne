@@ -101,7 +101,7 @@ export function serializeDocument(doc: Document): SerializedStory {
   const allElements = [...storyElements, ...standaloneElements];
   return {
     name: doc.story ? cleanName(doc.story.name) : '',
-    elements: allElements.map(serializeElement),
+    elements: allElements.map(serializeElement).filter((el): el is SerializedStoryElement => el !== null),
   };
 }
 
@@ -109,11 +109,11 @@ export function serializeDocument(doc: Document): SerializedStory {
 export function serializeStory(story: Story): SerializedStory {
   return {
     name: cleanName(story.name),
-    elements: story.elements.map(serializeElement),
+    elements: story.elements.map(serializeElement).filter((el): el is SerializedStoryElement => el !== null),
   };
 }
 
-function serializeElement(el: StoryElement): SerializedStoryElement {
+function serializeElement(el: StoryElement): SerializedStoryElement | null {
   if (isCharacterDef(el)) return serializeCharacter(el);
   if (isWorldDef(el)) return serializeWorld(el);
   if (isThemeDef(el)) return serializeTheme(el);
@@ -122,8 +122,8 @@ function serializeElement(el: StoryElement): SerializedStoryElement {
   if (isPlotDef(el)) return serializePlot(el);
   if (isInteractionDef(el)) return serializeInteraction(el);
   if (isGenerateBlock(el)) return serializeGenerate(el);
-  // Unreachable for valid ASTs, but TypeScript needs it
-  throw new Error(`Unknown element type: ${(el as AstNode).$type}`);
+  // Partial/broken AST nodes from error recovery — skip them
+  return null;
 }
 
 /* ── Character ───────────────────────────────────────────────────────── */

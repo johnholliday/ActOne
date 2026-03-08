@@ -68,6 +68,8 @@
   /* ── Derived: elements from the merged AST ─────────────── */
 
   const elements = $derived(astStore.activeElements);
+  const hasErrors = $derived(astStore.totalErrors > 0);
+  const errorCount = $derived(astStore.totalErrors);
 
   const storyName = $derived(astStore.mergedAst?.name ?? astStore.activeAst?.ast?.name ?? '');
 
@@ -354,7 +356,16 @@
   </div>
 
   <div class="flex-1 overflow-y-auto px-1 py-2 text-xs">
-    {#if elements.length === 0}
+    {#if hasErrors}
+      <div class="mx-2 my-3 rounded border border-red-500/30 bg-red-500/10 px-3 py-2 text-red-400">
+        <p class="font-medium">{errorCount} syntax {errorCount === 1 ? 'error' : 'errors'}</p>
+        <p class="mt-0.5 text-[10px] text-red-400/70">Fix errors in the editor to update the outline.</p>
+      </div>
+      {#if elements.length > 0}
+        <p class="px-3 pb-1 text-[10px] text-text-muted">Last valid state:</p>
+      {/if}
+    {/if}
+    {#if elements.length === 0 && !hasErrors}
       <p class="px-3 py-4 text-center text-text-muted">No elements</p>
     {:else}
       {#each categories as cat}

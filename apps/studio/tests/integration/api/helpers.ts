@@ -1,21 +1,18 @@
 /**
- * Test helpers for SvelteKit API endpoint testing.
+ * Test helpers for Hono API endpoint testing.
  *
- * Creates fake RequestEvent objects for calling endpoint handlers directly.
+ * Creates a Hono test app with local route handlers and auth middleware,
+ * replacing the previous SvelteKit RequestEvent-based helpers.
  */
 
-import type { RequestEvent } from '@sveltejs/kit';
+import { Hono } from 'hono';
+import { projectRoutes } from '$lib/api/project.js';
+import { draftRoutes } from '$lib/api/draft.js';
+import { analyticsRoutes } from '$lib/api/analytics.js';
 
-interface FakeEventOptions {
-  method?: string;
-  body?: unknown;
-  params?: Record<string, string>;
-  searchParams?: Record<string, string>;
-  locals?: Record<string, unknown>;
-  headers?: Record<string, string>;
-}
+// ── Default test user / session ───────────────────────────────────────
 
-const defaultUser = {
+export const defaultUser = {
   id: 'user-001',
   email: 'test@example.com',
   app_metadata: {},
@@ -24,7 +21,7 @@ const defaultUser = {
   created_at: '2025-01-01T00:00:00Z',
 };
 
-const defaultSession = {
+export const defaultSession = {
   access_token: 'mock-access-token',
   token_type: 'bearer',
   expires_in: 3600,
@@ -32,109 +29,68 @@ const defaultSession = {
   user: defaultUser,
 };
 
-/**
- * Creates a fake SvelteKit RequestEvent for testing endpoint handlers.
- */
-export function createFakeEvent(options: FakeEventOptions = {}): RequestEvent {
-  const {
-    method = 'GET',
-    body,
-    params = {},
-    searchParams = {},
-    locals,
-    headers = {},
-  } = options;
+// ── Hono test app factory ─────────────────────────────────────────────
 
-  const url = new URL('http://localhost:54530/api/test');
-  for (const [key, value] of Object.entries(searchParams)) {
-    url.searchParams.set(key, value);
+/**
+ * Creates a Hono test app with local route handlers.
+ * Pass a user object for authenticated requests, or `null` for unauthenticated.
+ */
+export function createTestApp(user?: typeof defaultUser | null) {
+  const app = new Hono();
+
+  app.use('*', async (c, next) => {
+    if (user) {
+      c.set('user', user);
+      c.set('session', { ...defaultSession, user });
+    }
+    await next();
+  });
+
+  app.route('/project', projectRoutes);
+  app.route('/draft', draftRoutes);
+  app.route('/analytics', analyticsRoutes);
+
+  return app;
+}
+
+// ── Request helpers ───────────────────────────────────────────────────
+
+interface RequestOptions {
+  method?: string;
+  body?: unknown;
+  searchParams?: Record<string, string>;
+  params?: Record<string, string>;
+}
+
+/**
+ * Send a request to the test app and return the Response.
+ */
+export async function appRequest(
+  app: ReturnType<typeof createTestApp>,
+  path: string,
+  options: RequestOptions = {},
+): Promise<Response> {
+  const { method = 'GET', body, searchParams } = options;
+
+  const url = new URL(`http://localhost${path}`);
+  if (searchParams) {
+    for (const [k, v] of Object.entries(searchParams)) {
+      url.searchParams.set(k, v);
+    }
   }
 
-  const requestInit: RequestInit = { method, headers };
+  const init: RequestInit = { method };
   if (body !== undefined) {
-    requestInit.body = JSON.stringify(body);
-    (requestInit.headers as Record<string, string>)['content-type'] =
-      'application/json';
+    init.body = JSON.stringify(body);
+    init.headers = { 'content-type': 'application/json' };
   }
 
-  const request = new Request(url, requestInit);
-
-  return {
-    request,
-    url,
-    params,
-    locals: {
-      session: defaultSession,
-      user: defaultUser,
-      ...locals,
-    },
-    cookies: {
-      get: () => undefined,
-      getAll: () => [],
-      set: () => {},
-      delete: () => {},
-      serialize: () => '',
-    },
-    getClientAddress: () => '127.0.0.1',
-    platform: undefined,
-    route: { id: '/api/test' },
-    isDataRequest: false,
-    isSubRequest: false,
-    fetch: globalThis.fetch,
-    setHeaders: () => {},
-  } as unknown as RequestEvent;
+  return app.request(url.pathname + url.search, init);
 }
 
 /**
- * Creates a fake event for an authenticated user.
- */
-export function createAuthenticatedEvent(
-  options: Omit<FakeEventOptions, 'locals'> = {},
-): RequestEvent {
-  return createFakeEvent({
-    ...options,
-    locals: { session: defaultSession, user: defaultUser },
-  });
-}
-
-/**
- * Creates a fake event for an unauthenticated user.
- */
-export function createUnauthenticatedEvent(
-  options: Omit<FakeEventOptions, 'locals'> = {},
-): RequestEvent {
-  return createFakeEvent({
-    ...options,
-    locals: { session: null, user: null },
-  });
-}
-
-/**
- * Extracts JSON body from a SvelteKit Response.
+ * Extracts JSON body from a Response.
  */
 export async function getJsonBody<T = unknown>(response: Response): Promise<T> {
   return response.json() as Promise<T>;
 }
-
-/**
- * Tests that a handler throws an HttpError with the expected status.
- * SvelteKit's `error()` function throws.
- */
-export async function expectHttpError(
-  fn: () => Promise<unknown>,
-  expectedStatus: number,
-): Promise<void> {
-  try {
-    await fn();
-    throw new Error(`Expected HttpError ${expectedStatus} but handler succeeded`);
-  } catch (err: unknown) {
-    const httpError = err as { status?: number; body?: { message?: string } };
-    if (httpError.status !== expectedStatus) {
-      throw new Error(
-        `Expected HttpError ${expectedStatus} but got ${httpError.status ?? 'unknown error'}: ${JSON.stringify(err)}`,
-      );
-    }
-  }
-}
-
-export { defaultUser, defaultSession };

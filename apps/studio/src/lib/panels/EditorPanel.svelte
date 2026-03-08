@@ -163,10 +163,9 @@
       authToken,
       compositionMode: project.compositionMode,
       fileOrder: projectStore.files
-        .filter((f) => !f.isEntry)
         .map((f, i) => ({
           uri: `file:///${f.filePath}`,
-          priority: i + 1,
+          priority: f.isEntry ? 0 : i + 1,
         })),
     };
   });
@@ -260,10 +259,9 @@
           authToken: session?.access_token ?? '',
           compositionMode: targetProject.meta.compositionMode,
           fileOrder: targetProject.files
-            .filter((f) => !f.isEntry)
             .map((f, i) => ({
               uri: `file:///${f.filePath}`,
-              priority: i + 1,
+              priority: f.isEntry ? 0 : i + 1,
             })),
         };
         await editorPane?.reinitializeProject?.(ctx);
@@ -302,14 +300,10 @@
     editorPane?.setDocument?.(newUri, newContent);
     switchingTab = false;
 
-    // 7. After a cross-project switch, explicitly request the AST data.
-    //    setDocument sends didClose+didOpen via postMessage before these
-    //    requests, so the worker processes them in order: the new file is
-    //    added to the workspace first, then these AST requests run against
-    //    the correct state. Without this, views stay blank because the
-    //    handleDiagnostics → getMergedAst chain is queued behind other
-    //    worker requests and may not resolve in time.
-    if (isCrossProject) {
+    // 7. Request AST data for the new file. setDocument sends
+    //    didClose+didOpen via postMessage before these requests, so
+    //    the worker processes them in order.
+    {
       const client = editorPane?.getClient?.();
       if (client?.isReady) {
         client.getSerializedAst(newUri).then((response) => {
@@ -348,6 +342,13 @@
     // Now close — activeFileId already points elsewhere, so close()
     // won't interfere with the switch
     editorStore.close(fileId);
+
+    // If no files remain, clear AST/diagram state so panels don't show stale data
+    if (editorStore.openFiles.length === 0) {
+      astStore.clear();
+      diagramStore.clear();
+      symbols = [];
+    }
   }
 
   /* ── Save & open-file event listeners ────────────────────── */

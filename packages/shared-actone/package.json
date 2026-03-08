@@ -38,14 +38,14 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@docugenix/sanyam-shared": "^0.8.0",
-    "@docugenix/sanyam-db": "^0.8.0",
+    "@docugenix/sanyam-db": "^0.9.1",
+    "@docugenix/sanyam-shared": "^0.9.1",
     "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.8.3",
     "zod": "^3.25.0"
   },
   "devDependencies": {
-    "@docugenix/sanyam-config": "^0.8.0",
+    "@docugenix/sanyam-config": "^0.9.1",
     "eslint": "^9.0.0",
     "typescript": "^5.9.2",
     "vitest": "^3.2.1"

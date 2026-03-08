@@ -28,9 +28,10 @@ export type {
   LifecycleStage,
   CompositionMode,
   LifecycleTransition,
+  ActOneProjectMetadata,
 } from './types/index.js';
 
-export { VALID_TRANSITIONS, isValidTransition } from './types/index.js';
+export { VALID_TRANSITIONS, isValidTransition, defaultActOneMetadata } from './types/index.js';
 
 export type {
   SerializedStory,

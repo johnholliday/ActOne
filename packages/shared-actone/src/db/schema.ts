@@ -9,32 +9,23 @@ import {
   jsonb,
   index,
   pgEnum,
-  pgPolicy,
 } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
-import { authenticatedRole } from 'drizzle-orm/supabase';
-import type { SchemaContribution } from '@docugenix/sanyam-db';
+import type { SchemaContribution, SchemaExtension } from '@docugenix/sanyam-db';
+import {
+  projects,
+  projectFiles,
+  ownedViaParentPolicies,
+  ownedByExtensionPolicy,
+} from '@docugenix/sanyam-db/schema';
 
-// ── ActOne-specific enums ───────────────────────────────────────────────
+// ── Re-export sanyam-db base tables ────────────────────────────────
+// ActOne uses sanyam-db's `projects` and `projectFiles` directly.
+// The `sourceFiles` alias preserves backward compatibility for imports.
 
-export const compositionModeEnum = pgEnum('composition_mode', [
-  'merge',
-  'overlay',
-  'sequential',
-]);
+export { projects, projectFiles };
+export { projectFiles as sourceFiles };
 
-export const lifecycleStageEnum = pgEnum('lifecycle_stage', [
-  'concept',
-  'draft',
-  'revision',
-  'final',
-  'published',
-]);
-
-export const publishingModeEnum = pgEnum('publishing_mode', [
-  'text',
-  'graphic-novel',
-]);
+// ── ActOne-specific enums ───────────────────────────────────────────
 
 export const assetTypeEnum = pgEnum('asset_type', [
   'portrait',
@@ -58,80 +49,27 @@ export const draftStatusEnum = pgEnum('draft_status', [
   'editing',
 ]);
 
-// ── Projects ───────────────────────────────────────────────────────────
-// ActOne's projects table with domain-specific columns.
-// This matches the existing database schema; sanyam-db's base `projects`
-// table has a different column set (name vs title, etc.).
+// ── ActOne Project Extension (1:1 with projects) ───────────────────
+// Domain-specific columns for ActOne projects, stored in a 1:1 extension
+// table that joins to the sanyam-db base `projects` table.
 
-export const projects = pgTable(
-  'projects',
+export const actoneProjectExt = pgTable(
+  'actone_project_ext',
   {
-    id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id').notNull(),
-    title: text('title').notNull(),
+    projectId: uuid('project_id')
+      .primaryKey()
+      .references(() => projects.id, { onDelete: 'cascade' }),
     authorName: text('author_name'),
     genre: text('genre'),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    modifiedAt: timestamp('modified_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    version: text('version').default('1.0.0'),
-    grammarVersion: text('grammar_version').default('2.0.0'),
-    grammarFingerprint: text('grammar_fingerprint'),
-    compositionMode: compositionModeEnum('composition_mode')
-      .default('merge')
-      .notNull(),
-    lifecycleStage: lifecycleStageEnum('lifecycle_stage')
-      .default('concept')
-      .notNull(),
-    publishingMode: publishingModeEnum('publishing_mode')
-      .default('text')
-      .notNull(),
+    compositionMode: text('composition_mode').default('merge').notNull(),
+    publishingMode: text('publishing_mode').default('text').notNull(),
   },
   (table) => [
-    index('projects_user_id_idx').on(table.userId),
-    pgPolicy('users_own_projects', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`(select auth.uid()) = ${table.userId}`,
-      withCheck: sql`(select auth.uid()) = ${table.userId}`,
-    }),
+    ...ownedByExtensionPolicy('actone_project_ext', table.projectId, 'projects'),
   ],
 );
 
-// ── Source Files ────────────────────────────────────────────────────────
-
-export const sourceFiles = pgTable(
-  'source_files',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    projectId: uuid('project_id')
-      .notNull()
-      .references(() => projects.id, { onDelete: 'cascade' }),
-    filePath: text('file_path').notNull(),
-    content: text('content').notNull().default(''),
-    isEntry: boolean('is_entry').default(false),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    modifiedAt: timestamp('modified_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-  },
-  (table) => [
-    index('source_files_project_id_idx').on(table.projectId),
-    pgPolicy('users_access_source_files', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`${table.projectId} in (select id from projects where user_id = (select auth.uid()))`,
-      withCheck: sql`${table.projectId} in (select id from projects where user_id = (select auth.uid()))`,
-    }),
-  ],
-);
-
-// ── Snapshots ──────────────────────────────────────────────────────────
+// ── Snapshots ──────────────────────────────────────────────────────
 
 export const snapshots = pgTable(
   'snapshots',
@@ -141,7 +79,7 @@ export const snapshots = pgTable(
       .notNull()
       .references(() => projects.id, { onDelete: 'cascade' }),
     tag: text('tag').notNull(),
-    stage: lifecycleStageEnum('stage').notNull(),
+    stage: text('stage').notNull(),
     wordCount: integer('word_count').default(0),
     sceneCount: integer('scene_count').default(0),
     characterCount: integer('character_count').default(0),
@@ -152,16 +90,11 @@ export const snapshots = pgTable(
   },
   (table) => [
     index('snapshots_project_id_idx').on(table.projectId),
-    pgPolicy('users_access_project_snapshots', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`${table.projectId} in (select id from projects where user_id = (select auth.uid()))`,
-      withCheck: sql`${table.projectId} in (select id from projects where user_id = (select auth.uid()))`,
-    }),
+    ...ownedViaParentPolicies('snapshots', table.projectId, 'projects'),
   ],
 );
 
-// ── Snapshot Files ─────────────────────────────────────────────────────
+// ── Snapshot Files ─────────────────────────────────────────────────
 
 export const snapshotFiles = pgTable(
   'snapshot_files',
@@ -174,16 +107,11 @@ export const snapshotFiles = pgTable(
     content: text('content').notNull(),
   },
   (table) => [
-    pgPolicy('users_access_snapshot_files', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`${table.snapshotId} in (select s.id from snapshots s join projects p on s.project_id = p.id where p.user_id = (select auth.uid()))`,
-      withCheck: sql`${table.snapshotId} in (select s.id from snapshots s join projects p on s.project_id = p.id where p.user_id = (select auth.uid()))`,
-    }),
+    ...ownedViaParentPolicies('snapshot_files', table.snapshotId, 'snapshots'),
   ],
 );
 
-// ── Assets ─────────────────────────────────────────────────────────────
+// ── Assets ─────────────────────────────────────────────────────────
 
 export const assets = pgTable(
   'assets',
@@ -205,16 +133,11 @@ export const assets = pgTable(
   (table) => [
     index('assets_project_id_idx').on(table.projectId),
     index('assets_type_idx').on(table.type),
-    pgPolicy('users_access_project_assets', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`${table.projectId} in (select id from projects where user_id = (select auth.uid()))`,
-      withCheck: sql`${table.projectId} in (select id from projects where user_id = (select auth.uid()))`,
-    }),
+    ...ownedViaParentPolicies('assets', table.projectId, 'projects'),
   ],
 );
 
-// ── Analytics Snapshots ────────────────────────────────────────────────
+// ── Analytics Snapshots ────────────────────────────────────────────
 
 export const analyticsSnapshots = pgTable(
   'analytics_snapshots',
@@ -233,16 +156,11 @@ export const analyticsSnapshots = pgTable(
   },
   (table) => [
     index('analytics_project_id_idx').on(table.projectId),
-    pgPolicy('users_access_project_analytics', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`${table.projectId} in (select id from projects where user_id = (select auth.uid()))`,
-      withCheck: sql`${table.projectId} in (select id from projects where user_id = (select auth.uid()))`,
-    }),
+    ...ownedViaParentPolicies('analytics_snapshots', table.projectId, 'projects'),
   ],
 );
 
-// ── Draft Versions ─────────────────────────────────────────────────────
+// ── Draft Versions ─────────────────────────────────────────────────
 
 export const draftVersions = pgTable(
   'draft_versions',
@@ -266,23 +184,27 @@ export const draftVersions = pgTable(
   },
   (table) => [
     index('drafts_project_scene_idx').on(table.projectId, table.sceneName),
-    pgPolicy('users_access_project_drafts', {
-      for: 'all',
-      to: authenticatedRole,
-      using: sql`${table.projectId} in (select id from projects where user_id = (select auth.uid()))`,
-      withCheck: sql`${table.projectId} in (select id from projects where user_id = (select auth.uid()))`,
-    }),
+    ...ownedViaParentPolicies('draft_versions', table.projectId, 'projects'),
   ],
 );
 
-// ── Schema Contribution ────────────────────────────────────────────────
-// Register ActOne's domain tables as extensions to sanyam-db's base schema.
+// ── Schema Extension (1:1 extension for projects) ──────────────────
+
+export const actoneProjectExtension: SchemaExtension = {
+  pluginId: 'actone',
+  extends: 'projects',
+  table: actoneProjectExt,
+  foreignKey: actoneProjectExt.projectId,
+};
+
+// ── Schema Contribution (additional domain tables) ─────────────────
+// The base `projects` and `projectFiles` tables are managed by sanyam-db.
+// ActOne contributes its extension table plus domain-specific tables.
 
 export const actOneSchemaContribution: SchemaContribution = {
   pluginId: 'actone',
   tables: [
-    projects,
-    sourceFiles,
+    actoneProjectExt,
     snapshots,
     snapshotFiles,
     assets,

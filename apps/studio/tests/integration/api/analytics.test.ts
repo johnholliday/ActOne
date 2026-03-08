@@ -1,7 +1,7 @@
 /**
- * T052: Analytics API endpoint integration tests.
+ * T052: Analytics API Hono handler integration tests.
  *
- * Tests POST /api/analytics/snapshot and GET /api/analytics/timeseries
+ * Tests POST /analytics/snapshot and GET /analytics/timeseries
  * using mocked Drizzle db.
  */
 
@@ -10,13 +10,11 @@ import '../../fixtures/mocks/setup.js';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { configureMockDb, resetMockDb } from '../../fixtures/mocks/db.js';
 import {
-  createFakeEvent,
+  createTestApp,
+  appRequest,
   getJsonBody,
-  expectHttpError,
+  defaultUser,
 } from './helpers.js';
-
-import { POST as createSnapshot } from '$routes/api/analytics/snapshot/+server.js';
-import { GET as getTimeseries } from '$routes/api/analytics/timeseries/+server.js';
 
 // ── Fixtures ─────────────────────────────────────────────────────────
 
@@ -39,7 +37,7 @@ const CAPTURED_AT = new Date('2026-02-26T12:00:00Z');
 
 // ── Tests ────────────────────────────────────────────────────────────
 
-describe('POST /api/analytics/snapshot', () => {
+describe('POST /analytics/snapshot', () => {
   beforeEach(() => {
     resetMockDb();
   });
@@ -49,12 +47,12 @@ describe('POST /api/analytics/snapshot', () => {
       insert: [{ id: SNAPSHOT_ID, capturedAt: CAPTURED_AT }],
     });
 
-    const event = createFakeEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/analytics/snapshot', {
       method: 'POST',
       body: validSnapshotBody,
     });
 
-    const response = await createSnapshot(event);
     const body = await getJsonBody<{ id: string; capturedAt: string }>(response);
 
     expect(body.id).toBe(SNAPSHOT_ID);
@@ -66,12 +64,11 @@ describe('POST /api/analytics/snapshot', () => {
       insert: [{ id: SNAPSHOT_ID, capturedAt: CAPTURED_AT }],
     });
 
-    const event = createFakeEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/analytics/snapshot', {
       method: 'POST',
       body: validSnapshotBody,
     });
-
-    const response = await createSnapshot(event);
 
     expect(response.status).toBe(201);
   });
@@ -79,25 +76,27 @@ describe('POST /api/analytics/snapshot', () => {
   it('returns 400 for missing projectId', async () => {
     const { projectId: _, ...bodyWithoutProjectId } = validSnapshotBody;
 
-    const event = createFakeEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/analytics/snapshot', {
       method: 'POST',
       body: bodyWithoutProjectId,
     });
 
-    await expectHttpError(() => createSnapshot(event), 400);
+    expect(response.status).toBe(400);
   });
 
   it('returns 400 for negative wordCount', async () => {
-    const event = createFakeEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/analytics/snapshot', {
       method: 'POST',
       body: { ...validSnapshotBody, wordCount: -1 },
     });
 
-    await expectHttpError(() => createSnapshot(event), 400);
+    expect(response.status).toBe(400);
   });
 });
 
-describe('GET /api/analytics/timeseries', () => {
+describe('GET /analytics/timeseries', () => {
   beforeEach(() => {
     resetMockDb();
   });
@@ -126,12 +125,11 @@ describe('GET /api/analytics/timeseries', () => {
 
     configureMockDb({ select: snapshotRows });
 
-    const event = createFakeEvent({
-      method: 'GET',
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/analytics/timeseries', {
       searchParams: { projectId: PROJECT_ID },
     });
 
-    const response = await getTimeseries(event);
     const body = await getJsonBody<{ snapshots: typeof snapshotRows }>(response);
 
     expect(response.status).toBe(200);
@@ -141,23 +139,20 @@ describe('GET /api/analytics/timeseries', () => {
   });
 
   it('returns 400 for missing projectId', async () => {
-    const event = createFakeEvent({
-      method: 'GET',
-      searchParams: {},
-    });
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/analytics/timeseries');
 
-    await expectHttpError(() => getTimeseries(event), 400);
+    expect(response.status).toBe(400);
   });
 
   it('returns empty array when no snapshots', async () => {
     configureMockDb({ select: [] });
 
-    const event = createFakeEvent({
-      method: 'GET',
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/analytics/timeseries', {
       searchParams: { projectId: PROJECT_ID },
     });
 
-    const response = await getTimeseries(event);
     const body = await getJsonBody<{ snapshots: unknown[] }>(response);
 
     expect(response.status).toBe(200);
@@ -177,12 +172,11 @@ describe('GET /api/analytics/timeseries', () => {
 
     configureMockDb({ select: snapshotRows });
 
-    const event = createFakeEvent({
-      method: 'GET',
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/analytics/timeseries', {
       searchParams: { projectId: PROJECT_ID, limit: '5' },
     });
 
-    const response = await getTimeseries(event);
     const body = await getJsonBody<{ snapshots: typeof snapshotRows }>(response);
 
     expect(response.status).toBe(200);

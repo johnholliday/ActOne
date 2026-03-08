@@ -184,6 +184,8 @@
   let diagramLoading = $state(true);
 
   const projectId = $derived(projectStore.project?.id ?? '');
+  const hasErrors = $derived(astStore.totalErrors > 0);
+  const errorCount = $derived(astStore.totalErrors);
 
   /* ── Diagram preferences ────────────────────────────────── */
 
@@ -385,11 +387,16 @@
   </div>
 {:else}
   <div
-    class="diagram-container"
+    class="diagram-container relative"
     style="background: {styleConfig.canvasBgColor};"
     role="presentation"
     oncontextmenu={handleContextMenu}
   >
+    {#if hasErrors}
+      <div class="absolute left-1/2 top-2 z-10 -translate-x-1/2 rounded border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs text-red-400 backdrop-blur-sm">
+        {errorCount} syntax {errorCount === 1 ? 'error' : 'errors'} — fix in editor to update diagram
+      </div>
+    {/if}
     <SvelteFlow
       bind:nodes
       bind:edges

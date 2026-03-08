@@ -1,8 +1,8 @@
 /**
- * T051: Integration tests for draft management endpoints.
+ * T051: Integration tests for draft management Hono handlers.
  *
- * - GET /api/draft/list
- * - PUT /api/draft/update
+ * - GET /draft/list
+ * - PUT /draft/update
  */
 
 import '../../fixtures/mocks/setup.js';
@@ -10,13 +10,11 @@ import '../../fixtures/mocks/setup.js';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { configureMockDb, resetMockDb } from '../../fixtures/mocks/db.js';
 import {
-  createFakeEvent,
+  createTestApp,
+  appRequest,
   getJsonBody,
-  expectHttpError,
+  defaultUser,
 } from './helpers.js';
-
-import { GET as listDrafts } from '$routes/api/draft/list/+server.js';
-import { PUT as updateDraft } from '$routes/api/draft/update/+server.js';
 
 // ── Fixtures ─────────────────────────────────────────────────────────
 
@@ -41,7 +39,7 @@ const fakeDrafts = [
 
 // ── Tests ────────────────────────────────────────────────────────────
 
-describe('GET /api/draft/list', () => {
+describe('GET /draft/list', () => {
   beforeEach(() => {
     resetMockDb();
   });
@@ -49,11 +47,11 @@ describe('GET /api/draft/list', () => {
   it('returns drafts for a project', async () => {
     configureMockDb({ select: fakeDrafts });
 
-    const event = createFakeEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/draft/list', {
       searchParams: { projectId: 'p1' },
     });
 
-    const response = await listDrafts(event);
     expect(response.status).toBe(200);
 
     const body = await getJsonBody<typeof fakeDrafts>(response);
@@ -62,20 +60,21 @@ describe('GET /api/draft/list', () => {
   });
 
   it('returns 400 for missing projectId', async () => {
-    const event = createFakeEvent();
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/draft/list');
 
-    await expectHttpError(() => listDrafts(event), 400);
+    expect(response.status).toBe(400);
   });
 
   it('filters by sceneName when provided', async () => {
     const filtered = [fakeDrafts[0]];
     configureMockDb({ select: filtered });
 
-    const event = createFakeEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/draft/list', {
       searchParams: { projectId: 'p1', sceneName: 'Scene 1' },
     });
 
-    const response = await listDrafts(event);
     expect(response.status).toBe(200);
 
     const body = await getJsonBody<typeof filtered>(response);
@@ -86,11 +85,11 @@ describe('GET /api/draft/list', () => {
   it('returns empty array for no drafts', async () => {
     configureMockDb({ select: [] });
 
-    const event = createFakeEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/draft/list', {
       searchParams: { projectId: 'p1' },
     });
 
-    const response = await listDrafts(event);
     expect(response.status).toBe(200);
 
     const body = await getJsonBody<unknown[]>(response);
@@ -99,7 +98,7 @@ describe('GET /api/draft/list', () => {
   });
 });
 
-describe('PUT /api/draft/update', () => {
+describe('PUT /draft/update', () => {
   beforeEach(() => {
     resetMockDb();
   });
@@ -109,7 +108,8 @@ describe('PUT /api/draft/update', () => {
       update: [{ id: 'draft-1', status: 'accepted' }],
     });
 
-    const event = createFakeEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/draft/update', {
       method: 'PUT',
       body: {
         draftId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
@@ -117,7 +117,6 @@ describe('PUT /api/draft/update', () => {
       },
     });
 
-    const response = await updateDraft(event);
     expect(response.status).toBe(200);
 
     const body = await getJsonBody<{ id: string; status: string }>(response);
@@ -125,16 +124,18 @@ describe('PUT /api/draft/update', () => {
   });
 
   it('returns 400 for missing draftId', async () => {
-    const event = createFakeEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/draft/update', {
       method: 'PUT',
       body: {},
     });
 
-    await expectHttpError(() => updateDraft(event), 400);
+    expect(response.status).toBe(400);
   });
 
   it('returns 400 for invalid status', async () => {
-    const event = createFakeEvent({
+    const app = createTestApp(defaultUser);
+    const response = await appRequest(app, '/draft/update', {
       method: 'PUT',
       body: {
         draftId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
@@ -142,6 +143,6 @@ describe('PUT /api/draft/update', () => {
       },
     });
 
-    await expectHttpError(() => updateDraft(event), 400);
+    expect(response.status).toBe(400);
   });
 });

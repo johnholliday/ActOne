@@ -24,15 +24,15 @@
   },
   "dependencies": {
     "@actone/shared": "workspace:*",
-    "@docugenix/sanyam-langium": "^0.8.0",
+    "@docugenix/sanyam-langium": "^0.9.1",
     "langium": "~4.2.1",
     "vscode-languageserver": "~9.0.1",
     "vscode-languageserver-protocol": "~3.17.5"
   },
   "devDependencies": {
-    "@docugenix/sanyam-config": "^0.8.0",
-    "langium-cli": "~4.2.0",
+    "@docugenix/sanyam-config": "^0.9.1",
     "eslint": "^9.0.0",
+    "langium-cli": "~4.2.0",
     "typescript": "^5.9.2",
     "vitest": "^3.2.1"
   }

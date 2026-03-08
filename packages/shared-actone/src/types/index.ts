@@ -40,6 +40,9 @@ export type {
 
 export { VALID_TRANSITIONS, isValidTransition } from './project.js';
 
+export type { ActOneProjectMetadata } from './project-metadata.js';
+export { defaultActOneMetadata } from './project-metadata.js';
+
 export type { WorkspaceState } from './workspace.js';
 
 export type {

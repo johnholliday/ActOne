@@ -1,7 +1,7 @@
 import { relations } from 'drizzle-orm';
+import { projects, projectFiles } from '@docugenix/sanyam-db/schema';
 import {
-  projects,
-  sourceFiles,
+  actoneProjectExt,
   snapshots,
   snapshotFiles,
   assets,
@@ -9,17 +9,28 @@ import {
   draftVersions,
 } from './schema.js';
 
-export const projectsRelations = relations(projects, ({ many }) => ({
-  sourceFiles: many(sourceFiles),
+export const projectsRelations = relations(projects, ({ one, many }) => ({
+  actoneExt: one(actoneProjectExt, {
+    fields: [projects.id],
+    references: [actoneProjectExt.projectId],
+  }),
+  projectFiles: many(projectFiles),
   snapshots: many(snapshots),
   assets: many(assets),
   analyticsSnapshots: many(analyticsSnapshots),
   draftVersions: many(draftVersions),
 }));
 
-export const sourceFilesRelations = relations(sourceFiles, ({ one }) => ({
+export const actoneProjectExtRelations = relations(actoneProjectExt, ({ one }) => ({
   project: one(projects, {
-    fields: [sourceFiles.projectId],
+    fields: [actoneProjectExt.projectId],
+    references: [projects.id],
+  }),
+}));
+
+export const projectFilesRelations = relations(projectFiles, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectFiles.projectId],
     references: [projects.id],
   }),
 }));

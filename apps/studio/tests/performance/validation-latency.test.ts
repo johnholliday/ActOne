@@ -19,7 +19,7 @@ const services = createActOneServices();
 const validate = validationHelper<Story>(services.ActOne);
 
 const langiumFixtures = new URL(
-  '../../../../packages/langium/tests/fixtures/',
+  '../../../../packages/lang-actone/tests/fixtures/',
   import.meta.url,
 );
 

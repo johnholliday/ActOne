@@ -47,7 +47,7 @@ export function registerActOneHandlers(
         try {
           const filePath = URI.parse(entry.uri).path.replace(/^\//, '');
 
-          const supabaseUrl = `${params.supabaseUrl}/rest/v1/source_files?select=content&file_path=eq.${encodeURIComponent(filePath)}&project_id=eq.${params.projectId}`;
+          const supabaseUrl = `${params.supabaseUrl}/rest/v1/project_files?select=content&file_path=eq.${encodeURIComponent(filePath)}&project_id=eq.${params.projectId}`;
           const response = await fetch(supabaseUrl, {
             headers: {
               apikey: params.supabaseAnonKey,
@@ -139,7 +139,12 @@ export function registerActOneHandlers(
     const errors = diagnostics.filter((d) => d.severity === 1).length;
 
     const root = document.parseResult.value;
-    const ast = isDocument(root) ? serializeDocument(root) : null;
+    let ast = null;
+    try {
+      ast = isDocument(root) ? serializeDocument(root) : null;
+    } catch {
+      // Partial AST from error recovery
+    }
     return { ast, valid: errors === 0, errors };
   });
 
@@ -153,7 +158,12 @@ export function registerActOneHandlers(
         const diagnostics = doc.diagnostics ?? [];
         const errors = diagnostics.filter((d) => d.severity === 1).length;
         const root = doc.parseResult.value;
-        const ast = isDocument(root) ? serializeDocument(root) : null;
+        let ast = null;
+        try {
+          ast = isDocument(root) ? serializeDocument(root) : null;
+        } catch {
+          // Partial AST from error recovery
+        }
         stories.push({
           uri: doc.uri.toString(),
           ast,
@@ -183,11 +193,15 @@ export function registerActOneHandlers(
       const root = doc.parseResult.value;
       if (!isDocument(root)) continue;
 
-      const serialized = serializeDocument(root);
-      mergedElements.push(...serialized.elements);
+      try {
+        const serialized = serializeDocument(root);
+        mergedElements.push(...serialized.elements);
 
-      if (serialized.name && !storyName) {
-        storyName = serialized.name;
+        if (serialized.name && !storyName) {
+          storyName = serialized.name;
+        }
+      } catch {
+        // Partial AST from error recovery — skip this document
       }
     }
 

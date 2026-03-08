@@ -1,14 +1,17 @@
 import { type Handle, redirect, json } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
+import { Hono } from 'hono';
 import { handleAuth } from '@docugenix/sanyam-auth/sveltekit';
 import { createSanyamApi, type ApiRouteContribution } from '@docugenix/sanyam-app/api';
 import { createAiTextRoutes } from '@docugenix/sanyam-ai-text';
 import { createAiImageRoutes } from '@docugenix/sanyam-ai-image';
 import { createPublishingRoutes } from '@docugenix/sanyam-publishing';
+import { FormatRegistry } from '@docugenix/sanyam-publishing/formats';
 import { projectRoutes } from '$lib/api/project.js';
 import { draftRoutes } from '$lib/api/draft.js';
 import { analyticsRoutes } from '$lib/api/analytics.js';
 import { visualDnaRoute } from '$lib/api/character.js';
+import { createAiTextConfig, createAiImageConfig } from '$lib/api/provider-adapters.js';
 
 import {
   PUBLIC_SUPABASE_URL,
@@ -65,17 +68,32 @@ const authGuard: Handle = async ({ event, resolve }) => {
 
 /* ── Hono API route contributions ──────────────────────────────── */
 
+// Publishing format registry — formats will be registered by contributions
+const publishingFormats = new FormatRegistry();
+
 const contributions: ApiRouteContribution[] = [
   { prefix: '/project', routes: projectRoutes },
   { prefix: '/draft', routes: draftRoutes },
-  { prefix: '/ai-text', routes: createAiTextRoutes() },
-  { prefix: '/ai-image', routes: createAiImageRoutes() },
+  { prefix: '/ai-text', routes: createAiTextRoutes(createAiTextConfig()) },
+  { prefix: '/ai-image', routes: createAiImageRoutes(createAiImageConfig()) },
   { prefix: '/character', routes: visualDnaRoute },
-  { prefix: '/publishing', routes: createPublishingRoutes() },
+  { prefix: '/publishing', routes: createPublishingRoutes({ registry: publishingFormats }) },
   { prefix: '/analytics', routes: analyticsRoutes },
 ];
 
 const honoApp = createSanyamApi(contributions, '/api');
+
+// Bridge SvelteKit locals (passed as Hono env bindings) into the Hono
+// context store so route handlers can access them via c.get('user') etc.
+// We prepend this middleware by re-wrapping the app.
+const wrappedApp = new Hono();
+wrappedApp.use('*', async (c, next) => {
+  if (c.env.user) c.set('user', c.env.user);
+  if (c.env.session) c.set('session', c.env.session);
+  if (c.env.supabase) c.set('supabase', c.env.supabase);
+  await next();
+});
+wrappedApp.route('/', honoApp);
 
 const apiHandle: Handle = async ({ event, resolve }) => {
   if (!event.url.pathname.startsWith('/api/')) {
@@ -83,7 +101,7 @@ const apiHandle: Handle = async ({ event, resolve }) => {
   }
 
   // Build a standard Request with Hono env bindings from SvelteKit locals
-  const response = await honoApp.fetch(event.request, {
+  const response = await wrappedApp.fetch(event.request, {
     session: event.locals.session,
     user: event.locals.user,
     supabase: event.locals.supabase,

@@ -5,7 +5,8 @@ import {
 } from 'drizzle-zod';
 import {
   projects,
-  sourceFiles,
+  projectFiles,
+  actoneProjectExt,
   snapshots,
   snapshotFiles,
   assets,
@@ -13,41 +14,52 @@ import {
   draftVersions,
 } from './schema.js';
 
-// ── Project schemas ────────────────────────────────────────────────────
+// ── Project schemas ────────────────────────────────────────────────
 
 export const projectSelectSchema = createSelectSchema(projects);
 export const projectInsertSchema = createInsertSchema(projects);
 export const projectUpdateSchema = createUpdateSchema(projects);
 
-// ── Source file schemas ────────────────────────────────────────────────
+// ── Project extension schemas ──────────────────────────────────────
 
-export const sourceFileSelectSchema = createSelectSchema(sourceFiles);
-export const sourceFileInsertSchema = createInsertSchema(sourceFiles);
-export const sourceFileUpdateSchema = createUpdateSchema(sourceFiles);
+export const actoneProjectExtSelectSchema = createSelectSchema(actoneProjectExt);
+export const actoneProjectExtInsertSchema = createInsertSchema(actoneProjectExt);
+export const actoneProjectExtUpdateSchema = createUpdateSchema(actoneProjectExt);
 
-// ── Snapshot schemas ───────────────────────────────────────────────────
+// ── Project file schemas ───────────────────────────────────────────
+
+export const projectFileSelectSchema = createSelectSchema(projectFiles);
+export const projectFileInsertSchema = createInsertSchema(projectFiles);
+export const projectFileUpdateSchema = createUpdateSchema(projectFiles);
+
+// Backward-compatible aliases
+export const sourceFileSelectSchema = projectFileSelectSchema;
+export const sourceFileInsertSchema = projectFileInsertSchema;
+export const sourceFileUpdateSchema = projectFileUpdateSchema;
+
+// ── Snapshot schemas ───────────────────────────────────────────────
 
 export const snapshotSelectSchema = createSelectSchema(snapshots);
 export const snapshotInsertSchema = createInsertSchema(snapshots);
 
-// ── Snapshot file schemas ──────────────────────────────────────────────
+// ── Snapshot file schemas ──────────────────────────────────────────
 
 export const snapshotFileSelectSchema = createSelectSchema(snapshotFiles);
 export const snapshotFileInsertSchema = createInsertSchema(snapshotFiles);
 
-// ── Asset schemas ──────────────────────────────────────────────────────
+// ── Asset schemas ──────────────────────────────────────────────────
 
 export const assetSelectSchema = createSelectSchema(assets);
 export const assetInsertSchema = createInsertSchema(assets);
 
-// ── Analytics snapshot schemas ─────────────────────────────────────────
+// ── Analytics snapshot schemas ─────────────────────────────────────
 
 export const analyticsSnapshotSelectSchema =
   createSelectSchema(analyticsSnapshots);
 export const analyticsSnapshotInsertSchema =
   createInsertSchema(analyticsSnapshots);
 
-// ── Draft version schemas ──────────────────────────────────────────────
+// ── Draft version schemas ──────────────────────────────────────────
 
 export const draftVersionSelectSchema = createSelectSchema(draftVersions);
 export const draftVersionInsertSchema = createInsertSchema(draftVersions);

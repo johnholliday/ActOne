@@ -37,7 +37,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Published to GitHub Packages (`@docugenix:registry=https://npm.pkg.github.com`):
 - `sanyam-core` — Plugin container, contribution points, loader
 - `sanyam-shared` — Generic Zod utilities, string-utils
-- `sanyam-db` — Base `projects`/`source_files` tables with RLS helpers; ActOne extends via `SchemaContribution`
+- `sanyam-db` — Base `projects`/`project_files` tables with RLS helpers; `SchemaExtension` for 1:1 extension tables, `SchemaContribution` for domain tables
 - `sanyam-langium` — Worker infrastructure (`createWorkerLanguageServer()`)
 - `sanyam-app` — Hono API adapter (`createSanyamApi()`, `ApiRouteContribution`)
 - `sanyam-auth` — Supabase SSR hooks, auth routes, admin client
@@ -81,8 +81,9 @@ Uses ESLint 9 flat config format (`.mjs` files). Packages import from `@docugeni
 
 ## Active Technologies
 - TypeScript 5.9.x (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + SvelteKit 2.53.x, Svelte 5.53.x (runes), Langium 4.2.x, @xyflow/svelte 1.5.x, CodeMirror 6, dockview-core 5.0.0, Hono 4.x, Drizzle ORM 0.45.x, @supabase/supabase-js 2.97.x, Tailwind CSS 4.2.x, Zod, lucide-svelte, Eleventy 3.1.x
-- @docugenix/sanyam-* 0.8.x (core, shared, db, langium, app, auth, ai-text, ai-image, publishing, config, diagrams, editor-codemirror, layout-dockview, guide, test-utils)
+- @docugenix/sanyam-* 0.9.x (core, shared, db, langium, app, auth, ai-text, ai-image, publishing, config, diagrams, editor-codemirror, layout-dockview, guide, test-utils)
 - Supabase PostgreSQL (Drizzle ORM for schema/queries, sanyam-auth for auth, sanyam-db for RLS-aware connections)
 
 ## Recent Changes
+- 010-sanyam-db-base-tables: Migrated to sanyam-db 0.9.0 base tables. Projects table uses sanyam-db's `name`/`lifecyclePhase`/`updatedAt` columns. Domain columns (authorName, genre, compositionMode, publishingMode) stored in `actone_project_ext` 1:1 extension table via SchemaExtension. `source_files` renamed to `project_files`. Old enums dropped, using text columns.
 - 009-migrate-sanyam-packages: Migrated from @repo/* to @actone/* (local) + @docugenix/sanyam-* (external). Replaced SvelteKit API routes with Hono handlers. Worker uses createWorkerLanguageServer(). Auth delegated to sanyam-auth. Guide uses sanyam-guide. DB client from sanyam-db.
