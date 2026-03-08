@@ -113,6 +113,7 @@ export interface ArcPhaseBandData {
 export interface LifelineData {
   characterName: string;
   nature: string;
+  role?: string;
   /** Dynamic bar height based on number of exchanges. */
   lifelineHeight?: number;
 }
@@ -122,6 +123,7 @@ export interface ExchangeArrowData {
   to: string;
   patternStep: string;
   styleMix: Record<string, number>;
+  powerDynamic?: string;
   /** Y position for the exchange arrow in sequence diagram layout. */
   exchangeY?: number;
   /** Source lifeline center X in sequence diagram layout. */

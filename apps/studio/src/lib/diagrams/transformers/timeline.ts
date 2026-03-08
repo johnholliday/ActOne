@@ -2,7 +2,7 @@
  * T069: Timeline transformer.
  *
  * Produces horizontal swim-lanes per timeline layer
- * with scene blocks and arc phase bands.
+ * with scene blocks inside each lane.
  */
 
 import type {
@@ -11,23 +11,21 @@ import type {
   ActOneEdge,
   TimelineLayerData,
   TimelineBlockData,
-  ArcPhaseBandData,
   BeatEdgeData,
 } from '@actone/shared';
-import { SCENE_TYPE_COLORS, BEAT_TYPE_COLORS } from '@actone/shared';
-import { findTimelines, findScenes, findPlots } from '$lib/ast/ast-utils.js';
+import { SCENE_TYPE_COLORS } from '@actone/shared';
+import { findTimelines, findScenes } from '$lib/ast/ast-utils.js';
 import { stableId, stableEdgeId, stableGroupId } from '../operations/stable-refs.js';
 
 export interface TimelineResult {
-  nodes: ActOneNode<TimelineLayerData | TimelineBlockData | ArcPhaseBandData>[];
+  nodes: ActOneNode<TimelineLayerData | TimelineBlockData>[];
   edges: ActOneEdge<BeatEdgeData>[];
 }
 
 export function transformTimeline(story: SerializedStory): TimelineResult {
   const timelines = findTimelines(story);
   const scenes = findScenes(story);
-  const plots = findPlots(story);
-  const nodes: ActOneNode<TimelineLayerData | TimelineBlockData | ArcPhaseBandData>[] = [];
+  const nodes: ActOneNode<TimelineLayerData | TimelineBlockData>[] = [];
   const edges: ActOneEdge<BeatEdgeData>[] = [];
 
   // Build a lookup of scene → layer assignment
@@ -38,8 +36,12 @@ export function transformTimeline(story: SerializedStory): TimelineResult {
     }
   }
 
+  // Lane colors for visual distinction
+  const LANE_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'];
+
   // Create swim-lanes for each timeline's layers
   let laneY = 0;
+  let laneColorIdx = 0;
   const LANE_HEIGHT = 120;
   const BLOCK_WIDTH = 160;
   const BLOCK_SPACING = 20;
@@ -50,6 +52,8 @@ export function transformTimeline(story: SerializedStory): TimelineResult {
       const laneId = stableGroupId('layer', layer.name);
 
       // Layer swim-lane container
+      const laneColor = LANE_COLORS[laneColorIdx % LANE_COLORS.length]!;
+      laneColorIdx++;
       nodes.push({
         id: laneId,
         type: 'timeline-layer',
@@ -59,7 +63,7 @@ export function transformTimeline(story: SerializedStory): TimelineResult {
           name: layer.name,
           description: layer.description,
           period: layer.period,
-          color: '#252525',
+          color: laneColor,
         } as TimelineLayerData,
       });
 
@@ -100,7 +104,7 @@ export function transformTimeline(story: SerializedStory): TimelineResult {
       data: {
         label: 'Unassigned',
         name: '__default__',
-        color: '#171717',
+        color: '#71717a',
       } as TimelineLayerData,
     });
 
@@ -122,44 +126,6 @@ export function transformTimeline(story: SerializedStory): TimelineResult {
           color,
         } as TimelineBlockData,
       });
-    }
-  }
-
-  // Create arc phase bands from plot beats
-  if (plots.length > 0) {
-    const totalScenes = scenes.length || 1;
-    for (const plot of plots) {
-      const beatsByAct = new Map<number, string[]>();
-      for (const beat of plot.beats) {
-        const act = beat.act ?? 1;
-        const existing = beatsByAct.get(act) ?? [];
-        existing.push(beat.type ?? 'action');
-        beatsByAct.set(act, existing);
-      }
-
-      // Create a band per act
-      for (const [act, beatTypes] of beatsByAct) {
-        const dominantType = beatTypes[0] ?? 'action';
-        const bandColor = BEAT_TYPE_COLORS[dominantType as keyof typeof BEAT_TYPE_COLORS] ?? '#71717a';
-        const startRatio = (act - 1) / 3;
-        const endRatio = act / 3;
-
-        nodes.push({
-          id: stableId('beat', `${plot.name}-act-${act}`),
-          type: 'arc-phase-band',
-          position: {
-            x: startRatio * totalScenes * (BLOCK_WIDTH + BLOCK_SPACING),
-            y: laneY + 20,
-          },
-          data: {
-            label: `Act ${act}`,
-            phase: `Act ${act}`,
-            startRatio,
-            endRatio,
-            color: bandColor,
-          } as ArcPhaseBandData,
-        });
-      }
     }
   }
 

@@ -12,6 +12,8 @@
     DIAGRAM_STYLE_CONFIGS,
     type DiagramStyle,
     type BackgroundPattern,
+    type EdgeAnimation,
+    type SwimLaneDisplay,
   } from '$lib/settings/diagram.js';
   import { uiStore } from '$lib/stores/ui.svelte.js';
 
@@ -26,6 +28,9 @@
   let backgroundVariant = $state<BackgroundPattern>('dots');
   let snapToGrid = $state(false);
   let gridSize = $state(20);
+  let edgeAnimation = $state<EdgeAnimation>('ants');
+  let swimLaneDisplay = $state<SwimLaneDisplay>('fill');
+  let swimLaneOpacity = $state(0.2);
 
   const fontOptions = [
     'JetBrains Mono',
@@ -51,6 +56,9 @@
     backgroundVariant = dPrefs.backgroundVariant;
     snapToGrid = dPrefs.snapToGrid;
     gridSize = dPrefs.gridSize;
+    edgeAnimation = dPrefs.edgeAnimation;
+    swimLaneDisplay = dPrefs.swimLaneDisplay;
+    swimLaneOpacity = dPrefs.swimLaneOpacity;
   });
 
   function save() {
@@ -62,6 +70,9 @@
         backgroundVariant,
         snapToGrid,
         gridSize,
+        edgeAnimation,
+        swimLaneDisplay,
+        swimLaneOpacity,
       }),
     );
     window.dispatchEvent(new CustomEvent('actone:diagram-prefs-changed'));
@@ -247,6 +258,80 @@
       <span>100px</span>
     </div>
   </div>
+
+  <!-- Edge Animation -->
+  <div class="mb-6">
+    <span class="mb-2 block text-xs font-medium text-text-secondary">Edge Direction Indicator</span>
+    <div class="flex gap-2">
+      {#each [
+        { value: 'ants' as const, label: 'Marching Ants' },
+        { value: 'arrows' as const, label: 'Arrows' },
+      ] as opt}
+        <label
+          class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2 text-sm transition-colors
+            {edgeAnimation === opt.value ? 'border-amber-500/50 bg-amber-500/5 text-text-primary' : 'border-border text-text-secondary hover:border-surface-overlay'}"
+        >
+          <input
+            type="radio"
+            name="edgeAnimation"
+            value={opt.value}
+            bind:group={edgeAnimation}
+            class="sr-only"
+          />
+          {opt.label}
+        </label>
+      {/each}
+    </div>
+    <p class="mt-1 text-[11px] text-text-muted">How directional edges indicate flow direction</p>
+  </div>
+
+  <!-- Swim Lane Display -->
+  <div class="mb-6">
+    <span class="mb-2 block text-xs font-medium text-text-secondary">Timeline Swim Lanes</span>
+    <div class="flex gap-2">
+      {#each [
+        { value: 'fill' as const, label: 'Filled' },
+        { value: 'outline' as const, label: 'Outline' },
+      ] as opt}
+        <label
+          class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2 text-sm transition-colors
+            {swimLaneDisplay === opt.value ? 'border-amber-500/50 bg-amber-500/5 text-text-primary' : 'border-border text-text-secondary hover:border-surface-overlay'}"
+        >
+          <input
+            type="radio"
+            name="swimLaneDisplay"
+            value={opt.value}
+            bind:group={swimLaneDisplay}
+            class="sr-only"
+          />
+          {opt.label}
+        </label>
+      {/each}
+    </div>
+    <p class="mt-1 text-[11px] text-text-muted">How timeline swim-lane containers are displayed</p>
+  </div>
+
+  <!-- Swim Lane Opacity (only when fill mode) -->
+  {#if swimLaneDisplay === 'fill'}
+    <div class="mb-6">
+      <label for="ap-laneopacity" class="mb-2 block text-xs font-medium text-text-secondary">
+        Swim Lane Opacity: {Math.round(swimLaneOpacity * 100)}%
+      </label>
+      <input
+        id="ap-laneopacity"
+        type="range"
+        min="0.05"
+        max="0.5"
+        step="0.05"
+        bind:value={swimLaneOpacity}
+        class="w-full accent-amber-500"
+      />
+      <div class="mt-1 flex justify-between text-[10px] text-text-muted">
+        <span>5%</span>
+        <span>50%</span>
+      </div>
+    </div>
+  {/if}
 
   <button
     class="rounded bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-500"

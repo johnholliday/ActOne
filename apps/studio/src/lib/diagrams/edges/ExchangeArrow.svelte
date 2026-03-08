@@ -3,6 +3,7 @@
    * T072: Custom SvelteFlow edge for interaction exchanges.
    * Renders as a horizontal arrow at a fixed Y position along lifelines,
    * producing a standard sequence diagram layout.
+   * Supports arrows or marching ants for direction indication.
    */
   import type { ExchangeArrowData } from '@actone/shared';
 
@@ -20,6 +21,7 @@
       exchangeY?: number;
       sourceX?: number;
       targetX?: number;
+      edgeAnimation?: 'ants' | 'arrows';
     };
     markerEnd?: string;
   }
@@ -35,6 +37,8 @@
     data,
     markerEnd,
   }: Props = $props();
+
+  const useAnts = $derived(data.edgeAnimation !== 'arrows');
 
   /** Use the transformer-computed positions when available, otherwise fall back to handle positions. */
   const y = $derived(data.exchangeY ?? (sourceY + targetY) / 2);
@@ -53,18 +57,31 @@
 </script>
 
 <g>
+  <!-- Invisible wider hit area for hover tooltip -->
+  <path
+    d={pathD}
+    stroke="transparent"
+    stroke-width={16}
+    fill="none"
+  >
+    {#if data.powerDynamic}<title>{data.powerDynamic}</title>{/if}
+  </path>
   <!-- Arrow line -->
   <path
     {id}
     class="exchange-edge"
+    class:ants={useAnts}
     d={pathD}
     stroke={data.color}
     stroke-width={2}
+    stroke-dasharray={useAnts ? '6 4' : 'none'}
     fill="none"
-    marker-end={markerEnd}
-  />
-  <!-- Arrowhead (manual since we bypass SvelteFlow's marker system) -->
-  {#if !markerEnd}
+    marker-end={useAnts ? undefined : markerEnd}
+  >
+    {#if data.powerDynamic}<title>{data.powerDynamic}</title>{/if}
+  </path>
+  <!-- Arrowhead (only in arrows mode) -->
+  {#if !useAnts && !markerEnd}
     {@const tipX = x2}
     {@const dir = goingLeft ? 1 : -1}
     <polygon
@@ -101,6 +118,16 @@
 <style>
   .exchange-edge {
     stroke-linecap: round;
+  }
+
+  .exchange-edge.ants {
+    animation: march 0.5s linear infinite;
+  }
+
+  @keyframes march {
+    to {
+      stroke-dashoffset: -10;
+    }
   }
 
   .exchange-label {

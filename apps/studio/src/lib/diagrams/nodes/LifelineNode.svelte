@@ -8,7 +8,7 @@
 
   interface Props {
     id: string;
-    data: LifelineData & { label: string; color: string; lifelineHeight?: number };
+    data: LifelineData & { label: string; color: string; lifelineHeight?: number; role?: string };
   }
 
   let { id, data }: Props = $props();
@@ -20,6 +20,7 @@
   <div
     class="lifeline-header"
     style="background: {data.color}33; border-color: {data.color};"
+    title={data.role || undefined}
   >
     <div class="lifeline-name">{data.label}</div>
     <div class="lifeline-nature" style="color: {data.color};">{data.nature}</div>

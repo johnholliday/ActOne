@@ -65,6 +65,7 @@ export function transformInteractionSequence(story: SerializedStory): Interactio
 
     const character = findCharacterByName(story, name);
     const nature = character?.nature ?? 'Human';
+    const role = character?.role ?? '';
     const color = CHARACTER_NATURE_COLORS[nature as keyof typeof CHARACTER_NATURE_COLORS] ?? '#6366f1';
 
     nodes.push({
@@ -75,6 +76,7 @@ export function transformInteractionSequence(story: SerializedStory): Interactio
         label: name,
         characterName: name,
         nature,
+        role,
         color,
         lifelineHeight,
       },
@@ -89,6 +91,7 @@ export function transformInteractionSequence(story: SerializedStory): Interactio
     if (participants.length < 2) continue;
 
     const styleMix = interaction.styleMix;
+    const powerDynamic = interaction.powerDynamic;
 
     for (let i = 0; i < participants.length - 1; i++) {
       const from = participants[i]!;
@@ -106,6 +109,7 @@ export function transformInteractionSequence(story: SerializedStory): Interactio
           to,
           patternStep: interaction.pattern ?? '',
           styleMix,
+          powerDynamic,
           color: EDGE_STYLES.exchangeArrow,
           exchangeY: y,
           sourceX: participantCenterX.get(from)!,
@@ -133,6 +137,7 @@ export function transformInteractionSequence(story: SerializedStory): Interactio
           to: first,
           patternStep: interaction.pattern ?? '',
           styleMix,
+          powerDynamic,
           color: EDGE_STYLES.exchangeArrow,
           exchangeY: y,
           sourceX: participantX.get(last)!,

@@ -17,6 +17,7 @@
   import WorldContainer from '$lib/diagrams/nodes/WorldContainer.svelte';
   import CharacterNode from '$lib/diagrams/nodes/CharacterNode.svelte';
   import TimelineBlock from '$lib/diagrams/nodes/TimelineBlock.svelte';
+  import TimelineLane from '$lib/diagrams/nodes/TimelineLane.svelte';
   import LifelineNode from '$lib/diagrams/nodes/LifelineNode.svelte';
 
   /* ── Edge components ──────────────────────────────────────── */
@@ -106,7 +107,7 @@
     'world-map': {
       viewId: 'world-map',
       nodeTypes: { location: LocationNode, 'world-container': WorldContainer },
-      edgeTypes: undefined,
+      edgeTypes: { 'location-link': BeatEdge },
       transformer: transformWorldMap,
       defaultNodeSize: (n) => ({
         width: n.width ?? (n.type === 'world-container' ? 400 : 246),
@@ -120,8 +121,8 @@
       edgeTypes: { relationship: RelationshipEdge },
       transformer: transformCharacterNetwork,
       defaultNodeSize: (n) => ({
-        width: n.width ?? 100,
-        height: n.height ?? 100,
+        width: n.width ?? 60,
+        height: n.height ?? 60,
       }),
       emptyDescription:
         'Create or open a project to see the character network.',
@@ -135,12 +136,12 @@
     },
     timeline: {
       viewId: 'timeline',
-      nodeTypes: { 'timeline-block': TimelineBlock },
+      nodeTypes: { 'timeline-block': TimelineBlock, 'timeline-layer': TimelineLane },
       edgeTypes: { beat: BeatEdge },
       transformer: transformTimeline,
       defaultNodeSize: (n) => ({
-        width: n.width ?? (n.type === 'timeline-layer' ? 800 : 140),
-        height: n.height ?? (n.type === 'timeline-layer' ? 100 : 60),
+        width: n.width ?? (n.type === 'timeline-layer' ? 400 : 140),
+        height: n.height ?? (n.type === 'timeline-layer' ? 200 : 60),
       }),
       emptyDescription: 'Create or open a project to see the timeline.',
     },
@@ -210,6 +211,7 @@
     function handlePrefsChanged() {
       const raw = localStorage.getItem('actone:diagram');
       diagramPrefs = parseDiagramPrefs(raw);
+      void refresh();
     }
 
     window.addEventListener('actone:diagram-prefs-changed', handlePrefsChanged);
@@ -224,6 +226,10 @@
     // Use the merged AST (cross-file consolidated) for all diagrams.
     // Falls back to the active file's AST if no merged AST is available yet.
     const ast = astStore.mergedAst ?? astStore.activeAst?.ast ?? null;
+    // Read prefs before await so $effect tracks them as dependencies
+    const edgeAnim = diagramPrefs.edgeAnimation;
+    const laneDisplay = diagramPrefs.swimLaneDisplay;
+    const laneOpacity = diagramPrefs.swimLaneOpacity;
     if (!ast || !projectId) {
       nodes = [];
       edges = [];
@@ -253,22 +259,56 @@
       const sidecar = loadSidecar(projectId, config.viewId);
       const positions = applyOverrides(layout.nodes, sidecar);
 
+      const locked = diagramType === 'interaction-sequence';
       nodes = result.nodes.map((n: any) => {
         const pos = positions.get(n.id);
         const layoutEntry = layout.nodes.get(n.id);
+        const extra: Record<string, unknown> = {};
+        if (n.type === 'timeline-layer') {
+          extra.data = { ...n.data, swimLaneDisplay: laneDisplay, swimLaneOpacity: laneOpacity };
+        }
+        const w = layoutEntry?.width ?? n.width;
+        const h = layoutEntry?.height ?? n.height;
+        const isContainer = n.type === 'timeline-layer' || n.type === 'world-container';
         return {
           ...n,
+          ...extra,
           position: pos ?? n.position,
-          ...(layoutEntry?.width != null ? { width: layoutEntry.width } : {}),
-          ...(layoutEntry?.height != null ? { height: layoutEntry.height } : {}),
+          ...(w != null ? { width: w } : {}),
+          ...(h != null ? { height: h } : {}),
+          ...(isContainer && w != null && h != null ? { style: `width: ${w}px; height: ${h}px;` } : {}),
+          ...(n.parentId ? { extent: 'parent' as const } : {}),
+          ...(locked ? { draggable: false, selectable: false, connectable: false } : {}),
         };
       });
+      const anim = edgeAnim;
+      // Build node color lookup so directional edges can match their target's color
+      const nodeColorMap = new Map<string, string>();
+      for (const n of nodes) {
+        if (n.data?.color) {
+          nodeColorMap.set(n.id, n.data.color);
+        }
+      }
+
+      // Per-view edge animation overrides
+      const effectiveAnim = diagramType === 'interaction-sequence' ? 'arrows'
+        : diagramType === 'world-map' ? 'dotted'
+        : anim;
+
       const routedEdges = result.edges.map((e: any) => {
         const route = layout.edges.get(e.id);
-        if (route && route.points.length > 0) {
-          return { ...e, data: { ...e.data, routePoints: route.points } };
+        const extra: Record<string, unknown> = { edgeAnimation: effectiveAnim };
+        if (route && route.points.length > 0 && diagramType !== 'world-map') {
+          extra.routePoints = route.points;
         }
-        return e;
+        // Directional edge color matches the target node (skip for non-directional views)
+        if (diagramType !== 'world-map') {
+          const targetColor = nodeColorMap.get(e.target);
+          if (targetColor) {
+            extra.color = targetColor;
+          }
+        }
+        return { ...e, data: { ...e.data, ...extra } };
       });
       edges = assignHandles(nodes, routedEdges, { width: 160, height: 80 });
       diagramStore.setView(config.viewId, nodes, edges);

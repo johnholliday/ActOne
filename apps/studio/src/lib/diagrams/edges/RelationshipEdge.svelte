@@ -2,6 +2,7 @@
   /**
    * T072: Custom SvelteFlow edge for character relationships.
    * Width by weight, dashed for dynamic, colored by sentiment.
+   * Supports arrows or marching ants for direction indication.
    */
   import { getBezierPath } from '@xyflow/svelte';
   import type { RelationshipEdgeData } from '@actone/shared';
@@ -15,7 +16,12 @@
     targetY: number;
     sourcePosition: string;
     targetPosition: string;
-    data: RelationshipEdgeData & { label: string; color: string; routePoints?: { x: number; y: number }[] };
+    data: RelationshipEdgeData & {
+      label: string;
+      color: string;
+      routePoints?: { x: number; y: number }[];
+      edgeAnimation?: 'ants' | 'arrows';
+    };
     markerEnd?: string;
   }
 
@@ -30,6 +36,8 @@
     data,
     markerEnd,
   }: Props = $props();
+
+  const useAnts = $derived(data.edgeAnimation !== 'arrows');
 
   const bezierPath = $derived(
     getBezierPath({
@@ -50,20 +58,25 @@
     return bezierPath[0];
   });
 
-  const strokeWidth = $derived(Math.max(1, Math.min(5, data.weight / 2)));
-  const dashArray = $derived(data.dynamic ? '6 4' : 'none');
+  const strokeWidth = $derived(Math.max(0.75, Math.min(3, data.weight / 3)));
+  const dashArray = $derived.by(() => {
+    if (useAnts) return '6 4';
+    if (data.dynamic) return '6 4';
+    return 'none';
+  });
 </script>
 
 <g>
   <path
     {id}
     class="relationship-edge"
+    class:ants={useAnts}
     d={pathD}
     stroke={data.color}
     stroke-width={strokeWidth}
     stroke-dasharray={dashArray}
     fill="none"
-    marker-end={markerEnd}
+    marker-end={useAnts ? undefined : markerEnd}
   />
   {#if data.label}
     <text>
@@ -83,6 +96,16 @@
 <style>
   .relationship-edge {
     stroke-linecap: round;
+  }
+
+  .relationship-edge.ants {
+    animation: march 0.5s linear infinite;
+  }
+
+  @keyframes march {
+    to {
+      stroke-dashoffset: -10;
+    }
   }
 
   .rel-label {

@@ -32,6 +32,8 @@ function atmosphereColor(atmosphere: Array<{ name: string; value: number }>): st
   return '#a1a1aa'; // cool/subdued
 }
 
+const WORLD_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'];
+
 export function transformWorldMap(story: SerializedStory): WorldMapResult {
   const worlds = findWorlds(story);
   const scenes = findScenes(story);
@@ -61,7 +63,7 @@ export function transformWorldMap(story: SerializedStory): WorldMapResult {
         label: world.name,
         name: world.name,
         period: world.period,
-        color: '#171717',
+        color: WORLD_COLORS[worldIndex % WORLD_COLORS.length]!,
       } as WorldContainerData,
     });
 

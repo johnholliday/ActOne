@@ -2,6 +2,7 @@
   /**
    * T072: Custom SvelteFlow edge for beat connections.
    * Colored by beat type, labeled with beat name.
+   * Supports arrows or marching ants for direction indication.
    */
   import { getBezierPath } from '@xyflow/svelte';
   import type { BeatEdgeData } from '@actone/shared';
@@ -15,7 +16,12 @@
     targetY: number;
     sourcePosition: string;
     targetPosition: string;
-    data: BeatEdgeData & { label: string; color: string; routePoints?: { x: number; y: number }[] };
+    data: BeatEdgeData & {
+      label: string;
+      color: string;
+      routePoints?: { x: number; y: number }[];
+      edgeAnimation?: 'ants' | 'arrows' | 'dotted';
+    };
     markerEnd?: string;
   }
 
@@ -31,6 +37,10 @@
     markerEnd,
   }: Props = $props();
 
+  const useAnts = $derived(data.edgeAnimation === 'ants');
+  const useDotted = $derived(data.edgeAnimation === 'dotted');
+  const useArrows = $derived(data.edgeAnimation === 'arrows');
+
   const bezierPath = $derived(
     getBezierPath({
       sourceX,
@@ -44,7 +54,6 @@
 
   const pathD = $derived.by(() => {
     if (data.routePoints && data.routePoints.length > 2) {
-      // Use SvelteFlow handles as start/end, ELK bend points for routing
       const bendPoints = data.routePoints.slice(1, -1);
       return buildRoutePath([{ x: sourceX, y: sourceY }, ...bendPoints, { x: targetX, y: targetY }]);
     }
@@ -56,11 +65,13 @@
   <path
     {id}
     class="beat-edge"
+    class:ants={useAnts}
     d={pathD}
     stroke={data.color}
-    stroke-width={2}
+    stroke-width={useDotted ? 2.5 : 2}
+    stroke-dasharray={useDotted ? '1 8' : useAnts ? '6 4' : 'none'}
     fill="none"
-    marker-end={markerEnd}
+    marker-end={useArrows ? markerEnd : undefined}
   />
   {#if data.label}
     <text>
@@ -80,6 +91,16 @@
 <style>
   .beat-edge {
     stroke-linecap: round;
+  }
+
+  .beat-edge.ants {
+    animation: march 0.5s linear infinite;
+  }
+
+  @keyframes march {
+    to {
+      stroke-dashoffset: -10;
+    }
   }
 
   .beat-label {

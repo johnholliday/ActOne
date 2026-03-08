@@ -1,7 +1,7 @@
 <script lang="ts">
   /**
    * T071: Custom SvelteFlow group node for worlds.
-   * Dark container with world name and period.
+   * Semi-transparent container with world name and period.
    */
   import type { WorldContainerData } from '@actone/shared';
 
@@ -11,9 +11,14 @@
   }
 
   let { id, data }: Props = $props();
+
+  const bgColor = $derived(data.color || '#3b82f6');
 </script>
 
-<div class="world-container">
+<div
+  class="world-container"
+  style="background: color-mix(in srgb, {bgColor} 15%, transparent); border-color: {bgColor};"
+>
   <div class="world-header">
     <span class="world-name">{data.label}</span>
     {#if data.period}
@@ -26,8 +31,7 @@
   .world-container {
     width: 100%;
     height: 100%;
-    background: #0D0D0D;
-    border: 1px dashed #252525;
+    border: 1px solid;
     border-radius: 12px;
     padding: 12px;
     box-sizing: border-box;

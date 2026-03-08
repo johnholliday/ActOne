@@ -5,12 +5,17 @@
 
 export type DiagramStyle = 'dark' | 'blueprint';
 export type BackgroundPattern = 'dots' | 'lines' | 'cross';
+export type EdgeAnimation = 'ants' | 'arrows';
+export type SwimLaneDisplay = 'fill' | 'outline';
 
 export interface DiagramPrefs {
   style: DiagramStyle;
   snapToGrid: boolean;
   gridSize: number;
   backgroundVariant: BackgroundPattern;
+  edgeAnimation: EdgeAnimation;
+  swimLaneDisplay: SwimLaneDisplay;
+  swimLaneOpacity: number;
 }
 
 export interface DiagramStyleConfig {
@@ -25,10 +30,15 @@ const DEFAULTS: DiagramPrefs = {
   snapToGrid: false,
   gridSize: 20,
   backgroundVariant: 'dots',
+  edgeAnimation: 'ants',
+  swimLaneDisplay: 'fill',
+  swimLaneOpacity: 0.2,
 };
 
 const VALID_STYLES = new Set<string>(['dark', 'blueprint']);
 const VALID_VARIANTS = new Set<string>(['dots', 'lines', 'cross']);
+const VALID_EDGE_ANIMATIONS = new Set<string>(['ants', 'arrows']);
+const VALID_SWIM_LANE_DISPLAYS = new Set<string>(['fill', 'outline']);
 
 export const DIAGRAM_STYLE_CONFIGS: Record<DiagramStyle, DiagramStyleConfig> = {
   dark: {
@@ -74,7 +84,26 @@ export function parseDiagramPrefs(raw: string | null): DiagramPrefs {
         ? (parsed.backgroundVariant as BackgroundPattern)
         : DEFAULTS.backgroundVariant;
 
-    return { style, snapToGrid, gridSize, backgroundVariant };
+    const edgeAnimation =
+      typeof parsed.edgeAnimation === 'string' &&
+      VALID_EDGE_ANIMATIONS.has(parsed.edgeAnimation)
+        ? (parsed.edgeAnimation as EdgeAnimation)
+        : DEFAULTS.edgeAnimation;
+
+    const swimLaneDisplay =
+      typeof parsed.swimLaneDisplay === 'string' &&
+      VALID_SWIM_LANE_DISPLAYS.has(parsed.swimLaneDisplay)
+        ? (parsed.swimLaneDisplay as SwimLaneDisplay)
+        : DEFAULTS.swimLaneDisplay;
+
+    const swimLaneOpacity =
+      typeof parsed.swimLaneOpacity === 'number' &&
+      parsed.swimLaneOpacity >= 0.05 &&
+      parsed.swimLaneOpacity <= 1
+        ? parsed.swimLaneOpacity
+        : DEFAULTS.swimLaneOpacity;
+
+    return { style, snapToGrid, gridSize, backgroundVariant, edgeAnimation, swimLaneDisplay, swimLaneOpacity };
   } catch {
     return { ...DEFAULTS };
   }

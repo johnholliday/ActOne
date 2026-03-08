@@ -513,6 +513,15 @@
     // Remove from cache and workspace
     projectStore.unloadProject(activeId);
     workspaceStore.closeProject(activeId);
+
+    // Switch to the remaining active project so views update
+    const nextId = workspaceStore.activeProjectId;
+    if (nextId) {
+      await handleSwitchProject(nextId);
+    } else {
+      // No projects remain — clear AST state
+      astStore.clear();
+    }
   }
 
   /* ── T021: Advance lifecycle stage handler ─────────────────── */

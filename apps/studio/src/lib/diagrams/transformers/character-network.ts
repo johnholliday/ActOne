@@ -29,7 +29,7 @@ export function transformCharacterNetwork(story: SerializedStory): CharacterNetw
   const edgeSet = new Set<string>();
 
   // Create character nodes arranged in a circle
-  const radius = Math.max(200, characters.length * 60);
+  const radius = Math.max(120, characters.length * 35);
   const angleStep = (2 * Math.PI) / Math.max(characters.length, 1);
 
   for (let i = 0; i < characters.length; i++) {
