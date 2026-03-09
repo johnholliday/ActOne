@@ -9,7 +9,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { buildPrompt, estimatePromptTokens } from '$lib/ai/prompt-builder.js';
-import type { GenerationContext } from '$lib/ai/backends/backend-registry.js';
+import type { GenerationContext } from '$lib/ai/generation-context.js';
 
 const testContext: GenerationContext = {
   sceneName: 'Opening',

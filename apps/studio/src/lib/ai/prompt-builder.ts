@@ -6,7 +6,7 @@
  * - Concise: abbreviated, top 3 traits, essential info only
  */
 
-import type { GenerationContext } from './backends/backend-registry.js';
+import type { GenerationContext } from './generation-context.js';
 
 export type PromptFormat = 'rich' | 'concise';
 

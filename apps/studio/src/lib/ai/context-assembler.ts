@@ -17,7 +17,7 @@ import {
   findThemes,
   findInteractions,
 } from '$lib/ast/ast-utils.js';
-import type { GenerationContext } from './backends/backend-registry.js';
+import type { GenerationContext } from './generation-context.js';
 
 /** Budget configuration for context assembly. */
 export interface ContextBudget {

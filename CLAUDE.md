@@ -41,8 +41,13 @@ Published to GitHub Packages (`@docugenix:registry=https://npm.pkg.github.com`):
 - `sanyam-langium` — Worker infrastructure (`createWorkerLanguageServer()`)
 - `sanyam-app` — Hono API adapter (`createSanyamApi()`, `ApiRouteContribution`)
 - `sanyam-auth` — Supabase SSR hooks, auth routes, admin client
-- `sanyam-ai-text` — AI text generation routes (generate, estimate, backends)
-- `sanyam-ai-image` — AI image generation routes (generate, backends)
+- `sanyam-ai-provider` — `ProviderRegistry`, `createProviderRegistry()`, `discoverProviderManifests()`, `textConfigFromRegistry()`, `imageConfigFromRegistry()`, `importConfigFromRegistry()`
+- `sanyam-ai-anthropic` — Anthropic provider (`createAnthropicProvider`, `anthropicManifest`)
+- `sanyam-ai-openai` — OpenAI provider (`createOpenAiProvider`, `createOpenAiImageProvider`, `openaiManifest`)
+- `sanyam-ai-local` — Local LLM provider (`createLocalProvider`, `localManifest`)
+- `sanyam-ai-text` — AI text generation routes (generate, estimate)
+- `sanyam-ai-image` — AI image generation routes (generate)
+- `sanyam-ai-import` — AI-powered file import (text/markdown/docx/pdf → grammar files)
 - `sanyam-publishing` — Publishing routes (export, preview, dependencies)
 - `sanyam-config` — ESLint configs (`eslint-base`, `eslint-svelte`) + tsconfig presets (`base.json`, `library.json`, `sveltekit.json`)
 - `sanyam-diagrams` — ELK layout + AST→graph transformer
@@ -55,7 +60,9 @@ Published to GitHub Packages (`@docugenix:registry=https://npm.pkg.github.com`):
 
 API routes are handled by Hono via `createSanyamApi()` in `hooks.server.ts`:
 - Local handlers in `$lib/api/`: project, draft, analytics, character/visual-dna
-- Sanyam packages: ai-text, ai-image, publishing
+- Sanyam packages: ai-text, ai-image, ai-import, publishing
+- AI providers auto-discovered via `sanyam-ai-provider` ProviderRegistry (`$lib/server/ai-providers.ts`)
+- Custom image providers (Midjourney, Flux, Local SD) registered via `$lib/ai/custom-image-providers.ts`
 
 ### TypeScript Configuration
 
@@ -81,9 +88,10 @@ Uses ESLint 9 flat config format (`.mjs` files). Packages import from `@docugeni
 
 ## Active Technologies
 - TypeScript 5.9.x (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + SvelteKit 2.53.x, Svelte 5.53.x (runes), Langium 4.2.x, @xyflow/svelte 1.5.x, CodeMirror 6, dockview-core 5.0.0, Hono 4.x, Drizzle ORM 0.45.x, @supabase/supabase-js 2.97.x, Tailwind CSS 4.2.x, Zod, lucide-svelte, Eleventy 3.1.x
-- @docugenix/sanyam-* 0.9.x (core, shared, db, langium, app, auth, ai-text, ai-image, publishing, config, diagrams, editor-codemirror, layout-dockview, guide, test-utils)
+- @docugenix/sanyam-* 0.10.x for AI packages (ai-provider, ai-anthropic, ai-openai, ai-local, ai-text, ai-image, ai-import), 0.9.x for others (core, shared, db, langium, app, auth, publishing, config, diagrams, editor-codemirror, layout-dockview, guide, test-utils)
 - Supabase PostgreSQL (Drizzle ORM for schema/queries, sanyam-auth for auth, sanyam-db for RLS-aware connections)
 
 ## Recent Changes
+- 011-sanyam-ai-provider: Migrated to sanyam-ai-provider 0.10.0. Replaced custom BackendRegistry/TextBackend/ImageBackend with sanyam ProviderRegistry + auto-discovery. Deleted backend-registry.ts, claude-api.ts, claude-max.ts, local-llm.ts, dalle.ts, text-backends.ts, image-backends.ts, provider-adapters.ts. Added ai-providers.ts server singleton, generation-context.ts domain type, custom-image-providers.ts for Midjourney/Flux/LocalSD. Cost estimator now uses ProviderRegistry.
 - 010-sanyam-db-base-tables: Migrated to sanyam-db 0.9.0 base tables. Projects table uses sanyam-db's `name`/`lifecyclePhase`/`updatedAt` columns. Domain columns (authorName, genre, compositionMode, publishingMode) stored in `actone_project_ext` 1:1 extension table via SchemaExtension. `source_files` renamed to `project_files`. Old enums dropped, using text columns.
 - 009-migrate-sanyam-packages: Migrated from @repo/* to @actone/* (local) + @docugenix/sanyam-* (external). Replaced SvelteKit API routes with Hono handlers. Worker uses createWorkerLanguageServer(). Auth delegated to sanyam-auth. Guide uses sanyam-guide. DB client from sanyam-db.

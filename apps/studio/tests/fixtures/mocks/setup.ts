@@ -36,49 +36,22 @@ vi.mock('$lib/server/supabase', () => ({
   supabaseAdmin: mockSupabaseAdmin,
 }));
 
-// Mock image backend registry
-vi.mock('$lib/server/image-backends', () => ({
-  imageBackendRegistry: {
-    get: vi.fn((id: string) =>
-      id === mockImageBackend.id ? mockImageBackend : undefined,
-    ),
-    listAll: vi.fn(async () => [
-      {
-        id: mockImageBackend.id,
-        name: mockImageBackend.name,
-        type: 'image' as const,
-        available: true,
-        capabilities: { maxResolution: 1024, referenceImages: false },
-      },
-    ]),
-    getIds: vi.fn(() => [mockImageBackend.id]),
-  },
-}));
-
-// Mock text backend registry
-vi.mock('$lib/ai/backends/backend-registry', () => ({
-  backendRegistry: {
-    get: vi.fn((id: string) =>
+// Mock the sanyam provider registry
+vi.mock('$lib/server/ai-providers', () => ({
+  providers: {
+    getText: vi.fn((id: string) =>
       id === mockTextBackend.id ? mockTextBackend : undefined,
     ),
-    getActive: vi.fn(() => mockTextBackend),
-    setActive: vi.fn(),
-    getActiveId: vi.fn(() => mockTextBackend.id),
-    listAll: vi.fn(async () => [
-      {
-        id: mockTextBackend.id,
-        name: mockTextBackend.name,
-        type: 'text' as const,
-        available: true,
-        capabilities: {
-          maxContextTokens: 100_000,
-          streaming: true,
-          concurrentRequests: 5,
-        },
-      },
-    ]),
-    getIds: vi.fn(() => [mockTextBackend.id]),
+    getAllText: vi.fn(() => [mockTextBackend]),
+    getImage: vi.fn((id: string) =>
+      id === mockImageBackend.id ? mockImageBackend : undefined,
+    ),
+    getAllImage: vi.fn(() => [mockImageBackend]),
+    registerText: vi.fn(),
+    registerImage: vi.fn(),
+    autoDiscover: vi.fn(),
   },
+  providerInit: Promise.resolve(),
 }));
 
 // Mock SvelteKit environment variables

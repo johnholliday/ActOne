@@ -5,18 +5,44 @@ import { handleAuth } from '@docugenix/sanyam-auth/sveltekit';
 import { createSanyamApi, type ApiRouteContribution } from '@docugenix/sanyam-app/api';
 import { createAiTextRoutes } from '@docugenix/sanyam-ai-text';
 import { createAiImageRoutes } from '@docugenix/sanyam-ai-image';
+import { createAiImportRoutes, createDefaultRegistry } from '@docugenix/sanyam-ai-import';
 import { createPublishingRoutes } from '@docugenix/sanyam-publishing';
 import { FormatRegistry } from '@docugenix/sanyam-publishing/formats';
+import {
+  textConfigFromRegistry,
+  imageConfigFromRegistry,
+  importConfigFromRegistry,
+} from '@docugenix/sanyam-ai-provider';
+import { anthropicManifest } from '@docugenix/sanyam-ai-anthropic';
+import { openaiManifest } from '@docugenix/sanyam-ai-openai';
+import { localManifest } from '@docugenix/sanyam-ai-local';
+import { registerCustomImageBackends } from '$lib/ai/custom-image-providers.js';
+import { providers } from '$lib/server/ai-providers.js';
 import { projectRoutes } from '$lib/api/project.js';
 import { draftRoutes } from '$lib/api/draft.js';
 import { analyticsRoutes } from '$lib/api/analytics.js';
 import { visualDnaRoute } from '$lib/api/character.js';
-import { createAiTextConfig, createAiImageConfig } from '$lib/api/provider-adapters.js';
+import { env } from '$env/dynamic/private';
 
 import {
   PUBLIC_SUPABASE_URL,
   PUBLIC_SUPABASE_ANON_KEY,
 } from '$env/static/public';
+
+/* ── Populate provider registry ────────────────────────────────── */
+
+// $env/dynamic/private loads from .env files (Vite doesn't inject into process.env).
+// Cast to Record for autoDiscover's type signature.
+const serverEnv = env as Record<string, string | undefined>;
+providers.autoDiscover([anthropicManifest, openaiManifest, localManifest], serverEnv);
+registerCustomImageBackends(providers, serverEnv);
+
+console.log(
+  '[hooks] providers — text:',
+  providers.getAllText().map((p) => p.id),
+  'image:',
+  providers.getAllImage().map((p) => p.id),
+);
 
 /* ── Auth handle (Supabase SSR session resolution) ─────────────── */
 
@@ -71,11 +97,15 @@ const authGuard: Handle = async ({ event, resolve }) => {
 // Publishing format registry — formats will be registered by contributions
 const publishingFormats = new FormatRegistry();
 
+// AI import: extractor registry (text, markdown, docx, pdf, zip, gzip)
+const importRegistry = createDefaultRegistry();
+
 const contributions: ApiRouteContribution[] = [
   { prefix: '/project', routes: projectRoutes },
   { prefix: '/draft', routes: draftRoutes },
-  { prefix: '/ai-text', routes: createAiTextRoutes(createAiTextConfig()) },
-  { prefix: '/ai-image', routes: createAiImageRoutes(createAiImageConfig()) },
+  { prefix: '/ai-text', routes: createAiTextRoutes(textConfigFromRegistry(providers)) },
+  { prefix: '/ai-image', routes: createAiImageRoutes(imageConfigFromRegistry(providers)) },
+  { prefix: '/ai-import', routes: createAiImportRoutes({ ...importConfigFromRegistry(providers), registry: importRegistry }) },
   { prefix: '/character', routes: visualDnaRoute },
   { prefix: '/publishing', routes: createPublishingRoutes({ registry: publishingFormats }) },
   { prefix: '/analytics', routes: analyticsRoutes },

@@ -2,15 +2,40 @@
  * T039: Cost estimator tests.
  *
  * Verifies formatCostEstimate and estimateWords pure functions.
- * estimateCost is async and depends on the backend registry,
- * so it is tested with a mock backend if needed.
+ * estimateCost is async and depends on the provider registry,
+ * so it is tested with a mocked provider.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { GenerationContext } from '$lib/ai/generation-context.js';
+
+// Mock the provider registry before importing cost-estimator
+const mockEstimateCost = vi.fn(async () => ({
+  inputTokens: 500,
+  estimatedCostUsd: 0.015,
+  providerId: 'test-provider',
+}));
+
+vi.mock('$lib/server/ai-providers', () => ({
+  providers: {
+    getText: vi.fn((id: string) =>
+      id === 'test-provider'
+        ? { id: 'test-provider', name: 'Test Provider', estimateCost: mockEstimateCost }
+        : undefined,
+    ),
+    getAllText: vi.fn(() => [
+      { id: 'test-provider', name: 'Test Provider', estimateCost: mockEstimateCost },
+    ]),
+  },
+  providerInit: Promise.resolve(),
+}));
+
+// Must also mock prompt-builder since cost-estimator uses it
+vi.mock('$lib/ai/prompt-builder', () => ({
+  buildPrompt: vi.fn(() => 'mock prompt for cost estimation'),
+}));
 
 import { estimateCost, formatCostEstimate, estimateWords } from '$lib/ai/cost-estimator.js';
-import { backendRegistry } from '$lib/ai/backends/backend-registry.js';
-import type { GenerationContext, TextBackend } from '$lib/ai/backends/backend-registry.js';
 
 const testContext: GenerationContext = {
   sceneName: 'Opening',
@@ -33,41 +58,20 @@ const testContext: GenerationContext = {
   temperature: 0.8,
 };
 
-/** Minimal mock backend for testing estimateCost. */
-function createMockBackend(): TextBackend {
-  return {
-    id: 'test-backend',
-    name: 'Test Backend',
-    async *generate() {
-      yield { text: 'test' };
-      return { fullText: 'test', totalTokens: 100, durationMs: 50 };
-    },
-    async estimateCost() {
-      return { estimatedCostUsd: 0.015, estimatedTokens: 500 };
-    },
-    async checkAvailability() {
-      return { available: true };
-    },
-    getCapabilities() {
-      return { maxContextTokens: 100_000, streaming: true, concurrentRequests: 1 };
-    },
-  };
-}
-
 describe('estimateCost', () => {
-  let mockBackend: TextBackend;
-
   beforeEach(() => {
-    mockBackend = createMockBackend();
-    backendRegistry.register(mockBackend);
-  });
-
-  afterEach(() => {
-    backendRegistry.unregister('test-backend');
+    mockEstimateCost.mockClear();
   });
 
   it('returns a CostEstimate with positive values', async () => {
-    const result = await estimateCost(testContext, 'test-backend');
+    const result = await estimateCost(testContext, 'test-provider');
+
+    expect(result.estimatedCostUsd).toBeGreaterThanOrEqual(0);
+    expect(result.estimatedTokens).toBeGreaterThan(0);
+  });
+
+  it('uses first available provider when no backendId specified', async () => {
+    const result = await estimateCost(testContext);
 
     expect(result.estimatedCostUsd).toBeGreaterThanOrEqual(0);
     expect(result.estimatedTokens).toBeGreaterThan(0);

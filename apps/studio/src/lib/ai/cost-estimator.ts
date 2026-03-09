@@ -2,36 +2,57 @@
  * T088: Cost estimator.
  *
  * Calculates estimated USD cost and token count before generation.
+ * Uses the sanyam ProviderRegistry to look up text providers.
  */
 
 import type { CostEstimate } from '@actone/shared';
-import { backendRegistry } from './backends/backend-registry.js';
-import type { GenerationContext } from './backends/backend-registry.js';
+import { providers } from '$lib/server/ai-providers.js';
+import type { GenerationContext } from './generation-context.js';
+import { buildPrompt } from './prompt-builder.js';
+
+/**
+ * Convert ActOne's domain GenerationContext to sanyam's GenerateContext
+ * by running it through the prompt builder.
+ */
+function toGenerateContext(context: GenerationContext) {
+  const userPrompt = buildPrompt(context);
+  return {
+    systemPrompt: context.precedingSceneSummary ?? '',
+    userPrompt,
+    temperature: context.temperature,
+  };
+}
 
 /**
  * Estimate the cost of generating prose for the given context.
  *
  * @param context - Assembled generation context
- * @param backendId - Backend to estimate for (uses active if not specified)
+ * @param backendId - Provider to estimate for (uses first available if not specified)
  * @returns Cost estimate with USD and token counts
  */
 export async function estimateCost(
   context: GenerationContext,
   backendId?: string,
 ): Promise<CostEstimate> {
-  const backend = backendId
-    ? backendRegistry.get(backendId)
-    : backendRegistry.getActive();
+  const provider = backendId
+    ? providers.getText(backendId)
+    : providers.getAllText()[0];
 
-  if (!backend) {
+  if (!provider) {
     throw new Error(
       backendId
-        ? `Backend "${backendId}" not found`
-        : 'No active backend configured',
+        ? `Provider "${backendId}" not found`
+        : 'No text providers configured',
     );
   }
 
-  return backend.estimateCost(context);
+  const generateCtx = toGenerateContext(context);
+  const result = await provider.estimateCost(generateCtx);
+
+  return {
+    estimatedCostUsd: result.estimatedCostUsd,
+    estimatedTokens: result.inputTokens,
+  };
 }
 
 /**
