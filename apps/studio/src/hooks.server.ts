@@ -4,6 +4,7 @@ import { Hono } from 'hono';
 import { handleAuth } from '@docugenix/sanyam-auth/sveltekit';
 import { createSanyamApi, type ApiRouteContribution } from '@docugenix/sanyam-app/api';
 import { createAiTextRoutes } from '@docugenix/sanyam-ai-text';
+import { createAiChatRoutes, ChatEngine, SlashCommandRegistry, createBuiltinCommands } from '@docugenix/sanyam-ai-chat';
 import { createAiImageRoutes } from '@docugenix/sanyam-ai-image';
 import { createAiImportRoutes, createDefaultRegistry } from '@docugenix/sanyam-ai-import';
 import { createPublishingRoutes } from '@docugenix/sanyam-publishing';
@@ -22,6 +23,7 @@ import { projectRoutes } from '$lib/api/project.js';
 import { draftRoutes } from '$lib/api/draft.js';
 import { analyticsRoutes } from '$lib/api/analytics.js';
 import { visualDnaRoute } from '$lib/api/character.js';
+import { conversationStore, messageStore } from '$lib/server/chat-stores.js';
 import { env } from '$env/dynamic/private';
 
 import {
@@ -43,6 +45,26 @@ console.log(
   'image:',
   providers.getAllImage().map((p) => p.id),
 );
+
+/* ── Chat engine ──────────────────────────────────────────────────── */
+
+const chatEngine = new ChatEngine({
+  config: {
+    defaultBackendId: providers.getAllText()[0]?.id ?? 'unknown',
+    systemPrompt: [
+      'You are an AI writing assistant for ActOne Studio, a creative writing application.',
+      'You help authors with their stories, characters, plots, dialogue, and worldbuilding.',
+      'Be helpful, creative, and concise.',
+    ].join('\n'),
+    maxHistoryMessages: 50,
+  },
+  loadHistory: (conversationId) => messageStore.list(conversationId),
+});
+
+/* ── Slash command registry ───────────────────────────────────────── */
+
+const slashCommandRegistry = new SlashCommandRegistry();
+slashCommandRegistry.registerAll(createBuiltinCommands());
 
 /* ── Auth handle (Supabase SSR session resolution) ─────────────── */
 
@@ -109,6 +131,13 @@ const contributions: ApiRouteContribution[] = [
   { prefix: '/character', routes: visualDnaRoute },
   { prefix: '/publishing', routes: createPublishingRoutes({ registry: publishingFormats }) },
   { prefix: '/analytics', routes: analyticsRoutes },
+  { prefix: '/ai-chat', routes: createAiChatRoutes({
+    conversationStore,
+    messageStore,
+    chatEngine,
+    getProvider: (id) => providers.getText(id),
+    slashCommandRegistry,
+  }) },
 ];
 
 const honoApp = createSanyamApi(contributions, '/api');
@@ -118,7 +147,11 @@ const honoApp = createSanyamApi(contributions, '/api');
 // We prepend this middleware by re-wrapping the app.
 const wrappedApp = new Hono();
 wrappedApp.use('*', async (c, next) => {
-  if (c.env.user) c.set('user', c.env.user);
+  if (c.env.user) {
+    c.set('user', c.env.user);
+    // Inject user ID header for sanyam-ai-chat routes
+    c.req.raw.headers.set('x-user-id', c.env.user.id);
+  }
   if (c.env.session) c.set('session', c.env.session);
   if (c.env.supabase) c.set('supabase', c.env.supabase);
   await next();

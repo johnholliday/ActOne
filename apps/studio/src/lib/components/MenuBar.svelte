@@ -74,6 +74,25 @@
     window.dispatchEvent(new CustomEvent('actone:auto-save-changed', { detail: { autoSave: autoSaveEnabled } }));
   }
 
+  async function downloadProject() {
+    const project = projectStore.activeProject;
+    if (!project) return;
+
+    const res = await fetch(`/api/project/${project.meta.id}/download`);
+    if (!res.ok) return;
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = res.headers.get('content-disposition')?.match(/filename="(.+)"/)?.[1]
+      ?? `${project.meta.title}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
   const validTargets = $derived(
     projectStore.project
       ? getValidTargets(projectStore.project.lifecycleStage)
@@ -237,6 +256,19 @@
         >
           <span>Save All</span>
           <span class="text-[10px] text-text-muted">Ctrl+K S</span>
+        </button>
+
+        <div class="my-1 border-t border-border"></div>
+
+        <!-- Download Project -->
+        <button
+          class="flex w-full items-center justify-between px-3 py-1.5 text-left text-text-secondary hover:bg-surface-raised/40 hover:text-text-primary {!projectStore.isLoaded ? 'cursor-not-allowed opacity-30' : ''}"
+          onclick={() => { void downloadProject(); closeMenus(); }}
+          onmouseenter={() => { openSubmenu = null; }}
+          disabled={!projectStore.isLoaded}
+          role="menuitem"
+        >
+          <span>Download Project (.zip)</span>
         </button>
 
         <div class="my-1 border-t border-border"></div>

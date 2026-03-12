@@ -27,15 +27,26 @@ export class ActOneDocumentSymbolProvider extends DefaultDocumentSymbolProvider 
     nameNode: CstNode,
     computedName?: string,
   ): DocumentSymbol {
+    // Strip surrounding quotes from DefinitionName (ID | STRING) so that
+    // symbol names match the serialized AST names used by the outline panel.
+    const cleanedName = computedName ? this.stripQuotes(computedName) : undefined;
     const symbol = super.createSymbol(
       document,
       astNode,
       cstNode,
       nameNode,
-      computedName,
+      cleanedName,
     );
     symbol.kind = this.getActOneSymbolKind(astNode);
     return symbol;
+  }
+
+  private stripQuotes(name: string): string {
+    if ((name.startsWith('"') && name.endsWith('"')) ||
+        (name.startsWith("'") && name.endsWith("'"))) {
+      return name.slice(1, -1);
+    }
+    return name;
   }
 
   private getActOneSymbolKind(node: AstNode): SymbolKind {

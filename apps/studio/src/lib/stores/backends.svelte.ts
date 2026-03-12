@@ -1,14 +1,25 @@
 /**
- * T095: Backend store using Svelte 5 runes.
+ * Backend store using Svelte 5 runes.
  *
  * Tracks backend list, availability, and active selection.
+ * Adapted for sanyam-ai-text 0.15.0 response format:
+ *   GET /api/ai-text/backends → { backends: [{ id, name, available, error? }] }
  */
 
-import type { BackendInfo } from '@actone/shared';
+/** Shape returned by sanyam-ai-text 0.15.0 backends route */
+interface BackendEntry {
+  id: string;
+  name: string;
+  available: boolean;
+  error?: string;
+}
 
 class BackendStore {
-  /** Available backends. */
-  backends = $state<(BackendInfo & { active: boolean })[]>([]);
+  /** Available backends from the server. */
+  backends = $state<BackendEntry[]>([]);
+
+  /** Locally-selected active backend ID. */
+  selectedId = $state<string | null>(null);
 
   /** Loading state. */
   loading = $state(false);
@@ -16,15 +27,23 @@ class BackendStore {
   /** Error message. */
   error = $state<string | null>(null);
 
-  /** Active backend ID. */
+  /** Active backend ID (selected, or first available). */
   activeId = $derived(
-    this.backends.find((b) => b.active)?.id ?? null,
+    this.selectedId
+      ?? this.backends.find((b) => b.available)?.id
+      ?? null,
   );
 
   /** Active backend info. */
-  activeBackend = $derived(
-    this.backends.find((b) => b.active) ?? null,
-  );
+  activeBackend = $derived.by(() => {
+    const id = this.activeId;
+    return this.backends.find((b) => b.id === id) ?? null;
+  });
+
+  /** Display label for a backend. */
+  get label(): string {
+    return this.activeBackend?.name ?? 'No backend';
+  }
 
   /** Available (online) backends. */
   availableBackends = $derived(
@@ -41,7 +60,14 @@ class BackendStore {
       if (!response.ok) {
         throw new Error(`Failed to fetch backends: ${response.status}`);
       }
-      this.backends = await response.json();
+      const data = await response.json() as { backends: BackendEntry[] };
+      this.backends = Array.isArray(data) ? data : (data.backends ?? []);
+
+      // Auto-select first available if none selected
+      if (!this.selectedId && this.backends.length > 0) {
+        const first = this.backends.find((b) => b.available);
+        if (first) this.selectedId = first.id;
+      }
     } catch (e) {
       this.error = e instanceof Error ? e.message : 'Failed to load backends';
     } finally {
@@ -49,30 +75,9 @@ class BackendStore {
     }
   }
 
-  /** Switch active backend. */
-  async switchBackend(
-    backendId: string,
-    fetchFn: typeof fetch = fetch,
-  ): Promise<void> {
-    try {
-      const response = await fetchFn('/api/ai-text/backends', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ backendId }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to switch backend: ${response.status}`);
-      }
-
-      // Update local state
-      this.backends = this.backends.map((b) => ({
-        ...b,
-        active: b.id === backendId,
-      }));
-    } catch (e) {
-      this.error = e instanceof Error ? e.message : 'Failed to switch backend';
-    }
+  /** Switch active backend (local-only, no server call). */
+  switchBackend(backendId: string): void {
+    this.selectedId = backendId;
   }
 }
 

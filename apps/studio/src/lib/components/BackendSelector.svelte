@@ -27,8 +27,8 @@
       {#each backendStore.backends as backend}
         <button
           class="backend-item"
-          class:active={backend.active}
-          onclick={() => void backendStore.switchBackend(backend.id)}
+          class:active={backend.id === backendStore.activeId}
+          onclick={() => backendStore.switchBackend(backend.id)}
         >
           <span
             class="availability-dot"
@@ -36,12 +36,9 @@
             class:unavailable={!backend.available}
           ></span>
           <span class="backend-name">{backend.name}</span>
-          {#if backend.active}
+          {#if backend.id === backendStore.activeId}
             <span class="active-badge">Active</span>
           {/if}
-          <span class="backend-caps">
-            {(backend.capabilities.maxContextTokens / 1000).toFixed(0)}k ctx
-          </span>
         </button>
       {/each}
     </div>
@@ -127,10 +124,5 @@
     border-radius: 3px;
     text-transform: uppercase;
     font-weight: 600;
-  }
-
-  .backend-caps {
-    font-size: 10px;
-    color: #64748b;
   }
 </style>

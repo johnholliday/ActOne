@@ -11,7 +11,8 @@
     "./worker": {
       "types": "./src/worker/main-browser.ts",
       "default": "./dist/worker/main-browser.js"
-    }
+    },
+    "./actone.langium": "./src/actone.langium"
   },
   "scripts": {
     "build": "langium generate && tsc",
@@ -24,13 +25,13 @@
   },
   "dependencies": {
     "@actone/shared": "workspace:*",
-    "@docugenix/sanyam-langium": "^0.9.1",
+    "@docugenix/sanyam-langium": "^1.0.3",
     "langium": "~4.2.1",
     "vscode-languageserver": "~9.0.1",
     "vscode-languageserver-protocol": "~3.17.5"
   },
   "devDependencies": {
-    "@docugenix/sanyam-config": "^0.9.1",
+    "@docugenix/sanyam-config": "^1.0.3",
     "eslint": "^9.0.0",
     "langium-cli": "~4.2.0",
     "typescript": "^5.9.2",

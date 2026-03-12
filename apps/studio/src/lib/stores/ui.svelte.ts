@@ -37,6 +37,12 @@ class UiStore {
   /** Whether the reading mode overlay is visible */
   readingModeVisible = $state(false);
 
+  /** Whether the AI chat sidebar is visible */
+  aiChatVisible = $state(false);
+
+  /** Width of the AI chat sidebar in pixels */
+  aiChatWidth = $state(340);
+
   /** Whether the editor or diagram canvas has focus */
   activePane = $state<'editor' | 'diagram'>('editor');
 
@@ -70,6 +76,14 @@ class UiStore {
 
   toggleReadingMode() {
     this.readingModeVisible = !this.readingModeVisible;
+  }
+
+  toggleAiChat() {
+    this.aiChatVisible = !this.aiChatVisible;
+  }
+
+  resizeAiChat(width: number) {
+    this.aiChatWidth = Math.max(280, width);
   }
 
   setDiagramView(view: DiagramView | null) {

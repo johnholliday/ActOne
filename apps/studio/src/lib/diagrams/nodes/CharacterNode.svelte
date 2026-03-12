@@ -13,7 +13,7 @@
 
   let { id, data }: Props = $props();
 
-  const size = $derived(Math.max(36, Math.min(72, 28 + data.sceneCount * 5)));
+  const size = $derived(Math.max(36, Math.min(56, 32 + data.sceneCount * 3)));
 </script>
 
 <div
@@ -40,7 +40,7 @@
 
 <style>
   .character-node {
-    border: 2px solid;
+    border: 1.5px solid;
     border-radius: 50%;
     display: flex;
     flex-direction: column;

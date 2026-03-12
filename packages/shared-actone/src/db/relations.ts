@@ -7,6 +7,8 @@ import {
   assets,
   analyticsSnapshots,
   draftVersions,
+  conversations,
+  chatMessages,
 } from './schema.js';
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -19,6 +21,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   assets: many(assets),
   analyticsSnapshots: many(analyticsSnapshots),
   draftVersions: many(draftVersions),
+  conversations: many(conversations),
 }));
 
 export const actoneProjectExtRelations = relations(actoneProjectExt, ({ one }) => ({
@@ -71,5 +74,20 @@ export const draftVersionsRelations = relations(draftVersions, ({ one }) => ({
   project: one(projects, {
     fields: [draftVersions.projectId],
     references: [projects.id],
+  }),
+}));
+
+export const conversationsRelations = relations(conversations, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [conversations.projectId],
+    references: [projects.id],
+  }),
+  messages: many(chatMessages),
+}));
+
+export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [chatMessages.conversationId],
+    references: [conversations.id],
   }),
 }));

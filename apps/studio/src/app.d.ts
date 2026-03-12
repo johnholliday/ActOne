@@ -18,4 +18,9 @@ declare global {
   }
 }
 
+declare module '@actone/lang/actone.langium?raw' {
+  const content: string;
+  export default content;
+}
+
 export {};

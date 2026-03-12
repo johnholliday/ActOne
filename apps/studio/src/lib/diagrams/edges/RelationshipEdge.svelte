@@ -58,10 +58,10 @@
     return bezierPath[0];
   });
 
-  const strokeWidth = $derived(Math.max(0.75, Math.min(3, data.weight / 3)));
+  const strokeWidth = $derived(Math.max(0.5, Math.min(1.5, data.weight / 5)));
   const dashArray = $derived.by(() => {
-    if (useAnts) return '6 4';
-    if (data.dynamic) return '6 4';
+    if (useAnts) return '3 2';
+    if (data.dynamic) return '3 2';
     return 'none';
   });
 </script>
@@ -104,12 +104,12 @@
 
   @keyframes march {
     to {
-      stroke-dashoffset: -10;
+      stroke-dashoffset: -5;
     }
   }
 
   .rel-label {
-    font-size: 10px;
+    font-size: 9px;
     dominant-baseline: text-after-edge;
   }
 </style>

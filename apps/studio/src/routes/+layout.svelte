@@ -36,6 +36,8 @@
   import X from 'lucide-svelte/icons/x';
   import Sun from 'lucide-svelte/icons/sun';
   import Moon from 'lucide-svelte/icons/moon';
+  import MessageSquare from 'lucide-svelte/icons/message-square';
+  import AiChatPanel from '$lib/panels/AiChatPanel.svelte';
   import ProjectSection from '$lib/components/ProjectSection.svelte';
   import DocPanel from '$lib/components/DocPanel.svelte';
   import DocSection from '$lib/components/DocSection.svelte';
@@ -51,6 +53,25 @@
   let newProjectGenre = $state('');
   let newProjectCreating = $state(false);
   let newProjectError = $state('');
+
+  /* ── Import from files ─────────────────────────────────────── */
+  import Upload from 'lucide-svelte/icons/upload';
+  import FileUp from 'lucide-svelte/icons/file-up';
+  import {
+    fileToInput,
+    extractFiles,
+    analyzeMetadata,
+    generateDslFiles,
+    getDefaultBackendId,
+    type ImportProgress,
+    type GeneratedFile,
+  } from '$lib/project/import-wizard.js';
+
+  let importMode = $state(false);
+  let importFiles = $state<File[]>([]);
+  let importProgress = $state<ImportProgress | null>(null);
+  let importGeneratedFiles = $state<GeneratedFile[]>([]);
+  let dragOver = $state(false);
 
   /* ── New File Dialog ────────────────────────────────────────── */
   let showNewFileDialog = $state(false);
@@ -290,6 +311,7 @@
   }
 
   let resizingSidebar = $state(false);
+  let resizingAiChat = $state(false);
 
   const navItems = [
     { icon: FileText, label: 'Editor', panelId: 'editor' },
@@ -328,7 +350,48 @@
   });
 
   /* ── T009: New project creation handler ──────────────────────── */
+
+  /** Pre-fill author name from signed-in user metadata when dialog opens */
+  function initNewProjectDialog() {
+    showNewProjectDialog = true;
+    importMode = false;
+    importFiles = [];
+    importProgress = null;
+    importGeneratedFiles = [];
+    newProjectError = '';
+    // Derive author name from current user if field is empty
+    if (!newProjectAuthor) {
+      const meta = data.user?.user_metadata;
+      newProjectAuthor = ((meta?.full_name ?? meta?.name ?? '') as string);
+    }
+  }
+
+  function handleImportDrop(e: DragEvent) {
+    e.preventDefault();
+    dragOver = false;
+    const dropped = e.dataTransfer?.files;
+    if (dropped && dropped.length > 0) {
+      importFiles = [...importFiles, ...Array.from(dropped)];
+    }
+  }
+
+  function handleImportFileSelect(e: Event) {
+    const input = e.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      importFiles = [...importFiles, ...Array.from(input.files)];
+      input.value = '';
+    }
+  }
+
+  function removeImportFile(index: number) {
+    importFiles = importFiles.filter((_, i) => i !== index);
+  }
+
   async function handleCreateProject() {
+    if (importMode && importFiles.length > 0) {
+      await handleCreateWithImport();
+      return;
+    }
     if (!newProjectTitle.trim()) {
       newProjectError = 'Project title is required';
       return;
@@ -361,45 +424,137 @@
       }
 
       const result = await res.json() as { id: string; title: string; entryFilePath: string };
-
-      // Load the newly created project into the cache
-      await projectStore.loadById(data.supabase, result.id);
-
-      // Add to workspace and make active
-      workspaceStore.openProject(result.id);
-      workspaceStore.setActiveProject(result.id);
-
-      // Refresh server-side data so data.projects includes the new project
-      await invalidate('supabase:auth');
-
-      showNewProjectDialog = false;
-      newProjectTitle = '';
-      newProjectAuthor = '';
-      newProjectGenre = '';
-
-      // Open the new project's entry file in the editor
-      const cached = projectStore.getProject(result.id);
-      const entryFile = cached?.files.find((f) => f.filePath === result.entryFilePath);
-      if (entryFile && cached) {
-        window.dispatchEvent(
-          new CustomEvent('actone:open-file', {
-            detail: {
-              id: entryFile.id,
-              filePath: entryFile.filePath,
-              projectId: cached.meta.id,
-              projectTitle: cached.meta.title,
-            },
-          }),
-        );
-      }
-
-      // Navigate to editor
-      await goto('/');
+      await finalizeProjectCreation(result);
     } catch (err) {
       newProjectError = err instanceof Error ? err.message : 'Failed to create project';
     } finally {
       newProjectCreating = false;
     }
+  }
+
+  async function handleCreateWithImport() {
+    newProjectCreating = true;
+    newProjectError = '';
+    importProgress = { phase: 'extracting', message: 'Extracting text from files...' };
+
+    try {
+      // Step 1: Convert files to base64 and extract text
+      const inputs = await Promise.all(importFiles.map(fileToInput));
+      const documents = await extractFiles(inputs);
+
+      if (documents.length === 0 || documents.every((d) => d.charCount === 0)) {
+        newProjectError = 'No extractable text found in the uploaded files.';
+        importProgress = null;
+        return;
+      }
+
+      // Step 2: Analyze metadata (title, genre) via AI
+      importProgress = { phase: 'analyzing', message: 'Identifying project title and genre...' };
+      const backendId = await getDefaultBackendId();
+      const metadata = await analyzeMetadata(documents, backendId);
+
+      // Auto-fill title and genre if not already set
+      if (!newProjectTitle.trim()) {
+        newProjectTitle = metadata.title;
+      }
+      if (!newProjectGenre.trim()) {
+        newProjectGenre = metadata.genre;
+      }
+
+      // Step 3: Generate DSL files
+      importProgress = { phase: 'generating', message: 'Generating ActOne files...' };
+      const generatedFiles = await generateDslFiles(
+        documents,
+        backendId,
+        (p) => { importProgress = p; },
+      );
+
+      if (generatedFiles.length === 0) {
+        newProjectError = 'AI did not generate any files. Please try again.';
+        importProgress = null;
+        return;
+      }
+
+      importGeneratedFiles = generatedFiles;
+
+      // Step 4: Create project with generated files
+      const res = await fetch('/api/project/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          title: newProjectTitle.trim() || 'Imported Project',
+          authorName: newProjectAuthor.trim() || undefined,
+          genre: newProjectGenre.trim() || undefined,
+          additionalFiles: generatedFiles.map((f) => ({
+            filePath: f.filename,
+            content: f.content,
+          })),
+        }),
+      });
+
+      const contentType = res.headers.get('content-type') ?? '';
+      if (!contentType.includes('application/json')) {
+        newProjectError = 'Unexpected response from server.';
+        importProgress = null;
+        return;
+      }
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null) as { message?: string } | null;
+        newProjectError = body?.message || `Error ${res.status}`;
+        importProgress = null;
+        return;
+      }
+
+      const result = await res.json() as { id: string; title: string; entryFilePath: string };
+      importProgress = { phase: 'done', message: `Created project with ${generatedFiles.length} files` };
+      await finalizeProjectCreation(result);
+    } catch (err) {
+      newProjectError = err instanceof Error ? err.message : 'Import failed';
+      importProgress = { phase: 'error', message: newProjectError };
+    } finally {
+      newProjectCreating = false;
+    }
+  }
+
+  async function finalizeProjectCreation(result: { id: string; title: string; entryFilePath: string }) {
+    // Load the newly created project into the cache
+    await projectStore.loadById(data.supabase, result.id);
+
+    // Add to workspace and make active
+    workspaceStore.openProject(result.id);
+    workspaceStore.setActiveProject(result.id);
+
+    // Refresh server-side data so data.projects includes the new project
+    await invalidate('supabase:auth');
+
+    showNewProjectDialog = false;
+    newProjectTitle = '';
+    newProjectAuthor = '';
+    newProjectGenre = '';
+    importMode = false;
+    importFiles = [];
+    importProgress = null;
+    importGeneratedFiles = [];
+
+    // Open the new project's entry file in the editor
+    const cached = projectStore.getProject(result.id);
+    const entryFile = cached?.files.find((f) => f.filePath === result.entryFilePath);
+    if (entryFile && cached) {
+      window.dispatchEvent(
+        new CustomEvent('actone:open-file', {
+          detail: {
+            id: entryFile.id,
+            filePath: entryFile.filePath,
+            projectId: cached.meta.id,
+            projectTitle: cached.meta.title,
+          },
+        }),
+      );
+    }
+
+    // Navigate to editor
+    await goto('/');
   }
 
   /* ── New file creation handler ─────────────────────────────── */
@@ -953,6 +1108,21 @@
     window.addEventListener('mouseup', onMouseUp);
   }
 
+  function handleAiChatMouseDown(e: MouseEvent) {
+    e.preventDefault();
+    resizingAiChat = true;
+    const onMouseMove = (ev: MouseEvent) => {
+      uiStore.resizeAiChat(window.innerWidth - ev.clientX);
+    };
+    const onMouseUp = () => {
+      resizingAiChat = false;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  }
+
 
 
 </script>
@@ -1040,7 +1210,7 @@
               <button
                 class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] text-amber-400 hover:bg-surface-raised/40"
                 role="menuitem"
-                onclick={() => { projectSelectorOpen = false; showNewProjectDialog = true; }}
+                onclick={() => { projectSelectorOpen = false; initNewProjectDialog(); }}
               >
                 <span class="w-4">+</span>
                 <span>New Project</span>
@@ -1155,7 +1325,7 @@
       <!-- Top toolbar zone -->
       <header class="flex h-10 items-center border-b border-border bg-surface-800 px-2">
         <MenuBar
-          oncreateproject={() => { showNewProjectDialog = true; }}
+          oncreateproject={() => initNewProjectDialog()}
           oncreatefile={() => { showNewFileDialog = true; }}
           onadvancestage={handleAdvanceStage}
           onsnapshot={handleSnapshot}
@@ -1172,6 +1342,13 @@
           {:else}
             <Moon size={16} />
           {/if}
+        </button>
+        <button
+          class="flex h-7 w-7 items-center justify-center rounded transition-colors hover:bg-surface-raised/20 {uiStore.aiChatVisible ? 'text-accent' : 'text-text-secondary hover:text-text-primary'}"
+          onclick={() => uiStore.toggleAiChat()}
+          title="Toggle AI Chat"
+        >
+          <MessageSquare size={16} />
         </button>
       </header>
 
@@ -1206,6 +1383,23 @@
         </div>
       {/if}
     </div>
+
+    <!-- AI Chat sidebar (right) -->
+    {#if uiStore.aiChatVisible}
+      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+      <div
+        class="w-1 cursor-col-resize bg-transparent hover:bg-accent/30 {resizingAiChat ? 'bg-accent/50' : ''}"
+        role="separator"
+        tabindex="-1"
+        onmousedown={handleAiChatMouseDown}
+      ></div>
+      <aside
+        class="flex flex-col border-l border-border bg-surface-850"
+        style="width: {uiStore.aiChatWidth}px;"
+      >
+        <AiChatPanel />
+      </aside>
+    {/if}
   </div>
 
   <!-- T008: New Project Dialog -->
@@ -1220,7 +1414,7 @@
     >
       <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
       <div
-        class="w-full max-w-md rounded-lg border border-border bg-surface-800 p-6 shadow-xl"
+        class="w-full max-w-lg rounded-lg border border-border bg-surface-800 p-6 shadow-xl"
         role="presentation"
         onclick={(e) => e.stopPropagation()}
       >
@@ -1232,16 +1426,116 @@
           </div>
         {/if}
 
+        <!-- Import mode toggle -->
+        <div class="mb-4">
+          <button
+            class="flex items-center gap-2 text-xs font-medium transition-colors"
+            class:text-amber-400={importMode}
+            class:text-text-muted={!importMode}
+            onclick={() => { importMode = !importMode; }}
+            disabled={newProjectCreating}
+          >
+            <Upload size={14} />
+            {importMode ? 'Starting from existing files' : 'Start from existing files...'}
+          </button>
+        </div>
+
+        <!-- Import file drop zone -->
+        {#if importMode}
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div
+            class="mb-4 rounded-lg border-2 border-dashed p-4 text-center transition-colors {dragOver ? 'border-amber-500 bg-amber-500/5' : 'border-border'}"
+            ondragover={(e) => { e.preventDefault(); dragOver = true; }}
+            ondragleave={() => { dragOver = false; }}
+            ondrop={handleImportDrop}
+          >
+            {#if importFiles.length === 0}
+              <div class="flex flex-col items-center gap-2 py-2">
+                <FileUp size={24} class="text-text-muted" />
+                <p class="text-xs text-text-muted">Drop files here or click to browse</p>
+                <p class="text-[10px] text-text-muted">Supports: .txt, .md, .docx, .pdf, .zip</p>
+                <label class="mt-1 cursor-pointer rounded bg-surface-raised px-3 py-1 text-xs text-text-secondary hover:text-text-primary">
+                  Browse Files
+                  <input
+                    type="file"
+                    class="hidden"
+                    multiple
+                    accept=".txt,.md,.markdown,.docx,.pdf,.zip,.gz,.tgz"
+                    onchange={handleImportFileSelect}
+                    disabled={newProjectCreating}
+                  />
+                </label>
+              </div>
+            {:else}
+              <div class="space-y-1 text-left">
+                {#each importFiles as file, i}
+                  <div class="flex items-center justify-between rounded bg-surface-900 px-2 py-1 text-xs">
+                    <span class="truncate text-text-primary">{file.name}</span>
+                    <div class="flex items-center gap-2">
+                      <span class="text-text-muted">{(file.size / 1024).toFixed(0)} KB</span>
+                      {#if !newProjectCreating}
+                        <button
+                          class="text-text-muted hover:text-red-400"
+                          onclick={() => removeImportFile(i)}
+                        >
+                          <X size={12} />
+                        </button>
+                      {/if}
+                    </div>
+                  </div>
+                {/each}
+                {#if !newProjectCreating}
+                  <label class="mt-2 inline-block cursor-pointer text-[10px] text-amber-400 hover:text-amber-300">
+                    + Add more files
+                    <input
+                      type="file"
+                      class="hidden"
+                      multiple
+                      accept=".txt,.md,.markdown,.docx,.pdf,.zip,.gz,.tgz"
+                      onchange={handleImportFileSelect}
+                    />
+                  </label>
+                {/if}
+              </div>
+            {/if}
+          </div>
+
+          <!-- Import progress -->
+          {#if importProgress}
+            <div class="mb-4 rounded bg-surface-900 px-3 py-2">
+              <div class="flex items-center gap-2 text-xs">
+                {#if importProgress.phase !== 'done' && importProgress.phase !== 'error'}
+                  <LoadingSpinner size="sm" />
+                {/if}
+                <span class="text-text-secondary">{importProgress.message}</span>
+              </div>
+              {#if importProgress.filesCompleted && importProgress.filesCompleted.length > 0}
+                <div class="mt-1 space-y-0.5">
+                  {#each importProgress.filesCompleted as f}
+                    <div class="text-[10px] text-text-muted">  {f}</div>
+                  {/each}
+                </div>
+              {/if}
+            </div>
+          {/if}
+
+          <p class="mb-3 text-[10px] text-text-muted">
+            Title and genre will be automatically detected from your files. You can override them below.
+          </p>
+        {/if}
+
         <div class="mb-3">
-          <label for="np-title" class="mb-1 block text-xs font-medium text-text-secondary">Project Title *</label>
+          <label for="np-title" class="mb-1 block text-xs font-medium text-text-secondary">
+            Project Title {importMode ? '' : '*'}
+          </label>
           <input
             id="np-title"
             type="text"
             bind:value={newProjectTitle}
             class="w-full rounded border border-border bg-surface-900 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:outline-none"
-            placeholder="My Story"
+            placeholder={importMode ? 'Auto-detected from files' : 'My Story'}
             disabled={newProjectCreating}
-            onkeydown={(e) => { if (e.key === 'Enter') void handleCreateProject(); }}
+            onkeydown={(e) => { if (e.key === 'Enter' && !importMode) void handleCreateProject(); }}
           />
         </div>
 
@@ -1254,7 +1548,7 @@
             class="w-full rounded border border-border bg-surface-900 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:outline-none"
             placeholder="Author name"
             disabled={newProjectCreating}
-            onkeydown={(e) => { if (e.key === 'Enter') void handleCreateProject(); }}
+            onkeydown={(e) => { if (e.key === 'Enter' && !importMode) void handleCreateProject(); }}
           />
         </div>
 
@@ -1265,9 +1559,9 @@
             type="text"
             bind:value={newProjectGenre}
             class="w-full rounded border border-border bg-surface-900 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:outline-none"
-            placeholder="Fantasy, Sci-Fi, etc."
+            placeholder={importMode ? 'Auto-detected from files' : 'Fantasy, Sci-Fi, etc.'}
             disabled={newProjectCreating}
-            onkeydown={(e) => { if (e.key === 'Enter') void handleCreateProject(); }}
+            onkeydown={(e) => { if (e.key === 'Enter' && !importMode) void handleCreateProject(); }}
           />
         </div>
 
@@ -1282,12 +1576,12 @@
           <button
             class="flex items-center gap-2 rounded bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-500 disabled:opacity-50"
             onclick={() => void handleCreateProject()}
-            disabled={newProjectCreating}
+            disabled={newProjectCreating || (importMode && importFiles.length === 0)}
           >
             {#if newProjectCreating}
               <LoadingSpinner size="sm" />
             {/if}
-            Create Project
+            {importMode ? 'Import & Create' : 'Create Project'}
           </button>
         </div>
       </div>

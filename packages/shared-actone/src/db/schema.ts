@@ -188,6 +188,55 @@ export const draftVersions = pgTable(
   ],
 );
 
+// ── Conversations ────────────────────────────────────────────────────
+
+export const conversations = pgTable(
+  'conversations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    projectId: uuid('project_id')
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
+    title: text('title'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('conversations_project_id_idx').on(table.projectId),
+    index('conversations_user_id_idx').on(table.userId),
+  ],
+);
+
+// ── Chat Messages ────────────────────────────────────────────────────
+
+export const chatMessages = pgTable(
+  'chat_messages',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    conversationId: uuid('conversation_id')
+      .notNull()
+      .references(() => conversations.id, { onDelete: 'cascade' }),
+    role: text('role').notNull(), // 'user' | 'assistant' | 'system'
+    content: text('content').notNull(),
+    tokenCount: integer('token_count'),
+    toolCalls: jsonb('tool_calls'),
+    modelUsed: text('model_used'),
+    inputTokens: integer('input_tokens'),
+    outputTokens: integer('output_tokens'),
+    durationMs: integer('duration_ms'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('chat_messages_conversation_id_idx').on(table.conversationId),
+  ],
+);
+
 // ── Schema Extension (1:1 extension for projects) ──────────────────
 
 export const actoneProjectExtension: SchemaExtension = {
@@ -210,5 +259,7 @@ export const actOneSchemaContribution: SchemaContribution = {
     assets,
     analyticsSnapshots,
     draftVersions,
+    conversations,
+    chatMessages,
   ],
 };

@@ -151,3 +151,4 @@ registerPanel({
   singleton: true,
   defaultPosition: { direction: 'right', referencePanel: 'editor' },
 });
+
