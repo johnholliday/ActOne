@@ -1,15 +1,31 @@
 /**
  * T050: Lifecycle transition logic.
  *
- * Enforces valid lifecycle transitions using VALID_TRANSITIONS from @actone/shared.
+ * Core lifecycle functions re-exported from @docugenix/sanyam-project.
+ * ActOne-specific helpers (requestTransition, getTransition) remain here.
  */
 
+import type {
+  LifecycleStage,
+  LifecycleTransition,
+} from '@docugenix/sanyam-project/types';
+import { VALID_TRANSITIONS } from '@docugenix/sanyam-project/types';
 import {
   isValidTransition,
-  type LifecycleStage,
-  type LifecycleTransition,
+  getValidTargets,
+  getStageLabel,
+  canTransition,
+} from '@docugenix/sanyam-project/services';
+
+// Re-export for consumers
+export {
+  isValidTransition,
+  getValidTargets,
+  getStageLabel,
+  canTransition,
   VALID_TRANSITIONS,
-} from '@actone/shared';
+};
+export type { LifecycleStage, LifecycleTransition };
 
 export interface TransitionResult {
   success: boolean;
@@ -17,25 +33,6 @@ export interface TransitionResult {
   currentStage: LifecycleStage;
   snapshotId?: string;
   error?: string;
-}
-
-/**
- * Check if a lifecycle transition is valid.
- */
-export function canTransition(
-  from: LifecycleStage,
-  to: LifecycleStage,
-): boolean {
-  return isValidTransition(from, to);
-}
-
-/**
- * Get all valid target stages from a given stage.
- */
-export function getValidTargets(from: LifecycleStage): LifecycleStage[] {
-  return VALID_TRANSITIONS
-    .filter((t: LifecycleTransition) => t.from === from)
-    .map((t: LifecycleTransition) => t.to);
 }
 
 /**
@@ -48,20 +45,6 @@ export function getTransition(
   return VALID_TRANSITIONS.find(
     (t: LifecycleTransition) => t.from === from && t.to === to,
   ) ?? null;
-}
-
-/**
- * Get the display label for a lifecycle stage.
- */
-export function getStageLabel(stage: LifecycleStage): string {
-  const labels: Record<LifecycleStage, string> = {
-    concept: 'Concept',
-    draft: 'Draft',
-    revision: 'Revision',
-    final: 'Final',
-    published: 'Published',
-  };
-  return labels[stage];
 }
 
 /**

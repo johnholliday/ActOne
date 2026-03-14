@@ -404,8 +404,10 @@
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
           title: newProjectTitle.trim(),
-          authorName: newProjectAuthor.trim() || undefined,
-          genre: newProjectGenre.trim() || undefined,
+          extensionData: {
+            authorName: newProjectAuthor.trim() || undefined,
+            genre: newProjectGenre.trim() || undefined,
+          },
         }),
       });
 
@@ -483,8 +485,10 @@
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
           title: newProjectTitle.trim() || 'Imported Project',
-          authorName: newProjectAuthor.trim() || undefined,
-          genre: newProjectGenre.trim() || undefined,
+          extensionData: {
+            authorName: newProjectAuthor.trim() || undefined,
+            genre: newProjectGenre.trim() || undefined,
+          },
           additionalFiles: generatedFiles.map((f) => ({
             filePath: f.filename,
             content: f.content,

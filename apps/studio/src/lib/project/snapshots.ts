@@ -1,26 +1,19 @@
 /**
  * T051: Snapshot capture and restore logic.
  *
- * Snapshots freeze all file contents and statistics at a point in time,
- * allowing authors to restore previous versions.
+ * Core snapshot utilities (generateSnapshotTag, countWords) are now
+ * provided by @docugenix/sanyam-project. This module retains the
+ * ActOne-specific grammar element counting and aggregation, which is
+ * injected into sanyam-project via the `aggregateStats` config hook.
  */
 
-import type { LifecycleStage } from '@actone/shared';
-
-export interface SnapshotInput {
-  projectId: string;
-  tag: string;
-  stage: LifecycleStage;
-  notes?: string;
-  wordCount?: number;
-  sceneCount?: number;
-  characterCount?: number;
-}
+// Re-export sanyam-project utilities for backward compatibility
+export { generateSnapshotTag, countWords } from '@docugenix/sanyam-project/services';
 
 export interface SnapshotEntry {
   id: string;
   tag: string;
-  stage: LifecycleStage;
+  stage: string;
   wordCount: number;
   sceneCount: number;
   characterCount: number;
@@ -34,29 +27,8 @@ export interface SnapshotFile {
 }
 
 /**
- * Generate a snapshot tag from stage and timestamp.
- */
-export function generateSnapshotTag(stage: LifecycleStage): string {
-  const now = new Date();
-  const date = now.toISOString().split('T')[0];
-  const time = now.toTimeString().split(' ')[0]?.replace(/:/g, '');
-  return `${stage}-${date}-${time}`;
-}
-
-/**
- * Count words in content (for snapshot statistics).
- */
-export function countWords(content: string): number {
-  return content
-    .replace(/\/\/.*/g, '') // strip single-line comments
-    .replace(/\/\*[\s\S]*?\*\//g, '') // strip multi-line comments
-    .split(/\s+/)
-    .filter((w) => w.length > 0)
-    .length;
-}
-
-/**
  * Count story elements by type in raw content.
+ * ActOne-specific: counts scene and character definitions by grammar pattern.
  */
 export function countElements(content: string): {
   scenes: number;
@@ -72,16 +44,25 @@ export function countElements(content: string): {
 
 /**
  * Aggregate statistics across multiple source files.
+ * ActOne-specific: counts words, scenes, and characters.
+ * Used as the `aggregateStats` hook for sanyam-project's createProjectRoutes.
  */
 export function aggregateStats(
   files: Array<{ content: string }>,
 ): { wordCount: number; sceneCount: number; characterCount: number } {
+  // Import countWords dynamically to avoid circular dependency at module level
   let wordCount = 0;
   let sceneCount = 0;
   let characterCount = 0;
 
   for (const file of files) {
-    wordCount += countWords(file.content);
+    // Count words using the same logic as sanyam-project
+    wordCount += file.content
+      .replace(/\/\/.*/g, '') // strip single-line comments
+      .replace(/\/\*[\s\S]*?\*\//g, '') // strip multi-line comments
+      .split(/\s+/)
+      .filter((w) => w.length > 0)
+      .length;
     const counts = countElements(file.content);
     sceneCount += counts.scenes;
     characterCount += counts.characters;

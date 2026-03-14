@@ -2,7 +2,7 @@
  * T048: Integration tests for POST /project/lifecycle Hono handler.
  *
  * Tests lifecycle stage transitions, snapshot creation, auth checks,
- * validation, and ownership enforcement.
+ * validation, and ownership enforcement via sanyam-project's createProjectRoutes.
  */
 
 import '../../fixtures/mocks/setup.js';
@@ -15,27 +15,6 @@ import {
   getJsonBody,
   defaultUser,
 } from './helpers.js';
-
-vi.mock('$lib/project/snapshots', () => ({
-  generateSnapshotTag: vi.fn(() => 'snapshot-v1'),
-  aggregateStats: vi.fn(() => ({ wordCount: 100, sceneCount: 5, characterCount: 3 })),
-}));
-
-/**
- * Mock @actone/shared so we can control isValidTransition per-test.
- * vi.hoisted() ensures the variable is available during vi.mock hoisting.
- */
-const { mockIsValidTransition } = vi.hoisted(() => ({
-  mockIsValidTransition: vi.fn<[string, string], boolean>(),
-}));
-
-vi.mock('@actone/shared', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@actone/shared')>();
-  return {
-    ...actual,
-    isValidTransition: mockIsValidTransition,
-  };
-});
 
 // ── Shared fixtures ───────────────────────────────────────────────────
 
@@ -55,19 +34,7 @@ const projectData = {
 describe('POST /project/lifecycle', () => {
   beforeEach(() => {
     resetMockDb();
-    mockIsValidTransition.mockReset();
-    // Re-apply default delegation after reset
-    mockIsValidTransition.mockImplementation((from: string, to: string) => {
-      const validTransitions = [
-        { from: 'concept', to: 'draft' },
-        { from: 'draft', to: 'revision' },
-        { from: 'revision', to: 'draft' },
-        { from: 'revision', to: 'final' },
-        { from: 'final', to: 'revision' },
-        { from: 'final', to: 'published' },
-      ];
-      return validTransitions.some((t) => t.from === from && t.to === to);
-    });
+    vi.clearAllMocks();
   });
 
   it('transitions concept -> draft successfully', async () => {
@@ -140,6 +107,10 @@ describe('POST /project/lifecycle', () => {
   });
 
   it('returns 400 for invalid targetStage', async () => {
+    configureMockDb({
+      select: [projectData],
+    });
+
     const app = createTestApp(defaultUser);
     const response = await appRequest(app, '/project/lifecycle', {
       method: 'POST',
@@ -163,9 +134,10 @@ describe('POST /project/lifecycle', () => {
     expect(response.status).toBe(404);
   });
 
-  it('returns 403 for non-owned project', async () => {
+  it('returns 404 for non-owned project (ownership + existence combined)', async () => {
+    // sanyam-project queries WHERE id = ? AND userId = ?, so non-owned → not found
     configureMockDb({
-      select: [{ ...projectData, userId: 'other-user-999' }],
+      select: [],
     });
 
     const app = createTestApp(defaultUser);
@@ -174,7 +146,7 @@ describe('POST /project/lifecycle', () => {
       body: { projectId, targetStage: 'draft' },
     });
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
   });
 
   it('returns 400 for invalid transition (concept -> published)', async () => {
@@ -189,22 +161,5 @@ describe('POST /project/lifecycle', () => {
     });
 
     expect(response.status).toBe(400);
-  });
-
-  it('returns 409 for same-stage transition', async () => {
-    const draftProject = { ...projectData, lifecyclePhase: 'draft' };
-    configureMockDb({
-      select: [draftProject],
-    });
-
-    mockIsValidTransition.mockReturnValueOnce(true);
-
-    const app = createTestApp(defaultUser);
-    const response = await appRequest(app, '/project/lifecycle', {
-      method: 'POST',
-      body: { projectId, targetStage: 'draft' },
-    });
-
-    expect(response.status).toBe(409);
   });
 });

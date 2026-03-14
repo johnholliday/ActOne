@@ -1,11 +1,13 @@
 import { relations } from 'drizzle-orm';
 import { projects, projectFiles } from '@docugenix/sanyam-db/schema';
 import {
+  projectSnapshots,
+  projectSnapshotFiles,
+  projectAnalytics,
+} from '@docugenix/sanyam-project/schema';
+import {
   actoneProjectExt,
-  snapshots,
-  snapshotFiles,
   assets,
-  analyticsSnapshots,
   draftVersions,
   conversations,
   chatMessages,
@@ -17,9 +19,9 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
     references: [actoneProjectExt.projectId],
   }),
   projectFiles: many(projectFiles),
-  snapshots: many(snapshots),
+  snapshots: many(projectSnapshots),
   assets: many(assets),
-  analyticsSnapshots: many(analyticsSnapshots),
+  analyticsSnapshots: many(projectAnalytics),
   draftVersions: many(draftVersions),
   conversations: many(conversations),
 }));
@@ -38,18 +40,18 @@ export const projectFilesRelations = relations(projectFiles, ({ one }) => ({
   }),
 }));
 
-export const snapshotsRelations = relations(snapshots, ({ one, many }) => ({
+export const snapshotsRelations = relations(projectSnapshots, ({ one, many }) => ({
   project: one(projects, {
-    fields: [snapshots.projectId],
+    fields: [projectSnapshots.projectId],
     references: [projects.id],
   }),
-  files: many(snapshotFiles),
+  files: many(projectSnapshotFiles),
 }));
 
-export const snapshotFilesRelations = relations(snapshotFiles, ({ one }) => ({
-  snapshot: one(snapshots, {
-    fields: [snapshotFiles.snapshotId],
-    references: [snapshots.id],
+export const snapshotFilesRelations = relations(projectSnapshotFiles, ({ one }) => ({
+  snapshot: one(projectSnapshots, {
+    fields: [projectSnapshotFiles.snapshotId],
+    references: [projectSnapshots.id],
   }),
 }));
 
@@ -61,10 +63,10 @@ export const assetsRelations = relations(assets, ({ one }) => ({
 }));
 
 export const analyticsSnapshotsRelations = relations(
-  analyticsSnapshots,
+  projectAnalytics,
   ({ one }) => ({
     project: one(projects, {
-      fields: [analyticsSnapshots.projectId],
+      fields: [projectAnalytics.projectId],
       references: [projects.id],
     }),
   }),

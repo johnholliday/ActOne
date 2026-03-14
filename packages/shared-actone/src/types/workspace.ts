@@ -1,9 +1,4 @@
 // ── Workspace Types ──────────────────────────────────────────────────
+// Re-exported from @docugenix/sanyam-project.
 
-/** Persisted workspace state (localStorage) */
-export interface WorkspaceState {
-  /** IDs of projects currently open in the workspace */
-  openProjectIds: string[];
-  /** ID of the currently active project (owns focused editor tab) */
-  activeProjectId: string | null;
-}
+export type { WorkspaceState } from '@docugenix/sanyam-project/types';

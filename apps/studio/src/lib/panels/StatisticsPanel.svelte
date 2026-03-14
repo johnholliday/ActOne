@@ -34,8 +34,7 @@
   interface TimeseriesPoint {
     capturedAt: string;
     wordCount: number;
-    sceneCount: number;
-    characterCount: number;
+    metrics: Record<string, unknown>;
   }
 
   let timeseries = $state<TimeseriesPoint[]>([]);
@@ -51,7 +50,7 @@
 
     timeseriesLoading = true;
     try {
-      const res = await fetch(`/api/analytics/timeseries?projectId=${projectId}&limit=30`);
+      const res = await fetch(`/api/project/analytics/timeseries?projectId=${projectId}&limit=30`);
       if (res.ok) {
         const data = await res.json();
         timeseries = (data.snapshots ?? []).reverse();
@@ -67,9 +66,9 @@
     const body = {
       projectId: projectStore.project.id,
       wordCount: analytics.wordCount,
-      sceneCount: analytics.sceneCount,
-      characterCount: analytics.characterCount,
       metrics: {
+        sceneCount: analytics.sceneCount,
+        characterCount: analytics.characterCount,
         sceneTypeDistribution: analytics.sceneTypeDistribution,
         characterScreenTime: Object.fromEntries(
           analytics.characterScreenTime.map((c) => [c.name, c.sceneCount]),
@@ -78,7 +77,7 @@
       },
     };
 
-    const res = await fetch('/api/analytics/snapshot', {
+    const res = await fetch('/api/project/analytics/snapshot', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -210,7 +209,7 @@
           <div class="trend-bars">
             {#each timeseries as point}
               {@const height = maxTrendWord > 0 ? (point.wordCount / maxTrendWord) * 100 : 0}
-              <div class="trend-bar-col" title="{new Date(point.capturedAt).toLocaleDateString()}: {point.wordCount} words, {point.sceneCount} scenes, {point.characterCount} characters">
+              <div class="trend-bar-col" title="{new Date(point.capturedAt).toLocaleDateString()}: {point.wordCount} words{point.metrics?.sceneCount ? `, ${point.metrics.sceneCount} scenes` : ''}{point.metrics?.characterCount ? `, ${point.metrics.characterCount} characters` : ''}">
                 <div class="trend-bar" style="height: {height}%;"></div>
               </div>
             {/each}
