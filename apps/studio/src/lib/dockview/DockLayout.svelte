@@ -56,6 +56,18 @@
         }),
       );
 
+      // Remove empty groups left behind after dragging panels out
+      disposables.push(
+        api.onDidMovePanel(() => {
+          if (!api) return;
+          for (const group of api.groups) {
+            if (group.panels.length === 0) {
+              api.removeGroup(group);
+            }
+          }
+        }),
+      );
+
       onReady?.(api);
     })();
 

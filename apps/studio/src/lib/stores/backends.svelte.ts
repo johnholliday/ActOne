@@ -1,7 +1,7 @@
 /**
  * Backend store using Svelte 5 runes.
  *
- * Tracks backend list, availability, and active selection.
+ * Tracks backend list, availability, active selection, and model choice.
  * Adapted for sanyam-ai-text 0.15.0 response format:
  *   GET /api/ai-text/backends → { backends: [{ id, name, available, error? }] }
  */
@@ -14,12 +14,42 @@ interface BackendEntry {
   error?: string;
 }
 
+/** A model available for a given provider */
+export interface ModelEntry {
+  id: string;
+  label: string;
+}
+
+/**
+ * Known models per provider.
+ * Sourced from sanyam-ai-anthropic, sanyam-ai-openai, sanyam-ai-local defaults.
+ * The first entry is the default.
+ */
+const KNOWN_MODELS: Record<string, ModelEntry[]> = {
+  anthropic: [
+    { id: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4' },
+    { id: 'claude-opus-4-20250514', label: 'Claude Opus 4' },
+    { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5' },
+  ],
+  openai: [
+    { id: 'gpt-4o', label: 'GPT-4o' },
+    { id: 'gpt-4o-mini', label: 'GPT-4o Mini' },
+    { id: 'gpt-4.1', label: 'GPT-4.1' },
+  ],
+  local: [
+    { id: 'llama3.2', label: 'Llama 3.2' },
+  ],
+};
+
 class BackendStore {
   /** Available backends from the server. */
   backends = $state<BackendEntry[]>([]);
 
   /** Locally-selected active backend ID. */
   selectedId = $state<string | null>(null);
+
+  /** Locally-selected model ID (per-backend). */
+  private selectedModels = $state<Record<string, string>>({});
 
   /** Loading state. */
   loading = $state(false);
@@ -50,6 +80,25 @@ class BackendStore {
     this.backends.filter((b) => b.available),
   );
 
+  /** Models available for the active backend. */
+  activeModels = $derived<ModelEntry[]>(
+    this.activeId ? (KNOWN_MODELS[this.activeId] ?? []) : [],
+  );
+
+  /** Currently selected model ID for the active backend. */
+  activeModelId = $derived.by(() => {
+    const id = this.activeId;
+    if (!id) return null;
+    return this.selectedModels[id] ?? KNOWN_MODELS[id]?.[0]?.id ?? null;
+  });
+
+  /** Currently selected model entry for the active backend. */
+  activeModel = $derived.by(() => {
+    const modelId = this.activeModelId;
+    const models = this.activeModels;
+    return models.find((m) => m.id === modelId) ?? models[0] ?? null;
+  });
+
   /** Fetch backends from API. */
   async refresh(fetchFn: typeof fetch = fetch): Promise<void> {
     this.loading = true;
@@ -78,6 +127,13 @@ class BackendStore {
   /** Switch active backend (local-only, no server call). */
   switchBackend(backendId: string): void {
     this.selectedId = backendId;
+  }
+
+  /** Switch model for the active backend (local-only). */
+  switchModel(modelId: string): void {
+    const id = this.activeId;
+    if (!id) return;
+    this.selectedModels = { ...this.selectedModels, [id]: modelId };
   }
 }
 

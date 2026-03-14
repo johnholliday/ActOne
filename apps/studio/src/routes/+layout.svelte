@@ -650,6 +650,26 @@
     projectContextMenu = null;
   }
 
+  async function handleDownloadProject() {
+    closeProjectContextMenu();
+    const project = projectStore.project;
+    if (!project) return;
+
+    const res = await fetch(`/api/project/${project.id}/download`);
+    if (!res.ok) return;
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = res.headers.get('content-disposition')?.match(/filename="(.+)"/)?.[1]
+      ?? `${project.title}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
   async function handleCloseProject() {
     closeProjectContextMenu();
     const activeId = workspaceStore.activeProjectId;
@@ -1749,6 +1769,10 @@
         <button class="flex w-full items-center px-3 py-1.5 text-left text-[13px] text-text-secondary hover:bg-surface-raised/40"
                 role="menuitem" onclick={() => { closeProjectContextMenu(); showNewFileDialog = true; }}>
           New File...
+        </button>
+        <button class="flex w-full items-center px-3 py-1.5 text-left text-[13px] text-text-secondary hover:bg-surface-raised/40"
+                role="menuitem" onclick={() => void handleDownloadProject()}>
+          Download Project (.zip)
         </button>
         <div class="my-1 border-t border-border"></div>
         <button class="flex w-full items-center px-3 py-1.5 text-left text-[13px] text-text-secondary hover:bg-surface-raised/40"

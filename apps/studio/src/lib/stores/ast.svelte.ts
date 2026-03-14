@@ -25,6 +25,16 @@ class AstStore {
   /** Whether the merged AST is valid (no errors across all files) */
   mergedValid = $state(true);
 
+  /**
+   * Generation counter — incremented on clear().
+   * Callers can snapshot this before an async operation and compare
+   * afterward to detect whether the store was cleared (project switch).
+   */
+  generation = $state(0);
+
+  /** Set of URIs belonging to the current project. Diagnostics for unknown URIs are rejected. */
+  private knownUris = new Set<string>();
+
   /** AST for the active file */
   activeAst = $derived(
     this.activeUri ? this.fileAsts.get(this.activeUri) ?? null : null,
@@ -61,8 +71,15 @@ class AstStore {
     this.mergedAst?.elements ?? this.activeAst?.ast?.elements ?? [],
   );
 
+  /** Register the set of URIs belonging to the current project.
+   *  Diagnostics/AST updates for URIs outside this set will be ignored. */
+  setKnownUris(uris: string[]): void {
+    this.knownUris = new Set(uris);
+  }
+
   /** Update the AST for a specific file (called after actone/getSerializedAst response) */
   updateAst(uri: string, ast: SerializedStory | null, valid: boolean, errors: number): void {
+    if (this.knownUris.size > 0 && !this.knownUris.has(uri)) return;
     const existing = this.fileAsts.get(uri);
     const updated: FileAst = {
       uri,
@@ -78,6 +95,7 @@ class AstStore {
 
   /** Update diagnostics for a specific file (called from publishDiagnostics) */
   updateDiagnostics(uri: string, diagnostics: Diagnostic[]): void {
+    if (this.knownUris.size > 0 && !this.knownUris.has(uri)) return;
     const existing = this.fileAsts.get(uri);
     const errors = diagnostics.filter((d) => d.severity === 1).length;
     const updated: FileAst = {
@@ -128,8 +146,10 @@ class AstStore {
     this.mergedValid = valid;
   }
 
-  /** Clear all AST state */
+  /** Clear all AST state (e.g. on project switch) */
   clear(): void {
+    this.generation++;
+    this.knownUris = new Set();
     this.fileAsts = new Map();
     this.activeUri = null;
     this.mergedAst = null;

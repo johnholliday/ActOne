@@ -252,17 +252,23 @@
       const targetProject = projectStore.getProject(targetFile.projectId);
       if (targetProject) {
         const session = page.data?.session;
+        const fileOrder = targetProject.files
+          .map((f, i) => ({
+            uri: `file:///${f.filePath}`,
+            priority: f.isEntry ? 0 : i + 1,
+          }));
+
+        // Register this project's URIs so stale diagnostics from
+        // the previous project are rejected by the AST store.
+        astStore.setKnownUris(fileOrder.map((f) => f.uri));
+
         const ctx = {
           projectId: targetProject.meta.id,
           supabaseUrl: PUBLIC_SUPABASE_URL,
           supabaseAnonKey: PUBLIC_SUPABASE_ANON_KEY,
           authToken: session?.access_token ?? '',
           compositionMode: targetProject.meta.compositionMode,
-          fileOrder: targetProject.files
-            .map((f, i) => ({
-              uri: `file:///${f.filePath}`,
-              priority: f.isEntry ? 0 : i + 1,
-            })),
+          fileOrder,
         };
         await editorPane?.reinitializeProject?.(ctx);
       }
