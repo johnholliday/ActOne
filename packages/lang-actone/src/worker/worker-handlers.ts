@@ -6,6 +6,7 @@ import { isDocument } from '../generated/ast.js';
 import { ActOneScopeProvider, type CompositionMode } from '../services/actone-scope.js';
 import { serializeDocument } from '../serializer/ast-serializer.js';
 import type { SerializedStoryElement } from '@actone/shared';
+import type { InMemoryFileSystemProvider } from './in-memory-fs-provider.js';
 
 function getScopeProvider(services: ActOneServices): ActOneScopeProvider | null {
   const sp = services.references.ScopeProvider;
@@ -17,6 +18,7 @@ export function registerActOneHandlers(
   connection: Connection,
   shared: LangiumSharedServices,
   language: ActOneServices,
+  fsProvider: InMemoryFileSystemProvider,
 ): void {
   /* ── Workspace management ──────────────────────────────────────── */
 
@@ -41,8 +43,16 @@ export function registerActOneHandlers(
         }
       }
 
-      // Load each file into the Langium workspace as a text document
+      // Clear previous project: remove all existing documents and file cache
+      const oldUris = Array.from(shared.workspace.LangiumDocuments.all).map(d => d.uri);
+      if (oldUris.length > 0) {
+        await shared.workspace.DocumentBuilder.update([], oldUris);
+      }
+      fsProvider.clear();
+
+      // Load each file from Supabase into the file system provider and workspace
       let loadedFiles = 0;
+      const newUris: URI[] = [];
       for (const entry of params.fileOrder) {
         try {
           const filePath = URI.parse(entry.uri).path.replace(/^\//, '');
@@ -62,7 +72,10 @@ export function registerActOneHandlers(
           const content = rows[0]!.content;
           const docUri = URI.parse(entry.uri);
 
+          // Populate the in-memory file system so Langium can read files during rebuild
+          fsProvider.setFile(docUri.toString(), content);
           shared.workspace.LangiumDocuments.createDocument(docUri, content);
+          newUris.push(docUri);
           loadedFiles++;
         } catch {
           // Skip files that fail to load
@@ -70,9 +83,8 @@ export function registerActOneHandlers(
       }
 
       // Trigger a full workspace rebuild using update()
-      const allUris = Array.from(shared.workspace.LangiumDocuments.all).map(d => d.uri);
-      console.log('[Worker] openProject: rebuilding', allUris.length, 'documents via update()');
-      await shared.workspace.DocumentBuilder.update(allUris, []);
+      console.log('[Worker] openProject: rebuilding', newUris.length, 'documents via update()');
+      await shared.workspace.DocumentBuilder.update(newUris, []);
 
       // Log document states after build
       for (const doc of shared.workspace.LangiumDocuments.all) {
@@ -100,6 +112,9 @@ export function registerActOneHandlers(
       const docUri = URI.parse(params.filePath);
       const existingDoc = shared.workspace.LangiumDocuments.getDocument(docUri);
 
+      // Keep the file system provider in sync
+      fsProvider.setFile(docUri.toString(), params.content);
+
       if (existingDoc) {
         shared.workspace.LangiumDocuments.deleteDocument(docUri);
         shared.workspace.LangiumDocuments.createDocument(docUri, params.content);
@@ -118,6 +133,10 @@ export function registerActOneHandlers(
     async (params: { filePath: string }) => {
       const docUri = URI.parse(params.filePath);
       const existingDoc = shared.workspace.LangiumDocuments.getDocument(docUri);
+
+      // Keep the file system provider in sync
+      fsProvider.removeFile(docUri.toString());
+
       if (existingDoc) {
         await shared.workspace.DocumentBuilder.update([], [docUri]);
       }

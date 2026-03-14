@@ -7,12 +7,14 @@ import {
   projects,
   projectFiles,
   actoneProjectExt,
-  snapshots,
-  snapshotFiles,
   assets,
-  analyticsSnapshots,
   draftVersions,
 } from './schema.js';
+import {
+  projectSnapshots,
+  projectSnapshotFiles,
+  projectAnalytics,
+} from '@docugenix/sanyam-project/schema';
 
 // ── Project schemas ────────────────────────────────────────────────
 
@@ -37,15 +39,15 @@ export const sourceFileSelectSchema = projectFileSelectSchema;
 export const sourceFileInsertSchema = projectFileInsertSchema;
 export const sourceFileUpdateSchema = projectFileUpdateSchema;
 
-// ── Snapshot schemas ───────────────────────────────────────────────
+// ── Snapshot schemas (from sanyam-project tables) ──────────────────
 
-export const snapshotSelectSchema = createSelectSchema(snapshots);
-export const snapshotInsertSchema = createInsertSchema(snapshots);
+export const snapshotSelectSchema = createSelectSchema(projectSnapshots);
+export const snapshotInsertSchema = createInsertSchema(projectSnapshots);
 
 // ── Snapshot file schemas ──────────────────────────────────────────
 
-export const snapshotFileSelectSchema = createSelectSchema(snapshotFiles);
-export const snapshotFileInsertSchema = createInsertSchema(snapshotFiles);
+export const snapshotFileSelectSchema = createSelectSchema(projectSnapshotFiles);
+export const snapshotFileInsertSchema = createInsertSchema(projectSnapshotFiles);
 
 // ── Asset schemas ──────────────────────────────────────────────────
 
@@ -55,9 +57,9 @@ export const assetInsertSchema = createInsertSchema(assets);
 // ── Analytics snapshot schemas ─────────────────────────────────────
 
 export const analyticsSnapshotSelectSchema =
-  createSelectSchema(analyticsSnapshots);
+  createSelectSchema(projectAnalytics);
 export const analyticsSnapshotInsertSchema =
-  createInsertSchema(analyticsSnapshots);
+  createInsertSchema(projectAnalytics);
 
 // ── Draft version schemas ──────────────────────────────────────────
 

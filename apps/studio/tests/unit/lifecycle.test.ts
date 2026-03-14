@@ -51,8 +51,8 @@ describe('canTransition', () => {
     expect(canTransition('concept', 'final')).toBe(false);
   });
 
-  it('rejects draft → final (must go through revision)', () => {
-    expect(canTransition('draft', 'final')).toBe(false);
+  it('allows draft → final', () => {
+    expect(canTransition('draft', 'final')).toBe(true);
   });
 
   it('rejects draft → published', () => {
@@ -79,8 +79,11 @@ describe('getValidTargets', () => {
     expect(getValidTargets('concept')).toEqual(['draft']);
   });
 
-  it('draft can only go to revision', () => {
-    expect(getValidTargets('draft')).toEqual(['revision']);
+  it('draft can go to revision or final', () => {
+    const targets = getValidTargets('draft');
+    expect(targets).toContain('revision');
+    expect(targets).toContain('final');
+    expect(targets).toHaveLength(2);
   });
 
   it('revision can go to draft or final', () => {

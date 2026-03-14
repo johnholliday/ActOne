@@ -97,10 +97,14 @@ export async function createProject(
   input: CreateProjectInput,
   fetchFn: typeof fetch = fetch,
 ): Promise<CreateProjectResult> {
+  const { title, authorName, genre, compositionMode, publishingMode } = input;
   const response = await fetchFn('/api/project/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
+    body: JSON.stringify({
+      title,
+      extensionData: { authorName, genre, compositionMode, publishingMode },
+    }),
   });
 
   if (!response.ok) {

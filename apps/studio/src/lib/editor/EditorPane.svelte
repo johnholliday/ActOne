@@ -341,6 +341,7 @@
         // Initialize the Langium workspace with full project context
         console.log('[EditorPane] projectContext:', projectContext ? `projectId=${projectContext.projectId}, files=${projectContext.fileOrder.length}` : 'null');
         if (projectContext) {
+          astStore.setKnownUris(projectContext.fileOrder.map((f) => f.uri));
           langiumClient.openProject(projectContext).then((result) => {
             console.log('[EditorPane] openProject succeeded:', result);
             // Populate merged AST immediately after workspace is built
@@ -475,6 +476,9 @@
   /* ── Diagnostic Handler ────────────────────────────────────────── */
 
   function handleDiagnostics(diagnosticUri: string, diagnostics: Diagnostic[]) {
+    // Snapshot the generation so async callbacks can detect stale data
+    const gen = astStore.generation;
+
     // Update AST store
     astStore.updateDiagnostics(diagnosticUri, diagnostics);
 
@@ -494,11 +498,13 @@
     // Request serialized AST after diagnostics arrive
     if (client?.isReady) {
       client.getSerializedAst(diagnosticUri).then((response) => {
+        if (astStore.generation !== gen) return; // project switched — discard
         astStore.updateAst(diagnosticUri, response.ast, response.valid, response.errors);
       }).catch(() => { /* silently ignore serialization failures */ });
 
       // Also refresh the merged AST (cross-file consolidated view)
       client.getMergedAst().then((response) => {
+        if (astStore.generation !== gen) return; // project switched — discard
         astStore.updateMergedAst(response.ast, response.valid);
       }).catch(() => { /* silently ignore merge failures */ });
     }

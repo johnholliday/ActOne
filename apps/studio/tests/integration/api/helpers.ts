@@ -1,14 +1,14 @@
 /**
  * Test helpers for Hono API endpoint testing.
  *
- * Creates a Hono test app with local route handlers and auth middleware,
- * replacing the previous SvelteKit RequestEvent-based helpers.
+ * Creates a Hono test app with sanyam-project route handlers and auth middleware,
+ * using a mock database for testing.
  */
 
 import { Hono } from 'hono';
-import { projectRoutes } from '$lib/api/project.js';
+import { createProjectRoutes } from '@docugenix/sanyam-project';
 import { draftRoutes } from '$lib/api/draft.js';
-import { analyticsRoutes } from '$lib/api/analytics.js';
+import { mockDb } from '../../fixtures/mocks/db.js';
 
 // ── Default test user / session ───────────────────────────────────────
 
@@ -32,7 +32,7 @@ export const defaultSession = {
 // ── Hono test app factory ─────────────────────────────────────────────
 
 /**
- * Creates a Hono test app with local route handlers.
+ * Creates a Hono test app with sanyam-project route handlers.
  * Pass a user object for authenticated requests, or `null` for unauthenticated.
  */
 export function createTestApp(user?: typeof defaultUser | null) {
@@ -42,13 +42,28 @@ export function createTestApp(user?: typeof defaultUser | null) {
     if (user) {
       c.set('user', user);
       c.set('session', { ...defaultSession, user });
+      // Set user ID header for sanyam-project routes
+      c.req.raw.headers.set('x-user-id', user.id);
     }
     await next();
   });
 
+  const projectRoutes = createProjectRoutes({
+    db: mockDb,
+    fileExtension: 'actone',
+    generateEntryFilePath: (title: string) =>
+      `${title.toLowerCase().replace(/\s+/g, '-')}.actone`,
+    generateEntrySkeleton: (title: string) => `story "${title}" {}\n`,
+    aggregateStats: () => ({
+      wordCount: 100,
+      sceneCount: 5,
+      characterCount: 3,
+    }),
+    maxFilesPerProject: 10,
+  });
+
   app.route('/project', projectRoutes);
   app.route('/draft', draftRoutes);
-  app.route('/analytics', analyticsRoutes);
 
   return app;
 }

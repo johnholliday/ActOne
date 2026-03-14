@@ -1,28 +1,22 @@
 /**
  * Langium FileSystemProvider backed by an in-memory cache.
  *
- * Files are loaded from Supabase into the cache by the main thread,
- * then the Langium workspace reads/lists them via this provider.
+ * Files are loaded into the cache during openProject,
+ * then Langium workspace reads/lists them via this provider.
  * This runs inside the web worker context.
  */
 
 import type { FileSystemNode, FileSystemProvider } from 'langium';
 import { URI } from 'langium';
 
-/** In-memory file entry */
-interface CachedFile {
-  uri: string;
-  content: string;
-}
-
-export class SupabaseFileSystemProvider implements FileSystemProvider {
-  private files = new Map<string, CachedFile>();
+export class InMemoryFileSystemProvider implements FileSystemProvider {
+  private files = new Map<string, string>();
 
   /* ── Cache Management ──────────────────────────────────────────── */
 
   /** Add or update a file in the cache. */
   setFile(uri: string, content: string): void {
-    this.files.set(uri, { uri, content });
+    this.files.set(uri, content);
   }
 
   /** Remove a file from the cache. */
@@ -30,21 +24,9 @@ export class SupabaseFileSystemProvider implements FileSystemProvider {
     this.files.delete(uri);
   }
 
-  /** Load multiple files at once (e.g., on project open). */
-  loadFiles(entries: Array<{ uri: string; content: string }>): void {
-    for (const entry of entries) {
-      this.files.set(entry.uri, entry);
-    }
-  }
-
   /** Clear all cached files. */
   clear(): void {
     this.files.clear();
-  }
-
-  /** Get all cached file URIs. */
-  getFileUris(): string[] {
-    return Array.from(this.files.keys());
   }
 
   /* ── FileSystemProvider Implementation ─────────────────────────── */
@@ -58,7 +40,6 @@ export class SupabaseFileSystemProvider implements FileSystemProvider {
     if (this.files.has(key)) {
       return { isFile: true, isDirectory: false, uri };
     }
-    // Check if any file starts with this URI (directory check)
     const prefix = key.endsWith('/') ? key : key + '/';
     for (const fileUri of this.files.keys()) {
       if (fileUri.startsWith(prefix)) {
@@ -90,11 +71,11 @@ export class SupabaseFileSystemProvider implements FileSystemProvider {
   }
 
   readFileSync(uri: URI): string {
-    const file = this.files.get(uri.toString());
-    if (!file) {
+    const content = this.files.get(uri.toString());
+    if (content === undefined) {
       throw new Error(`File not found: ${uri.toString()}`);
     }
-    return file.content;
+    return content;
   }
 
   async readDirectory(uri: URI): Promise<FileSystemNode[]> {

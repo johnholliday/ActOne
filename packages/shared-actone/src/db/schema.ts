@@ -25,6 +25,15 @@ import {
 export { projects, projectFiles };
 export { projectFiles as sourceFiles };
 
+// ── Re-export sanyam-project tables ─────────────────────────────────
+// Snapshots and analytics tables are now owned by @docugenix/sanyam-project.
+
+export {
+  projectSnapshots,
+  projectSnapshotFiles,
+  projectAnalytics,
+} from '@docugenix/sanyam-project/schema';
+
 // ── ActOne-specific enums ───────────────────────────────────────────
 
 export const assetTypeEnum = pgEnum('asset_type', [
@@ -69,48 +78,6 @@ export const actoneProjectExt = pgTable(
   ],
 );
 
-// ── Snapshots ──────────────────────────────────────────────────────
-
-export const snapshots = pgTable(
-  'snapshots',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    projectId: uuid('project_id')
-      .notNull()
-      .references(() => projects.id, { onDelete: 'cascade' }),
-    tag: text('tag').notNull(),
-    stage: text('stage').notNull(),
-    wordCount: integer('word_count').default(0),
-    sceneCount: integer('scene_count').default(0),
-    characterCount: integer('character_count').default(0),
-    notes: text('notes'),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-  },
-  (table) => [
-    index('snapshots_project_id_idx').on(table.projectId),
-    ...ownedViaParentPolicies('snapshots', table.projectId, 'projects'),
-  ],
-);
-
-// ── Snapshot Files ─────────────────────────────────────────────────
-
-export const snapshotFiles = pgTable(
-  'snapshot_files',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    snapshotId: uuid('snapshot_id')
-      .notNull()
-      .references(() => snapshots.id, { onDelete: 'cascade' }),
-    filePath: text('file_path').notNull(),
-    content: text('content').notNull(),
-  },
-  (table) => [
-    ...ownedViaParentPolicies('snapshot_files', table.snapshotId, 'snapshots'),
-  ],
-);
-
 // ── Assets ─────────────────────────────────────────────────────────
 
 export const assets = pgTable(
@@ -134,29 +101,6 @@ export const assets = pgTable(
     index('assets_project_id_idx').on(table.projectId),
     index('assets_type_idx').on(table.type),
     ...ownedViaParentPolicies('assets', table.projectId, 'projects'),
-  ],
-);
-
-// ── Analytics Snapshots ────────────────────────────────────────────
-
-export const analyticsSnapshots = pgTable(
-  'analytics_snapshots',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    projectId: uuid('project_id')
-      .notNull()
-      .references(() => projects.id, { onDelete: 'cascade' }),
-    wordCount: integer('word_count').default(0),
-    sceneCount: integer('scene_count').default(0),
-    characterCount: integer('character_count').default(0),
-    metrics: jsonb('metrics').default('{}'),
-    capturedAt: timestamp('captured_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-  },
-  (table) => [
-    index('analytics_project_id_idx').on(table.projectId),
-    ...ownedViaParentPolicies('analytics_snapshots', table.projectId, 'projects'),
   ],
 );
 
@@ -248,16 +192,14 @@ export const actoneProjectExtension: SchemaExtension = {
 
 // ── Schema Contribution (additional domain tables) ─────────────────
 // The base `projects` and `projectFiles` tables are managed by sanyam-db.
+// Snapshots and analytics tables are managed by sanyam-project.
 // ActOne contributes its extension table plus domain-specific tables.
 
 export const actOneSchemaContribution: SchemaContribution = {
   pluginId: 'actone',
   tables: [
     actoneProjectExt,
-    snapshots,
-    snapshotFiles,
     assets,
-    analyticsSnapshots,
     draftVersions,
     conversations,
     chatMessages,

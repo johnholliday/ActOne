@@ -9,6 +9,7 @@ import { createAiImageRoutes } from '@docugenix/sanyam-ai-image';
 import { createAiImportRoutes, createDefaultRegistry } from '@docugenix/sanyam-ai-import';
 import { createPublishingRoutes } from '@docugenix/sanyam-publishing';
 import { FormatRegistry } from '@docugenix/sanyam-publishing/formats';
+import { createProjectRoutes } from '@docugenix/sanyam-project';
 import {
   textConfigFromRegistry,
   imageConfigFromRegistry,
@@ -17,13 +18,19 @@ import {
 import { anthropicManifest } from '@docugenix/sanyam-ai-anthropic';
 import { openaiManifest } from '@docugenix/sanyam-ai-openai';
 import { localManifest } from '@docugenix/sanyam-ai-local';
+import { z } from 'zod';
 import { registerCustomImageBackends } from '$lib/ai/custom-image-providers.js';
 import { providers } from '$lib/server/ai-providers.js';
-import { projectRoutes } from '$lib/api/project.js';
 import { draftRoutes } from '$lib/api/draft.js';
-import { analyticsRoutes } from '$lib/api/analytics.js';
 import { visualDnaRoute } from '$lib/api/character.js';
 import { conversationStore, messageStore } from '$lib/server/chat-stores.js';
+import { db } from '$lib/server/db.js';
+import { actoneProjectExt } from '@actone/shared/db';
+import {
+  generateEntrySkeleton,
+  generateEntryFilePath,
+} from '$lib/project/creation-wizard.js';
+import { aggregateStats } from '$lib/project/snapshots.js';
 import { env } from '$env/dynamic/private';
 
 import {
@@ -65,6 +72,37 @@ const chatEngine = new ChatEngine({
 
 const slashCommandRegistry = new SlashCommandRegistry();
 slashCommandRegistry.registerAll(createBuiltinCommands());
+
+/* ── Project routes (sanyam-project) ─────────────────────────────── */
+
+const actoneExtensionSchema = z.object({
+  authorName: z.string().max(200).optional(),
+  genre: z.string().max(100).optional(),
+  compositionMode: z.enum(['merge', 'overlay', 'sequential']).default('merge'),
+  publishingMode: z.enum(['text', 'graphic-novel']).default('text'),
+});
+
+const projectRoutes = createProjectRoutes({
+  db,
+  fileExtension: 'actone',
+  extensionTable: {
+    table: actoneProjectExt,
+    projectIdColumn: actoneProjectExt.projectId,
+  },
+  extensionSchema: actoneExtensionSchema,
+  generateEntrySkeleton: (title, metadata) =>
+    generateEntrySkeleton(title, (metadata as Record<string, unknown> | undefined)?.authorName as string | undefined),
+  generateEntryFilePath,
+  aggregateStats: (files) => {
+    const stats = aggregateStats(files);
+    return {
+      wordCount: stats.wordCount,
+      sceneCount: stats.sceneCount,
+      characterCount: stats.characterCount,
+    };
+  },
+  maxFilesPerProject: 10,
+});
 
 /* ── Auth handle (Supabase SSR session resolution) ─────────────── */
 
@@ -130,7 +168,6 @@ const contributions: ApiRouteContribution[] = [
   { prefix: '/ai-import', routes: createAiImportRoutes({ ...importConfigFromRegistry(providers), registry: importRegistry }) },
   { prefix: '/character', routes: visualDnaRoute },
   { prefix: '/publishing', routes: createPublishingRoutes({ registry: publishingFormats }) },
-  { prefix: '/analytics', routes: analyticsRoutes },
   { prefix: '/ai-chat', routes: createAiChatRoutes({
     conversationStore,
     messageStore,

@@ -13,6 +13,7 @@
   import { predefinedPrompts, buildFullGrammarContext } from '$lib/ai/chat-prompts.js';
   import X from 'lucide-svelte/icons/x';
   import Plus from 'lucide-svelte/icons/plus';
+  import ChevronDown from 'lucide-svelte/icons/chevron-down';
 
   let conversationId = $state<string | null>(null);
   let messages = $state<ChatMessage[]>([]);
@@ -267,8 +268,11 @@
 <div class="actone-chat-wrapper">
   <!-- Header -->
   <div class="flex h-10 shrink-0 items-center justify-between border-b border-border px-3">
-    <span class="text-xs font-semibold text-text-secondary">AI Chat</span>
+    <span class="text-xs font-semibold text-text-secondary">
+      AI Chat{#if projectStore.project}: {projectStore.project.title}{/if}
+    </span>
     <div class="flex items-center gap-1">
+      <!-- Provider + model selector -->
       <span class="text-[10px] text-text-muted">
         {#if backendStore.activeBackend}
           {backendStore.activeBackend.name}
@@ -276,6 +280,23 @@
           No backend
         {/if}
       </span>
+      {#if backendStore.activeModels.length > 1}
+        <div class="relative">
+          <select
+            class="model-select"
+            value={backendStore.activeModelId}
+            onchange={(e) => backendStore.switchModel(e.currentTarget.value)}
+            title="Select model"
+          >
+            {#each backendStore.activeModels as model (model.id)}
+              <option value={model.id}>{model.label}</option>
+            {/each}
+          </select>
+          <ChevronDown size={10} class="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-text-muted" />
+        </div>
+      {:else if backendStore.activeModel}
+        <span class="text-[10px] text-text-muted">{backendStore.activeModel.label}</span>
+      {/if}
       {#if streaming}
         <button
           class="flex h-6 items-center rounded bg-red-600/80 px-1.5 text-[10px] text-white transition-colors hover:bg-red-600"
@@ -337,4 +358,25 @@
     --color-text-muted: var(--color-text-muted);
     --color-primary: var(--color-accent);
     --color-on-primary: #fff;
-  }</style>
+  }
+
+  .model-select {
+    appearance: none;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    color: var(--color-text-muted);
+    font-size: 10px;
+    padding: 1px 16px 1px 6px;
+    height: 20px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .model-select:hover {
+    border-color: var(--color-text-muted);
+  }
+  .model-select:focus {
+    border-color: var(--color-accent);
+  }
+</style>

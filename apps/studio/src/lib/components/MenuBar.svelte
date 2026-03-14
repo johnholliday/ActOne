@@ -75,10 +75,10 @@
   }
 
   async function downloadProject() {
-    const project = projectStore.activeProject;
+    const project = projectStore.project;
     if (!project) return;
 
-    const res = await fetch(`/api/project/${project.meta.id}/download`);
+    const res = await fetch(`/api/project/${project.id}/download`);
     if (!res.ok) return;
 
     const blob = await res.blob();
@@ -86,7 +86,7 @@
     const a = document.createElement('a');
     a.href = url;
     a.download = res.headers.get('content-disposition')?.match(/filename="(.+)"/)?.[1]
-      ?? `${project.meta.title}.zip`;
+      ?? `${project.title}.zip`;
     document.body.appendChild(a);
     a.click();
     a.remove();
