@@ -9,7 +9,7 @@ import { createAiImageRoutes } from '@docugenix/sanyam-ai-image';
 import { createAiImportRoutes, createDefaultRegistry } from '@docugenix/sanyam-ai-import';
 import { createPublishingRoutes } from '@docugenix/sanyam-publishing';
 import { FormatRegistry } from '@docugenix/sanyam-publishing/formats';
-import { createProjectRoutes } from '@docugenix/sanyam-project';
+import { createProjectRoutes } from '@docugenix/sanyam-projects';
 import {
   textConfigFromRegistry,
   imageConfigFromRegistry,
@@ -73,7 +73,7 @@ const chatEngine = new ChatEngine({
 const slashCommandRegistry = new SlashCommandRegistry();
 slashCommandRegistry.registerAll(createBuiltinCommands());
 
-/* ── Project routes (sanyam-project) ─────────────────────────────── */
+/* ── Project routes (sanyam-projects) ─────────────────────────────── */
 
 const actoneExtensionSchema = z.object({
   authorName: z.string().max(200).optional(),

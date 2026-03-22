@@ -1,9 +1,6 @@
-import type { AstNode, LangiumDocument } from 'langium';
-import type { SemanticTokens, SemanticTokensParams } from 'vscode-languageserver';
-import { Cancellation } from 'langium';
+import type { AstNode } from 'langium';
 import {
   AbstractSemanticTokenProvider,
-  AllSemanticTokenTypes,
   type SemanticTokenAcceptor,
 } from 'langium/lsp';
 import {
@@ -46,31 +43,10 @@ import {
  *  - Number literals → number
  */
 export class ActOneSemanticTokenProvider extends AbstractSemanticTokenProvider {
-  private highlightCount = 0;
-
-  override async semanticHighlight(
-    document: LangiumDocument,
-    params: SemanticTokensParams,
-    cancelToken = Cancellation.CancellationToken.None,
-  ): Promise<SemanticTokens> {
-    console.log('[SemanticTokenProvider] semanticHighlight called for', document.uri.toString());
-    console.log('[SemanticTokenProvider] parseResult errors:', document.parseResult.lexerErrors.length, 'lexer,', document.parseResult.parserErrors.length, 'parser');
-    for (const err of document.parseResult.parserErrors) {
-      console.log('[SemanticTokenProvider] parser error:', err.message);
-    }
-    console.log('[SemanticTokenProvider] AST root type:', document.parseResult.value?.$type ?? 'null');
-    this.highlightCount = 0;
-    const result = await super.semanticHighlight(document, params, cancelToken);
-    console.log('[SemanticTokenProvider] produced', result.data.length / 5, 'tokens,', result.data.length, 'data entries');
-    console.log('[SemanticTokenProvider] highlightElement called', this.highlightCount, 'times');
-    return result;
-  }
-
   protected override highlightElement(
     node: AstNode,
     acceptor: SemanticTokenAcceptor,
   ): void {
-    this.highlightCount++;
 
     // ── Definition-level keyword + name highlighting ──────────────
 

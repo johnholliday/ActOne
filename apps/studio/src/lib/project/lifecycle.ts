@@ -1,21 +1,21 @@
 /**
  * T050: Lifecycle transition logic.
  *
- * Core lifecycle functions re-exported from @docugenix/sanyam-project.
+ * Core lifecycle functions re-exported from @docugenix/sanyam-projects.
  * ActOne-specific helpers (requestTransition, getTransition) remain here.
  */
 
 import type {
   LifecycleStage,
   LifecycleTransition,
-} from '@docugenix/sanyam-project/types';
-import { VALID_TRANSITIONS } from '@docugenix/sanyam-project/types';
+} from '@docugenix/sanyam-projects/types';
+import { VALID_TRANSITIONS } from '@docugenix/sanyam-projects/types';
 import {
   isValidTransition,
   getValidTargets,
   getStageLabel,
   canTransition,
-} from '@docugenix/sanyam-project/services';
+} from '@docugenix/sanyam-projects/services';
 
 // Re-export for consumers
 export {

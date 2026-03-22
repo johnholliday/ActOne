@@ -2,13 +2,13 @@
  * T051: Snapshot capture and restore logic.
  *
  * Core snapshot utilities (generateSnapshotTag, countWords) are now
- * provided by @docugenix/sanyam-project. This module retains the
+ * provided by @docugenix/sanyam-projects. This module retains the
  * ActOne-specific grammar element counting and aggregation, which is
- * injected into sanyam-project via the `aggregateStats` config hook.
+ * injected into sanyam-projects via the `aggregateStats` config hook.
  */
 
-// Re-export sanyam-project utilities for backward compatibility
-export { generateSnapshotTag, countWords } from '@docugenix/sanyam-project/services';
+// Re-export sanyam-projects utilities for backward compatibility
+export { generateSnapshotTag, countWords } from '@docugenix/sanyam-projects/services';
 
 export interface SnapshotEntry {
   id: string;
@@ -45,7 +45,7 @@ export function countElements(content: string): {
 /**
  * Aggregate statistics across multiple source files.
  * ActOne-specific: counts words, scenes, and characters.
- * Used as the `aggregateStats` hook for sanyam-project's createProjectRoutes.
+ * Used as the `aggregateStats` hook for sanyam-projects's createProjectRoutes.
  */
 export function aggregateStats(
   files: Array<{ content: string }>,
@@ -56,7 +56,7 @@ export function aggregateStats(
   let characterCount = 0;
 
   for (const file of files) {
-    // Count words using the same logic as sanyam-project
+    // Count words using the same logic as sanyam-projects
     wordCount += file.content
       .replace(/\/\/.*/g, '') // strip single-line comments
       .replace(/\/\*[\s\S]*?\*\//g, '') // strip multi-line comments

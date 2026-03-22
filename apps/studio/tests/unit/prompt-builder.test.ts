@@ -2,13 +2,12 @@
  * T038: Prompt builder tests.
  *
  * Verifies that buildPrompt produces structured prompts
- * from GenerationContext, and that estimatePromptTokens
- * returns a positive token estimate.
+ * from GenerationContext.
  */
 
 import { describe, it, expect } from 'vitest';
 
-import { buildPrompt, estimatePromptTokens } from '$lib/ai/prompt-builder.js';
+import { buildPrompt } from '$lib/ai/prompt-builder.js';
 import type { GenerationContext } from '$lib/ai/generation-context.js';
 
 const testContext: GenerationContext = {
@@ -63,20 +62,5 @@ describe('buildPrompt', () => {
     expect(concisePrompt.length).toBeGreaterThan(0);
     // Rich format should be more detailed (longer) than concise
     expect(richPrompt.length).toBeGreaterThan(concisePrompt.length);
-  });
-});
-
-describe('estimatePromptTokens', () => {
-  it('returns positive number for non-empty prompt', () => {
-    const prompt = buildPrompt(testContext);
-    const tokens = estimatePromptTokens(prompt);
-
-    expect(tokens).toBeGreaterThan(0);
-    expect(Number.isInteger(tokens)).toBe(true);
-  });
-
-  it('returns 0 for empty string', () => {
-    const tokens = estimatePromptTokens('');
-    expect(tokens).toBe(0);
   });
 });

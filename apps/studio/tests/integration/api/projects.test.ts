@@ -2,7 +2,7 @@
  * T047: Project management API endpoint tests.
  *
  * Tests POST /project/create, GET /project/manifest,
- * and POST /project/:id/files via sanyam-project's createProjectRoutes.
+ * and POST /project/:id/files via sanyam-projects' createProjectRoutes.
  */
 
 // Must be first import — sets up vi.mock() for server singletons

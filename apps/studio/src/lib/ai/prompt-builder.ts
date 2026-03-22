@@ -139,11 +139,3 @@ function buildConcisePrompt(ctx: GenerationContext): string {
 
   return lines.join('\n');
 }
-
-/**
- * Estimate the token count of a prompt.
- * Rough heuristic: ~4 characters per token.
- */
-export function estimatePromptTokens(prompt: string): number {
-  return Math.ceil(prompt.length / 4);
-}

@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import { serveGuide } from '@docugenix/sanyam-guide/vite-plugin';
+import { serveGuide } from '@docugenix/sanyam-user-guide/vite-plugin';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 

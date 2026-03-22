@@ -2,7 +2,7 @@
  * T052: Analytics API Hono handler integration tests.
  *
  * Tests POST /project/analytics/snapshot and GET /project/analytics/timeseries
- * via sanyam-project's createProjectRoutes using mocked Drizzle db.
+ * via sanyam-projects' createProjectRoutes using mocked Drizzle db.
  */
 
 import '../../fixtures/mocks/setup.js';

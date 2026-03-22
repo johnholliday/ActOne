@@ -1,12 +1,12 @@
 /**
  * Test helpers for Hono API endpoint testing.
  *
- * Creates a Hono test app with sanyam-project route handlers and auth middleware,
+ * Creates a Hono test app with sanyam-projects route handlers and auth middleware,
  * using a mock database for testing.
  */
 
 import { Hono } from 'hono';
-import { createProjectRoutes } from '@docugenix/sanyam-project';
+import { createProjectRoutes } from '@docugenix/sanyam-projects';
 import { draftRoutes } from '$lib/api/draft.js';
 import { mockDb } from '../../fixtures/mocks/db.js';
 
@@ -32,7 +32,7 @@ export const defaultSession = {
 // ── Hono test app factory ─────────────────────────────────────────────
 
 /**
- * Creates a Hono test app with sanyam-project route handlers.
+ * Creates a Hono test app with sanyam-projects route handlers.
  * Pass a user object for authenticated requests, or `null` for unauthenticated.
  */
 export function createTestApp(user?: typeof defaultUser | null) {
@@ -42,7 +42,7 @@ export function createTestApp(user?: typeof defaultUser | null) {
     if (user) {
       c.set('user', user);
       c.set('session', { ...defaultSession, user });
-      // Set user ID header for sanyam-project routes
+      // Set user ID header for sanyam-projects routes
       c.req.raw.headers.set('x-user-id', user.id);
     }
     await next();

@@ -83,13 +83,7 @@ export function registerActOneHandlers(
       }
 
       // Trigger a full workspace rebuild using update()
-      console.log('[Worker] openProject: rebuilding', newUris.length, 'documents via update()');
       await shared.workspace.DocumentBuilder.update(newUris, []);
-
-      // Log document states after build
-      for (const doc of shared.workspace.LangiumDocuments.all) {
-        console.log('[Worker] doc:', doc.uri.toString(), 'state:', doc.state, 'parseErrors:', doc.parseResult?.parserErrors?.length ?? '?', 'astType:', doc.parseResult?.value?.$type ?? 'null');
-      }
 
       // Collect diagnostics summary
       let errors = 0;

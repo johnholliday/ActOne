@@ -23,7 +23,6 @@ import type {
 } from '@actone/shared';
 import type {
   Document,
-  Story,
   StoryElement,
   CharacterDef,
   WorldDef,
@@ -105,13 +104,6 @@ export function serializeDocument(doc: Document): SerializedStory {
   };
 }
 
-/** @deprecated Use serializeDocument instead. Retained as internal helper. */
-export function serializeStory(story: Story): SerializedStory {
-  return {
-    name: cleanName(story.name),
-    elements: story.elements.map(serializeElement).filter((el): el is SerializedStoryElement => el !== null),
-  };
-}
 
 function serializeElement(el: StoryElement): SerializedStoryElement | null {
   if (isCharacterDef(el)) return serializeCharacter(el);

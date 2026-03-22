@@ -1,4 +1,4 @@
 // ── Workspace Types ──────────────────────────────────────────────────
-// Re-exported from @docugenix/sanyam-project.
+// Re-exported from @docugenix/sanyam-projects.
 
-export type { WorkspaceState } from '@docugenix/sanyam-project/types';
+export type { WorkspaceState } from '@docugenix/sanyam-projects/types';

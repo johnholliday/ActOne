@@ -2,7 +2,7 @@
  * T048: Integration tests for POST /project/lifecycle Hono handler.
  *
  * Tests lifecycle stage transitions, snapshot creation, auth checks,
- * validation, and ownership enforcement via sanyam-project's createProjectRoutes.
+ * validation, and ownership enforcement via sanyam-projects' createProjectRoutes.
  */
 
 import '../../fixtures/mocks/setup.js';
@@ -135,7 +135,7 @@ describe('POST /project/lifecycle', () => {
   });
 
   it('returns 404 for non-owned project (ownership + existence combined)', async () => {
-    // sanyam-project queries WHERE id = ? AND userId = ?, so non-owned → not found
+    // sanyam-projects queries WHERE id = ? AND userId = ?, so non-owned → not found
     configureMockDb({
       select: [],
     });

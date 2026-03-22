@@ -1,9 +1,9 @@
 // @ts-check
-import { createEleventyConfig } from '@docugenix/sanyam-guide/eleventy';
+import { createEleventyConfig } from '@docugenix/sanyam-user-guide/eleventy';
 
 /** @param {import("@11ty/eleventy").UserConfig} eleventyConfig */
 export default function (eleventyConfig) {
-  // Apply sanyam-guide base config (navigation plugin, common defaults)
+  // Apply sanyam-user-guide base config (navigation plugin, common defaults)
   createEleventyConfig(eleventyConfig);
 
   // Pass through CSS files unchanged

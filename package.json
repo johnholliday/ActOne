@@ -28,17 +28,17 @@
     "guide:build": "pnpm --filter actone-guide build"
   },
   "devDependencies": {
-    "@docugenix/sanyam-cli": "^1.0.13",
+    "@docugenix/sanyam-cli": "^1.0.17",
     "@types/node": "^22.15.3",
     "prettier": "^3.7.4",
-    "supabase": "^2.76.15",
+    "supabase": "^2.83.0",
     "turbo": "^2.8.16",
     "typescript": "5.9.2"
   },
   "pnpm": {
     "peerDependencyRules": {
       "allowedVersions": {
-        "@docugenix/sanyam-guide>vite": "7"
+        "@docugenix/sanyam-user-guide>vite": "7"
       }
     }
   },

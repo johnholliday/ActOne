@@ -14,7 +14,7 @@ import {
   projectSnapshots,
   projectSnapshotFiles,
   projectAnalytics,
-} from '@docugenix/sanyam-project/schema';
+} from '@docugenix/sanyam-projects/schema';
 
 // ── Project schemas ────────────────────────────────────────────────
 
@@ -39,7 +39,7 @@ export const sourceFileSelectSchema = projectFileSelectSchema;
 export const sourceFileInsertSchema = projectFileInsertSchema;
 export const sourceFileUpdateSchema = projectFileUpdateSchema;
 
-// ── Snapshot schemas (from sanyam-project tables) ──────────────────
+// ── Snapshot schemas (from sanyam-projects tables) ──────────────────
 
 export const snapshotSelectSchema = createSelectSchema(projectSnapshots);
 export const snapshotInsertSchema = createInsertSchema(projectSnapshots);

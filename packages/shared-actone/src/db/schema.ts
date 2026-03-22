@@ -25,14 +25,14 @@ import {
 export { projects, projectFiles };
 export { projectFiles as sourceFiles };
 
-// ── Re-export sanyam-project tables ─────────────────────────────────
-// Snapshots and analytics tables are now owned by @docugenix/sanyam-project.
+// ── Re-export sanyam-projects tables ─────────────────────────────────
+// Snapshots and analytics tables are now owned by @docugenix/sanyam-projects.
 
 export {
   projectSnapshots,
   projectSnapshotFiles,
   projectAnalytics,
-} from '@docugenix/sanyam-project/schema';
+} from '@docugenix/sanyam-projects/schema';
 
 // ── ActOne-specific enums ───────────────────────────────────────────
 
@@ -192,7 +192,7 @@ export const actoneProjectExtension: SchemaExtension = {
 
 // ── Schema Contribution (additional domain tables) ─────────────────
 // The base `projects` and `projectFiles` tables are managed by sanyam-db.
-// Snapshots and analytics tables are managed by sanyam-project.
+// Snapshots and analytics tables are managed by sanyam-projects.
 // ActOne contributes its extension table plus domain-specific tables.
 
 export const actOneSchemaContribution: SchemaContribution = {

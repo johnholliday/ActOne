@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       '@docugenix/sanyam-cli':
-        specifier: ^1.0.13
-        version: 1.0.13(@types/node@22.15.3)
+        specifier: ^1.0.17
+        version: 1.0.17(@types/node@22.15.3)
       '@types/node':
         specifier: ^22.15.3
         version: 22.15.3
@@ -18,8 +18,8 @@ importers:
         specifier: ^3.7.4
         version: 3.7.4
       supabase:
-        specifier: ^2.76.15
-        version: 2.76.15
+        specifier: ^2.83.0
+        version: 2.83.0
       turbo:
         specifier: ^2.8.16
         version: 2.8.16
@@ -36,53 +36,53 @@ importers:
         specifier: workspace:*
         version: link:../../packages/shared-actone
       '@docugenix/sanyam-ai-anthropic':
-        specifier: ^1.0.13
-        version: 1.0.13(zod@3.25.76)
+        specifier: ^1.0.17
+        version: 1.0.17(zod@3.25.76)
       '@docugenix/sanyam-ai-chat':
-        specifier: ^1.0.13
-        version: 1.0.13(svelte@5.53.5)
+        specifier: ^1.0.17
+        version: 1.0.17(@electric-sql/pglite@0.2.17)(postgres@3.4.8)(svelte@5.53.5)
       '@docugenix/sanyam-ai-image':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.17
+        version: 1.0.17
       '@docugenix/sanyam-ai-import':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.17
+        version: 1.0.17
       '@docugenix/sanyam-ai-local':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.17
+        version: 1.0.17
       '@docugenix/sanyam-ai-openai':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.17
+        version: 1.0.17
       '@docugenix/sanyam-ai-provider':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.17
+        version: 1.0.17
       '@docugenix/sanyam-ai-text':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.17
+        version: 1.0.17
       '@docugenix/sanyam-app':
-        specifier: ^1.0.13
-        version: 1.0.13(@sveltejs/kit@2.53.2(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1)))(svelte@5.53.5)(typescript@5.9.2)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1)))(svelte@5.53.5)(tailwindcss@4.2.1)
+        specifier: ^1.0.17
+        version: 1.0.17(@sveltejs/kit@2.53.2(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1)))(svelte@5.53.5)(typescript@5.9.2)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1)))(svelte@5.53.5)(tailwindcss@4.2.1)
       '@docugenix/sanyam-auth':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.17
+        version: 1.0.17
       '@docugenix/sanyam-core':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.17
+        version: 1.0.17
       '@docugenix/sanyam-db':
-        specifier: ^1.0.13
-        version: 1.0.13(@electric-sql/pglite@0.2.17)
+        specifier: ^1.0.17
+        version: 1.0.17(@electric-sql/pglite@0.2.17)
       '@docugenix/sanyam-diagrams':
-        specifier: ^1.0.13
-        version: 1.0.13(svelte@5.53.5)
-      '@docugenix/sanyam-project':
-        specifier: ^1.0.13
-        version: 1.0.13(@electric-sql/pglite@0.2.17)(postgres@3.4.8)
+        specifier: ^1.0.17
+        version: 1.0.17(svelte@5.53.5)
+      '@docugenix/sanyam-projects':
+        specifier: ^1.0.17
+        version: 1.0.17(@electric-sql/pglite@0.2.17)(postgres@3.4.8)
       '@docugenix/sanyam-publishing':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.17
+        version: 1.0.17
       '@docugenix/sanyam-shared':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.17
+        version: 1.0.17
       '@supabase/ssr':
         specifier: ^0.8.0
         version: 0.8.0(@supabase/supabase-js@2.97.0)
@@ -148,14 +148,14 @@ importers:
         specifier: ^6.36.0
         version: 6.39.15
       '@docugenix/sanyam-config':
-        specifier: ^1.0.13
-        version: 1.0.13
-      '@docugenix/sanyam-guide':
-        specifier: ^1.0.13
-        version: 1.0.13(@11ty/eleventy-navigation@1.0.5)(@11ty/eleventy@3.1.2)(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1))
+        specifier: ^1.0.17
+        version: 1.0.17
       '@docugenix/sanyam-test-utils':
-        specifier: ^1.0.13
-        version: 1.0.13(vitest@3.2.4)
+        specifier: ^1.0.17
+        version: 1.0.17(vitest@3.2.4)
+      '@docugenix/sanyam-user-guide':
+        specifier: ^1.0.17
+        version: 1.0.17(@11ty/eleventy-navigation@1.0.5)(@11ty/eleventy@3.1.2)(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1))
       '@playwright/test':
         specifier: ^1.58.2
         version: 1.58.2
@@ -219,9 +219,9 @@ importers:
       '@11ty/eleventy-navigation':
         specifier: ^1.0.5
         version: 1.0.5
-      '@docugenix/sanyam-guide':
-        specifier: ^1.0.13
-        version: 1.0.13(@11ty/eleventy-navigation@1.0.5)(@11ty/eleventy@3.1.2)(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1))
+      '@docugenix/sanyam-user-guide':
+        specifier: ^1.0.17
+        version: 1.0.17(@11ty/eleventy-navigation@1.0.5)(@11ty/eleventy@3.1.2)(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1))
 
   packages/lang-actone:
     dependencies:
@@ -229,8 +229,8 @@ importers:
         specifier: workspace:*
         version: link:../shared-actone
       '@docugenix/sanyam-langium':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.17
+        version: 1.0.17
       langium:
         specifier: ~4.2.1
         version: 4.2.1
@@ -242,8 +242,8 @@ importers:
         version: 3.17.5
     devDependencies:
       '@docugenix/sanyam-config':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.17
+        version: 1.0.17
       eslint:
         specifier: ^9.0.0
         version: 9.39.1(jiti@2.6.1)
@@ -260,14 +260,14 @@ importers:
   packages/shared-actone:
     dependencies:
       '@docugenix/sanyam-db':
-        specifier: ^1.0.13
-        version: 1.0.13(@electric-sql/pglite@0.2.17)
-      '@docugenix/sanyam-project':
-        specifier: ^1.0.13
-        version: 1.0.13(@electric-sql/pglite@0.2.17)(postgres@3.4.8)
+        specifier: ^1.0.17
+        version: 1.0.17(@electric-sql/pglite@0.2.17)
+      '@docugenix/sanyam-projects':
+        specifier: ^1.0.17
+        version: 1.0.17(@electric-sql/pglite@0.2.17)(postgres@3.4.8)
       '@docugenix/sanyam-shared':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.17
+        version: 1.0.17
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@electric-sql/pglite@0.2.17)(postgres@3.4.8)
@@ -279,8 +279,8 @@ importers:
         version: 3.25.76
     devDependencies:
       '@docugenix/sanyam-config':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.17
+        version: 1.0.17
       eslint:
         specifier: ^9.0.0
         version: 9.39.1(jiti@2.6.1)
@@ -378,62 +378,85 @@ packages:
   '@codemirror/view@6.39.15':
     resolution: {integrity: sha512-aCWjgweIIXLBHh7bY6cACvXuyrZ0xGafjQ2VInjp4RM4gMfscK5uESiNdrH0pE+e1lZr2B4ONGsjchl2KsKZzg==}
 
-  '@docugenix/sanyam-ai-anthropic@1.0.13':
-    resolution: {integrity: sha512-NMapei/Yk60WcL3WSAkkbV9O0XiB8rziveFb2w+R/2hkncNAO0N5zPhQeyNdRsFQxrMez+7UDes3ukn94oTPNQ==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-anthropic/1.0.13/b9527fb8197f9a4aff4386aa082468345842e734}
+  '@docugenix/sanyam-ai-anthropic@1.0.17':
+    resolution: {integrity: sha512-folg13dsiOqgc7QfqMSZXBumbnK/mOTFBlmCNpbQ5IV70lFicWRC0R+3jshoxbeaaQADObES/FGZFWl2ssKGtw==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-anthropic/1.0.17/7770f09b56b627759af24e7238ce85d1d1b3ae76}
 
-  '@docugenix/sanyam-ai-chat@1.0.13':
-    resolution: {integrity: sha512-zENnqG58VIBbaVGpjeL8o2YlpO7lu08/a06RH7BOk1KduWY0HmKOOuuqtu4r5nRxHodx0kAysHzuK+wIdFcrEg==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-chat/1.0.13/4974f0b15945492c62306d33036ba91afe9efd69}
+  '@docugenix/sanyam-ai-chat@1.0.17':
+    resolution: {integrity: sha512-avV6sjIOAWiohAmCb8MupYgfXA8AffNvzaO/HkTHJQNmSHxQboglZgLRzA16iu1xKYazj6ILjdE9XWQ2mQcbRA==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-chat/1.0.17/6cc92efbe6d94c168bda1a171dbabd8e98e1eb6d}
     peerDependencies:
       svelte: ^5.50.0
 
-  '@docugenix/sanyam-ai-image@1.0.13':
-    resolution: {integrity: sha512-NFFbGR1ORTj36tMj2JhLf/HKN/2Dwtov7ZdCE9RWWfkCAmBIYv9IzKLwdwxyKqf1hugTBHJgrKb+YUXoZ3gq3g==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-image/1.0.13/40a370e84a2638f34ecc445c21895c0ffe53688b}
+  '@docugenix/sanyam-ai-image@1.0.17':
+    resolution: {integrity: sha512-oJuriCp0m1Kb6u/PmqvyC/n0sGyBNkO5ZTPBDx0ehBvyCQSkhg9KMmqSTDMj/cIwBH2f6lYHm2kz2ajgKp/ROQ==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-image/1.0.17/8b415b9330d2c40835f84b784f42632e9fa3edbb}
 
-  '@docugenix/sanyam-ai-import@1.0.13':
-    resolution: {integrity: sha512-e/7bfAF6wygl00ZZCE9HzUJLTJVZo9aWfpB0qgPaMYQIgQ/w0AcU1jHSFTxTuDBgLwNtXNlOyBcE+2UY4hpbrQ==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-import/1.0.13/321239ce211c918319da55ec68a75fb5bb94daf0}
+  '@docugenix/sanyam-ai-import@1.0.17':
+    resolution: {integrity: sha512-YKNeetjoUgxEE3eqE09vTGfHFgzZGw4E6RycYwFd8rzH8DVHD6eyrnrnAtIJ8l+slAurHAVKb/psF63NCCnGkg==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-import/1.0.17/4c74774f90789b0f65f57b25c6bad028a06c07df}
 
-  '@docugenix/sanyam-ai-local@1.0.13':
-    resolution: {integrity: sha512-NTMWZdJWIUavq1Wqi7/Yqnw6VvKOYq+78paXhZK0CcM6H0F+lcOogOdKE6m3WJPjS8e9RsGuadPi7LnLifr/Kw==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-local/1.0.13/01a66abbdbfd484575c182c35ce37e5219fd5825}
+  '@docugenix/sanyam-ai-local@1.0.17':
+    resolution: {integrity: sha512-8OXKH8XuF01mLfIEVbjUhuRZMZp9eWauMqZKCUNqpRsGmOH/SkKC6DAZ+zEq06MxNAKClUBKRUtWD0E5HNcVkg==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-local/1.0.17/53f76f2c6ce558e0da8c9fbb5c58ed6dbefcdcf2}
 
-  '@docugenix/sanyam-ai-openai@1.0.13':
-    resolution: {integrity: sha512-62n1cRgrK2IjHj2Ao4ZXnmks4RiwH5xWqRJ7rQ6939GYqUmjWKUs+SEHMnYJ7OU3Xq4orv+MR2a+jvso8+QQKw==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-openai/1.0.13/57019d0a8404e49841b1b01dcbfa7beca7c9eda4}
+  '@docugenix/sanyam-ai-openai@1.0.17':
+    resolution: {integrity: sha512-8+O/tK5F34kQ2XY1rIKSQ0r/bz0gH/BPq1ecBAJLQPZtR1p9bQsRW5FsAYpB64Pke5tsfnmSRtkj41vXPGko4w==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-openai/1.0.17/43ba95b97bb6cb313729424584109aabc1aa4f1c}
 
-  '@docugenix/sanyam-ai-provider@1.0.13':
-    resolution: {integrity: sha512-4Z6slxVeAmbcDe14U1JOG9NTCLkt81866kYU+xx8nqKIzFPDRuCzDPbNSMdcVIbdoI6fqcAj2GBr2KZHZXQZmA==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-provider/1.0.13/575fac60cc17f356a693fc5cfdea95f3f647b365}
+  '@docugenix/sanyam-ai-provider@1.0.17':
+    resolution: {integrity: sha512-h/QQ7H0QWHOZfundXS6cn1Vy0fo6zu506ueER55mj36M5d6Yh0Ww7fHjAfMPvFIw3JQo1p8l9/3oWAqoSH0P/Q==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-provider/1.0.17/2c1ee37c93b81d587f271141cc9e044598065f12}
 
-  '@docugenix/sanyam-ai-text@1.0.13':
-    resolution: {integrity: sha512-bCPuem2JfBCGMe/i7TClh/XMIWyvp77Lg5N1lNdsjl8iOQWVmQEutMPsfWkUH/Ks21ZS5Q18tCzszlDT5WOUAA==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-text/1.0.13/352e9bb5cb2bdbda4425929efc8a2e7a1983762f}
+  '@docugenix/sanyam-ai-text@1.0.17':
+    resolution: {integrity: sha512-KYpP6/QOiRCX9W9d4BgxBiJmLNHcDX8p9cNxgueN8WzSKeyZv6hUt+8I/Q28SdI4L2PhgW8stmAQuFalyKtSSg==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-ai-text/1.0.17/c2075f4cb8280b1980ac0fc1d1eff514ee31d4dd}
 
-  '@docugenix/sanyam-app@1.0.13':
-    resolution: {integrity: sha512-RlQVl3mO9yxR1H2j4xxLMjOYwXc20l+qmAcWh97i3npdkdwRYKEITpE+QDX7moOJSSvoS3+yFsI0hvx3YjwqLQ==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-app/1.0.13/5cfe0da2c5060107d712f6824db5dccb3f216929}
+  '@docugenix/sanyam-app@1.0.17':
+    resolution: {integrity: sha512-BOoYX6WDtMRe2G1sXBANnn9AWBFsxfaK/BP5nhqOqV5uR6YSBbPczINHqmzgnMpXAqgGQ/NVY172JbNq1+w0gg==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-app/1.0.17/742c59f17f6981a4b9ec0ef19f0b8e721eb7ce08}
     peerDependencies:
       '@sveltejs/kit': ^2.50.0
       svelte: ^5.50.0
       tailwindcss: ^4.0.0
 
-  '@docugenix/sanyam-auth@1.0.13':
-    resolution: {integrity: sha512-mY0FtF1ftS1oxTDnl37YRB2bTX3DfG0/3mgud1FYl1VdCL0uSrPrtJHEkYvqnmwyS0RgCmGvwHAFPe5VCuY9jQ==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-auth/1.0.13/0ec7e375b7f2459a55bb78f5aef7e05685522888}
+  '@docugenix/sanyam-auth@1.0.17':
+    resolution: {integrity: sha512-7Zj7MPA64U2sJa6U655S0M5i1ubJbwQ4i+TJezkhvlnziO/2j2eBtjaHKxfWvoPEy4BhAqWOQZu4/qwqeHiOQg==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-auth/1.0.17/be9734120e02c8a838970b78b95617d5ada8d048}
 
-  '@docugenix/sanyam-cli@1.0.13':
-    resolution: {integrity: sha512-pEi2zX7Wr28egH3PQEy8XAr58kg7sJ+6zdyUpOjxMRSemHdyYHZVt7+Xyun7/K96JV04KfxNDCLBSIbas5eJxQ==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-cli/1.0.13/4166a6efacd220f28e98be93dad89951e843ca04}
+  '@docugenix/sanyam-cli@1.0.17':
+    resolution: {integrity: sha512-aAALkERJORsYJCSELmS4yS30jaWHzrkPkqYwuN0bnz53aj7RzwT7EGIE59k9nzC5vzfSswya1+ao4xTO/hnWKg==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-cli/1.0.17/b0628c3229fe019a884022cd9a28eb4b2baea7d1}
     hasBin: true
 
-  '@docugenix/sanyam-config@1.0.13':
-    resolution: {integrity: sha512-omVN+aIH6lV50AsB4t4gIXITO02oC664WJtCkRQ7EDkGMNO2WK090vZpKr5Ll8+4i6Mmt92MR672S+gxEHfALQ==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-config/1.0.13/8fa8bc14d963cbebd9aba135e4ec24665f6f8b12}
+  '@docugenix/sanyam-config@1.0.17':
+    resolution: {integrity: sha512-aEG9772vM0g6DuFkvGZ6WOT4rtE3anakchiEzdjVAQRc3IxgVQiTRD72lkvsvwPnuAuscfy8piDXn9xD5jNC2g==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-config/1.0.17/9c53fb0b55d134940681857fffa7d8d49db0fc93}
 
-  '@docugenix/sanyam-core@1.0.13':
-    resolution: {integrity: sha512-/nOTk7mgX+FVFFma3bIiY/ar1r3mdRz5EkIZ1oYOPs1jK2tiOILEf6G0WiBVzamN4gT35xm4PxUur97zrF1GgQ==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-core/1.0.13/b79b9fa6e0a24084957eb549ac7fa9fbf0634c37}
+  '@docugenix/sanyam-core@1.0.17':
+    resolution: {integrity: sha512-Z+OQCVNdPk9YhIUOESLhiVs18w/PjUuanZ5bIjxZJcvjJmanOsi9CStXHm3+ZnuOo7MzRgZ3mgwZ+SsX0+W+AQ==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-core/1.0.17/a911ca78dfa58b4f3d33cbd38075e5d6fa8e7bc0}
 
-  '@docugenix/sanyam-db@1.0.13':
-    resolution: {integrity: sha512-h6qxeZPacK4g/wSvBAjlPFUa68/CkPw6EazSKUbBUFkoYa+WAwe042Rq74zhXRvZqxuRlVpZ22lZtNNXZuSm/Q==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-db/1.0.13/3a4fdaa460ddd73d9d7368e5a683bb131988020c}
+  '@docugenix/sanyam-db@1.0.17':
+    resolution: {integrity: sha512-yjg5Ambzb1JksNjXmfiICT1ei0EecTrx1/o5kKbXEjG1Wz7qUEcSOQ/FpLbV/DlCjCC99klT3HlxscRYQbmW+g==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-db/1.0.17/cc594ea5032c17872c050964cfb61bf9bfba5250}
 
-  '@docugenix/sanyam-diagrams@1.0.13':
-    resolution: {integrity: sha512-d6Elcpwop1VU3bXeFFDEPxxVaQZJjXkXmLHZZQaTa9HICcwqXRvkdYy7znGPUiP8QVN2O3Ax2HEFog4F4+Rd3g==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-diagrams/1.0.13/7cd13d9245cfcbdfa88048a7ac07e8b862288a4a}
+  '@docugenix/sanyam-diagrams@1.0.17':
+    resolution: {integrity: sha512-jR++xK0E7aBleHH/MoqtkpLyynqNFDjafnopux+rKvNkGk6v3w/xiI92wtiFnWWVNY31XW89KiVAFrTxpNxVYg==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-diagrams/1.0.17/222f5b720634ed055f32db17ab4e99c08a689e02}
     peerDependencies:
       svelte: ^5.50.0
 
-  '@docugenix/sanyam-guide@1.0.13':
-    resolution: {integrity: sha512-DYrJGCv3iMa/R0RflDRBZkaup+wpoFzMafYlCOkIvsN6k1hcpzZjkLBKHSm0mtVHehtfYPnn5IMr0ydPP8m4+Q==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-guide/1.0.13/c9321b0344632d4962baa20e4ed773e973d25556}
+  '@docugenix/sanyam-langium@1.0.17':
+    resolution: {integrity: sha512-j7fl8bPzLusfJ0JDOQKm/HXEpU0dQYlXQniR/pxeJDQ03pVo5fgkAETJyU7F8HTHYAvSVYu1qVpZPFdM2xsOeQ==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-langium/1.0.17/14b4177ec877faf46f73cf2544696aaa64578da9}
+
+  '@docugenix/sanyam-projects@1.0.17':
+    resolution: {integrity: sha512-YgIiVbzzzqhOe3OOSvUBoAY5QTTU7DKKLWKVOkzpzPWQ8y3uDbyL99d6cOhlOhtC3Trcr7Cwatsyin+OqMYFcw==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-projects/1.0.17/5476cd6a2f332e50bbe2920348bd5828ded1d639}
+
+  '@docugenix/sanyam-publishing@1.0.17':
+    resolution: {integrity: sha512-HpH7B0SAmAow3FhCm4ixGLuGr8W+PiAdnmzhgJhh3qA0uY0e2x+M7dEPWVrvEqUJ807Q2hPztIa57fhvYh017w==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-publishing/1.0.17/58c43f3dae3023ab9a4fe539a17db00bd0bf05da}
+
+  '@docugenix/sanyam-shared@1.0.17':
+    resolution: {integrity: sha512-zCl8lFmFHXtZ5R0EBtnIamfkBryvsMduJRhm8Q6RuJuJfOc1BrwxNLR5SSXf4zcis3Ygv+gYCvFBXyeq5424fg==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-shared/1.0.17/5b1818cbb5c9e01cab7bdafed5f34f5637831735}
+
+  '@docugenix/sanyam-template-dsl@1.0.17':
+    resolution: {integrity: sha512-nkBzcaW5clXHuGkTan+8vA/vXcwNx5r/1WA12t2HTXwdYE3pNVTBNubd8dJw153iQ4reiZ3ZvPWtlkPb/AP2KA==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-template-dsl/1.0.17/402a29d7b147817d9ba3caaf6a0341c8cff0d7a3}
+
+  '@docugenix/sanyam-templates@1.0.17':
+    resolution: {integrity: sha512-dPDgbuzYdfMnuJH5iSs9fF1dfLY8Yl0hXVr8C61T7m/yvn7ySCKadIAJnoY9Wh6J8WnEVChSbE/kxvwxRwpwkQ==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-templates/1.0.17/d08ef8708b1f82484c35a5320a1b11cdb90b8460}
+
+  '@docugenix/sanyam-test-utils@1.0.17':
+    resolution: {integrity: sha512-MdMyKf2GY1MEEqiWa25+YpLnlpG92Sif18Db12yRKvFth9F8UgDGv5fK7RIFY48PyKqcsCfM797fCopFwa1fAw==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-test-utils/1.0.17/005dbfa02521234054deaccf03d8d6aabc5c1269}
+    peerDependencies:
+      vitest: '>=3.0.0'
+
+  '@docugenix/sanyam-user-guide@1.0.17':
+    resolution: {integrity: sha512-xm3ihfisTzwl1XaxLU4wXICmHO4FgZa4JXvCwjT2Q8J4CiEuNBQToGwhHrtgvCxCn25oyW0BZqyTqiRk4EVYfA==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-user-guide/1.0.17/c8ddc9a5a15167a0388e9cb01d6c2350861f3c4a}
     peerDependencies:
       '@11ty/eleventy': ^3.0.0
       '@11ty/eleventy-navigation': ^1.0.0
@@ -444,29 +467,6 @@ packages:
         optional: true
       '@11ty/eleventy-navigation':
         optional: true
-
-  '@docugenix/sanyam-langium@1.0.13':
-    resolution: {integrity: sha512-zpi47vktfBg5b/ZmDOKzzmwo4K7H8wNy3ApR79RIWajbzSx7s5O3BaplvDwFh7H+7llsRRsgIIUVRtWduq3rvw==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-langium/1.0.13/0ac8fc374b6d9984424ce09900627819d256f452}
-
-  '@docugenix/sanyam-project@1.0.13':
-    resolution: {integrity: sha512-oYHhhOUGpfcDPMmkDCXaDsYf/yv8qTxjOQm/VqtR2UfD0iIuMlT6C7wLj8GjpIrKCX2XTmmR7QOCnku/gACDsA==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-project/1.0.13/7c393af82a66c09e91779a5c1b4a5ddce9b27db6}
-
-  '@docugenix/sanyam-publishing@1.0.13':
-    resolution: {integrity: sha512-lQ8r8H+ejnIYB8AyyzYpo7zEiB8TIFCBeC4pBUub2T3ETmfhZSan0F0Tog0Ub1hZZQax57bPlfx8tKZeUlGM/A==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-publishing/1.0.13/7d977a1433964cad58e4afc77a38778371dc8193}
-
-  '@docugenix/sanyam-shared@1.0.13':
-    resolution: {integrity: sha512-eSkw6jBscpS11NCkTT1YbYeqlLV0yXll0GLUsl8xhw7biggrYahZTzOtE+X9f2NkzOqQXkfkpsbaAALaMVYkoQ==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-shared/1.0.13/3baa0fcb70cd1857a6115e39ce225f79295150c2}
-
-  '@docugenix/sanyam-template-dsl@1.0.13':
-    resolution: {integrity: sha512-Rsxkal6L+gNzBi9cYzEMaIaQ9srnNaNyqjztuIjX6abreo4mNUKviliLGjYtDVbZyIyOWX20Ry1KOmZpH3/0HA==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-template-dsl/1.0.13/f7750ff1355a9d62313e859fa8727a88cc568359}
-
-  '@docugenix/sanyam-templates@1.0.13':
-    resolution: {integrity: sha512-msBK7dwNOOyN5wWGlZl2677IzCX8T4uo5D2YkO7C0HJdXK2NsBANago7Hd2Ye2Fn1HhhEdkeprEWWfjK6FPIXg==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-templates/1.0.13/05e30b7f54df4cb21a48331b2d39bd0e14766c76}
-
-  '@docugenix/sanyam-test-utils@1.0.13':
-    resolution: {integrity: sha512-uc+z9X0q4A53zjhlb20v7M2sBYjvdF2mmJ5bTk7lx2hFFg6jNwsDW6vYgqTz33GIq6TPw5T2SR3cI9xZFDizVw==, tarball: https://npm.pkg.github.com/download/@docugenix/sanyam-test-utils/1.0.13/3b912e02292d7afd773ba939b1d4f6e48d6d87c3}
-    peerDependencies:
-      vitest: '>=3.0.0'
 
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
@@ -3602,8 +3602,8 @@ packages:
   style-mod@4.1.3:
     resolution: {integrity: sha512-i/n8VsZydrugj3Iuzll8+x/00GH2vnYsk1eomD8QiRrSAeW6ItbCQDtfXCeJHd0iwiNagqjQkvpvREEPtW3IoQ==}
 
-  supabase@2.76.15:
-    resolution: {integrity: sha512-m69o1XPAzZaIWfQiEeT+KY/Ci3OSA663RyoH9xECbXSxhr7dsipLCpCqT1E4MCob0mMhHh/7A+Eltx4y1qSwiQ==}
+  supabase@2.83.0:
+    resolution: {integrity: sha512-80j5YeYMkJqVc5gZGySMxiUJSUcwES6mNqi1nCa9q40qnPftff+LevcdZGLct4xtpaefkTtgmZArPSdq+H2RZQ==}
     engines: {npm: '>=8'}
     hasBin: true
 
@@ -3641,8 +3641,8 @@ packages:
   tar-stream@3.1.7:
     resolution: {integrity: sha512-qJj60CXt7IU1Ffyc3NJMjh6EkuCFej46zUqJ4J7pqYlThyd9bO0XBTmcOIhSzZJVWfsLks0+nle/j538YAW9RQ==}
 
-  tar@7.5.9:
-    resolution: {integrity: sha512-BTLcK0xsDh2+PUe9F6c2TlRp4zOOBMTkoQHQIWSIzI0R7KG46uEwq4OPk2W7bZcprBMsuaeFsqwYr7pjh6CuHg==}
+  tar@7.5.11:
+    resolution: {integrity: sha512-ChjMH33/KetonMTAtpYdgUFr0tbz69Fp2v7zWxQfYZX4g5ZN2nOBXm1R2xyA+lMIKrLKIoKAwFj93jE/avX9cQ==}
     engines: {node: '>=18'}
 
   text-decoder@1.2.7:
@@ -4150,35 +4150,66 @@ snapshots:
       style-mod: 4.1.3
       w3c-keyname: 2.2.8
 
-  '@docugenix/sanyam-ai-anthropic@1.0.13(zod@3.25.76)':
+  '@docugenix/sanyam-ai-anthropic@1.0.17(zod@3.25.76)':
     dependencies:
       '@anthropic-ai/sdk': 0.78.0(zod@3.25.76)
-      '@docugenix/sanyam-ai-provider': 1.0.13
-      '@docugenix/sanyam-ai-text': 1.0.13
+      '@docugenix/sanyam-ai-provider': 1.0.17
+      '@docugenix/sanyam-ai-text': 1.0.17
     transitivePeerDependencies:
       - zod
 
-  '@docugenix/sanyam-ai-chat@1.0.13(svelte@5.53.5)':
+  '@docugenix/sanyam-ai-chat@1.0.17(@electric-sql/pglite@0.2.17)(postgres@3.4.8)(svelte@5.53.5)':
     dependencies:
-      '@docugenix/sanyam-ai-text': 1.0.13
-      '@docugenix/sanyam-core': 1.0.13
+      '@docugenix/sanyam-ai-text': 1.0.17
+      '@docugenix/sanyam-core': 1.0.17
       '@hono/zod-validator': 0.7.6(hono@4.12.5)(zod@3.25.76)
+      drizzle-orm: 0.45.1(@electric-sql/pglite@0.2.17)(postgres@3.4.8)
       hono: 4.12.5
       marked: 15.0.12
       svelte: 5.53.5
       zod: 3.25.76
+    transitivePeerDependencies:
+      - '@aws-sdk/client-rds-data'
+      - '@cloudflare/workers-types'
+      - '@electric-sql/pglite'
+      - '@libsql/client'
+      - '@libsql/client-wasm'
+      - '@neondatabase/serverless'
+      - '@op-engineering/op-sqlite'
+      - '@opentelemetry/api'
+      - '@planetscale/database'
+      - '@prisma/client'
+      - '@tidbcloud/serverless'
+      - '@types/better-sqlite3'
+      - '@types/pg'
+      - '@types/sql.js'
+      - '@upstash/redis'
+      - '@vercel/postgres'
+      - '@xata.io/client'
+      - better-sqlite3
+      - bun-types
+      - expo-sqlite
+      - gel
+      - knex
+      - kysely
+      - mysql2
+      - pg
+      - postgres
+      - prisma
+      - sql.js
+      - sqlite3
 
-  '@docugenix/sanyam-ai-image@1.0.13':
+  '@docugenix/sanyam-ai-image@1.0.17':
     dependencies:
-      '@docugenix/sanyam-core': 1.0.13
+      '@docugenix/sanyam-core': 1.0.17
       '@hono/zod-validator': 0.7.6(hono@4.12.5)(zod@3.25.76)
       hono: 4.12.5
       zod: 3.25.76
 
-  '@docugenix/sanyam-ai-import@1.0.13':
+  '@docugenix/sanyam-ai-import@1.0.17':
     dependencies:
-      '@docugenix/sanyam-ai-text': 1.0.13
-      '@docugenix/sanyam-core': 1.0.13
+      '@docugenix/sanyam-ai-text': 1.0.17
+      '@docugenix/sanyam-core': 1.0.17
       '@hono/zod-validator': 0.7.6(hono@4.12.5)(zod@3.25.76)
       adm-zip: 0.5.16
       hono: 4.12.5
@@ -4186,41 +4217,41 @@ snapshots:
       pdf-parse: 1.1.4
       zod: 3.25.76
 
-  '@docugenix/sanyam-ai-local@1.0.13':
+  '@docugenix/sanyam-ai-local@1.0.17':
     dependencies:
-      '@docugenix/sanyam-ai-provider': 1.0.13
-      '@docugenix/sanyam-ai-text': 1.0.13
+      '@docugenix/sanyam-ai-provider': 1.0.17
+      '@docugenix/sanyam-ai-text': 1.0.17
 
-  '@docugenix/sanyam-ai-openai@1.0.13':
+  '@docugenix/sanyam-ai-openai@1.0.17':
     dependencies:
-      '@docugenix/sanyam-ai-image': 1.0.13
-      '@docugenix/sanyam-ai-provider': 1.0.13
-      '@docugenix/sanyam-ai-text': 1.0.13
+      '@docugenix/sanyam-ai-image': 1.0.17
+      '@docugenix/sanyam-ai-provider': 1.0.17
+      '@docugenix/sanyam-ai-text': 1.0.17
 
-  '@docugenix/sanyam-ai-provider@1.0.13':
+  '@docugenix/sanyam-ai-provider@1.0.17':
     dependencies:
-      '@docugenix/sanyam-ai-image': 1.0.13
-      '@docugenix/sanyam-ai-text': 1.0.13
-      '@docugenix/sanyam-core': 1.0.13
+      '@docugenix/sanyam-ai-image': 1.0.17
+      '@docugenix/sanyam-ai-text': 1.0.17
+      '@docugenix/sanyam-core': 1.0.17
 
-  '@docugenix/sanyam-ai-text@1.0.13':
+  '@docugenix/sanyam-ai-text@1.0.17':
     dependencies:
-      '@docugenix/sanyam-core': 1.0.13
+      '@docugenix/sanyam-core': 1.0.17
       '@hono/zod-validator': 0.7.6(hono@4.12.5)(zod@3.25.76)
       hono: 4.12.5
       zod: 3.25.76
 
-  '@docugenix/sanyam-app@1.0.13(@sveltejs/kit@2.53.2(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1)))(svelte@5.53.5)(typescript@5.9.2)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1)))(svelte@5.53.5)(tailwindcss@4.2.1)':
+  '@docugenix/sanyam-app@1.0.17(@sveltejs/kit@2.53.2(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1)))(svelte@5.53.5)(typescript@5.9.2)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1)))(svelte@5.53.5)(tailwindcss@4.2.1)':
     dependencies:
-      '@docugenix/sanyam-core': 1.0.13
+      '@docugenix/sanyam-core': 1.0.17
       '@sveltejs/kit': 2.53.2(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1)))(svelte@5.53.5)(typescript@5.9.2)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1))
       hono: 4.12.5
       svelte: 5.53.5
       tailwindcss: 4.2.1
 
-  '@docugenix/sanyam-auth@1.0.13':
+  '@docugenix/sanyam-auth@1.0.17':
     dependencies:
-      '@docugenix/sanyam-core': 1.0.13
+      '@docugenix/sanyam-core': 1.0.17
       '@supabase/ssr': 0.9.0(@supabase/supabase-js@2.99.1)
       '@supabase/supabase-js': 2.99.1
       hono: 4.12.5
@@ -4229,10 +4260,10 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@docugenix/sanyam-cli@1.0.13(@types/node@22.15.3)':
+  '@docugenix/sanyam-cli@1.0.17(@types/node@22.15.3)':
     dependencies:
-      '@docugenix/sanyam-core': 1.0.13
-      '@docugenix/sanyam-template-dsl': 1.0.13
+      '@docugenix/sanyam-core': 1.0.17
+      '@docugenix/sanyam-template-dsl': 1.0.17
       '@inquirer/prompts': 7.10.1(@types/node@22.15.3)
       clipanion: 4.0.0-rc.4(typanion@3.14.0)
       fs-extra: 11.3.3
@@ -4240,13 +4271,13 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@docugenix/sanyam-config@1.0.13': {}
+  '@docugenix/sanyam-config@1.0.17': {}
 
-  '@docugenix/sanyam-core@1.0.13': {}
+  '@docugenix/sanyam-core@1.0.17': {}
 
-  '@docugenix/sanyam-db@1.0.13(@electric-sql/pglite@0.2.17)':
+  '@docugenix/sanyam-db@1.0.17(@electric-sql/pglite@0.2.17)':
     dependencies:
-      '@docugenix/sanyam-core': 1.0.13
+      '@docugenix/sanyam-core': 1.0.17
       drizzle-orm: 0.45.1(@electric-sql/pglite@0.2.17)(postgres@3.4.8)
       drizzle-zod: 0.8.3(drizzle-orm@0.45.1(@electric-sql/pglite@0.2.17)(postgres@3.4.8))(zod@3.25.76)
       postgres: 3.4.8
@@ -4281,33 +4312,24 @@ snapshots:
       - sql.js
       - sqlite3
 
-  '@docugenix/sanyam-diagrams@1.0.13(svelte@5.53.5)':
+  '@docugenix/sanyam-diagrams@1.0.17(svelte@5.53.5)':
     dependencies:
-      '@docugenix/sanyam-core': 1.0.13
+      '@docugenix/sanyam-core': 1.0.17
       '@xyflow/svelte': 1.5.1(svelte@5.53.5)
       elkjs: 0.11.1
       svelte: 5.53.5
 
-  '@docugenix/sanyam-guide@1.0.13(@11ty/eleventy-navigation@1.0.5)(@11ty/eleventy@3.1.2)(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1))':
+  '@docugenix/sanyam-langium@1.0.17':
     dependencies:
-      '@docugenix/sanyam-core': 1.0.13
-      svelte: 5.53.5
-      vite: 7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1)
-    optionalDependencies:
-      '@11ty/eleventy': 3.1.2
-      '@11ty/eleventy-navigation': 1.0.5
-
-  '@docugenix/sanyam-langium@1.0.13':
-    dependencies:
-      '@docugenix/sanyam-core': 1.0.13
+      '@docugenix/sanyam-core': 1.0.17
       langium: 4.2.1
       vscode-languageserver: 9.0.1
       vscode-languageserver-protocol: 3.17.5
 
-  '@docugenix/sanyam-project@1.0.13(@electric-sql/pglite@0.2.17)(postgres@3.4.8)':
+  '@docugenix/sanyam-projects@1.0.17(@electric-sql/pglite@0.2.17)(postgres@3.4.8)':
     dependencies:
-      '@docugenix/sanyam-db': 1.0.13(@electric-sql/pglite@0.2.17)
-      '@docugenix/sanyam-shared': 1.0.13
+      '@docugenix/sanyam-db': 1.0.17(@electric-sql/pglite@0.2.17)
+      '@docugenix/sanyam-shared': 1.0.17
       '@hono/zod-validator': 0.7.6(hono@4.12.5)(zod@3.25.76)
       archiver: 7.0.1
       drizzle-orm: 0.45.1(@electric-sql/pglite@0.2.17)(postgres@3.4.8)
@@ -4346,9 +4368,9 @@ snapshots:
       - sql.js
       - sqlite3
 
-  '@docugenix/sanyam-publishing@1.0.13':
+  '@docugenix/sanyam-publishing@1.0.17':
     dependencies:
-      '@docugenix/sanyam-core': 1.0.13
+      '@docugenix/sanyam-core': 1.0.17
       '@hono/zod-validator': 0.7.6(hono@4.12.5)(zod@3.25.76)
       docx: 9.6.0
       exceljs: 4.4.0
@@ -4357,28 +4379,28 @@ snapshots:
       pptxgenjs: 3.12.0
       zod: 3.25.76
 
-  '@docugenix/sanyam-shared@1.0.13':
+  '@docugenix/sanyam-shared@1.0.17':
     dependencies:
       zod: 3.25.76
 
-  '@docugenix/sanyam-template-dsl@1.0.13':
+  '@docugenix/sanyam-template-dsl@1.0.17':
     dependencies:
-      '@docugenix/sanyam-core': 1.0.13
-      '@docugenix/sanyam-langium': 1.0.13
-      '@docugenix/sanyam-templates': 1.0.13
+      '@docugenix/sanyam-core': 1.0.17
+      '@docugenix/sanyam-langium': 1.0.17
+      '@docugenix/sanyam-templates': 1.0.17
       langium: 4.2.1
       vscode-languageserver: 9.0.1
       vscode-languageserver-protocol: 3.17.5
       zod: 3.25.76
 
-  '@docugenix/sanyam-templates@1.0.13':
+  '@docugenix/sanyam-templates@1.0.17':
     dependencies:
-      '@docugenix/sanyam-core': 1.0.13
+      '@docugenix/sanyam-core': 1.0.17
       zod: 3.25.76
 
-  '@docugenix/sanyam-test-utils@1.0.13(vitest@3.2.4)':
+  '@docugenix/sanyam-test-utils@1.0.17(vitest@3.2.4)':
     dependencies:
-      '@docugenix/sanyam-core': 1.0.13
+      '@docugenix/sanyam-core': 1.0.17
       '@electric-sql/pglite': 0.2.17
       drizzle-orm: 0.45.1(@electric-sql/pglite@0.2.17)(postgres@3.4.8)
       hono: 4.12.5
@@ -4413,6 +4435,15 @@ snapshots:
       - prisma
       - sql.js
       - sqlite3
+
+  '@docugenix/sanyam-user-guide@1.0.17(@11ty/eleventy-navigation@1.0.5)(@11ty/eleventy@3.1.2)(svelte@5.53.5)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1))':
+    dependencies:
+      '@docugenix/sanyam-core': 1.0.17
+      svelte: 5.53.5
+      vite: 7.3.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1)
+    optionalDependencies:
+      '@11ty/eleventy': 3.1.2
+      '@11ty/eleventy-navigation': 1.0.5
 
   '@drizzle-team/brocli@0.10.2': {}
 
@@ -7211,12 +7242,12 @@ snapshots:
 
   style-mod@4.1.3: {}
 
-  supabase@2.76.15:
+  supabase@2.83.0:
     dependencies:
       bin-links: 6.0.0
       https-proxy-agent: 7.0.6
       node-fetch: 3.3.2
-      tar: 7.5.9
+      tar: 7.5.11
     transitivePeerDependencies:
       - supports-color
 
@@ -7278,7 +7309,7 @@ snapshots:
       - bare-abort-controller
       - react-native-b4a
 
-  tar@7.5.9:
+  tar@7.5.11:
     dependencies:
       '@isaacs/fs-minipass': 4.0.1
       chownr: 3.0.0

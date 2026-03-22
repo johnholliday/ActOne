@@ -30,7 +30,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `packages/` — local shared libraries:
   - `@actone/shared` (`packages/shared-actone`) — Domain types (`SerializedStory*`, lifecycle, composition), DB schemas (Drizzle + RLS), constants, enums, validation
   - `@actone/lang` (`packages/lang-actone`) — Langium grammar, 10 custom services, domain serializer, web worker LSP server
-- `guide/` — Eleventy-based documentation (uses `@docugenix/sanyam-guide`)
+- `guide/` — Eleventy-based documentation (uses `@docugenix/sanyam-user-guide`)
 
 ### External Dependencies (@docugenix/sanyam-*)
 
@@ -54,7 +54,7 @@ Published to GitHub Packages (`@docugenix:registry=https://npm.pkg.github.com`):
 - `sanyam-diagrams` — ELK layout + AST→graph transformer
 - `sanyam-editor-codemirror` — CodeMirror 6 integration
 - `sanyam-layout-dockview` — Dockview layout integration
-- `sanyam-guide` — Eleventy config factory + Vite dev-server plugin
+- `sanyam-user-guide` — Eleventy config factory + Vite dev-server plugin
 - `sanyam-test-utils` — Shared Vitest fixtures, mock factories
 
 ### API Routing
@@ -90,11 +90,11 @@ Uses ESLint 9 flat config format (`.mjs` files). Packages import from `@docugeni
 
 ## Active Technologies
 - TypeScript 5.9.x (strict mode, ES2022 target, `moduleResolution: "Bundler"`) + SvelteKit 2.53.x, Svelte 5.53.x (runes), Langium 4.2.x, @xyflow/svelte 1.5.x, CodeMirror 6, dockview-core 5.0.0, Hono 4.x, Drizzle ORM 0.45.x, @supabase/supabase-js 2.97.x, Tailwind CSS 4.2.x, Zod, lucide-svelte, Eleventy 3.1.x
-- @docugenix/sanyam-* 1.0.x for all packages (core, shared, db, langium, app, auth, ai-provider, ai-anthropic, ai-openai, ai-local, ai-text, ai-chat, ai-image, ai-import, publishing, config, diagrams, guide, test-utils)
+- @docugenix/sanyam-* 1.0.x for all packages (core, shared, db, langium, app, auth, ai-provider, ai-anthropic, ai-openai, ai-local, ai-text, ai-chat, ai-image, ai-import, publishing, config, diagrams, user-guide, api-docs, test-utils)
 - Supabase PostgreSQL (Drizzle ORM for schema/queries, sanyam-auth for auth, sanyam-db for RLS-aware connections)
 
 ## Recent Changes
 - 012-ai-chat: Added AI chat panel as right fly-out sidebar. Integrated `@docugenix/sanyam-ai-chat` 0.15.0 with `ChatEngine`, Drizzle-backed `ConversationStore`/`MessageStore` (`conversations`/`chat_messages` tables with RLS). Updated all sanyam packages to 0.15.0. Removed unused `sanyam-editor-codemirror`/`sanyam-layout-dockview`. Fixed `BackendStore` for sanyam-ai-text 0.15.0 response format (`{ backends: [...] }` wrapper, `name` instead of `label`, local active selection).
 - 011-sanyam-ai-provider: Migrated to sanyam-ai-provider 0.10.0. Replaced custom BackendRegistry/TextBackend/ImageBackend with sanyam ProviderRegistry + auto-discovery. Deleted backend-registry.ts, claude-api.ts, claude-max.ts, local-llm.ts, dalle.ts, text-backends.ts, image-backends.ts, provider-adapters.ts. Added ai-providers.ts server singleton, generation-context.ts domain type, custom-image-providers.ts for Midjourney/Flux/LocalSD. Cost estimator now uses ProviderRegistry.
 - 010-sanyam-db-base-tables: Migrated to sanyam-db 0.9.0 base tables. Projects table uses sanyam-db's `name`/`lifecyclePhase`/`updatedAt` columns. Domain columns (authorName, genre, compositionMode, publishingMode) stored in `actone_project_ext` 1:1 extension table via SchemaExtension. `source_files` renamed to `project_files`. Old enums dropped, using text columns.
-- 009-migrate-sanyam-packages: Migrated from @repo/* to @actone/* (local) + @docugenix/sanyam-* (external). Replaced SvelteKit API routes with Hono handlers. Worker uses createWorkerLanguageServer(). Auth delegated to sanyam-auth. Guide uses sanyam-guide. DB client from sanyam-db.
+- 009-migrate-sanyam-packages: Migrated from @repo/* to @actone/* (local) + @docugenix/sanyam-* (external). Replaced SvelteKit API routes with Hono handlers. Worker uses createWorkerLanguageServer(). Auth delegated to sanyam-auth. Guide uses sanyam-user-guide. DB client from sanyam-db.

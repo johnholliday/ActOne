@@ -4,7 +4,7 @@ import {
   projectSnapshots,
   projectSnapshotFiles,
   projectAnalytics,
-} from '@docugenix/sanyam-project/schema';
+} from '@docugenix/sanyam-projects/schema';
 import {
   actoneProjectExt,
   assets,
